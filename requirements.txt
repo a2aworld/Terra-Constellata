@@ -1,0 +1,97 @@
+# Core dependencies
+langchain==0.1.0
+langchain-community==0.0.13
+langchain-core==0.1.17
+langchain-openai==0.0.8
+langgraph==0.0.40
+langsmith==0.0.92
+chromadb==0.4.18
+
+# Open-source LLMs
+transformers==4.35.0
+accelerate==0.24.0
+bitsandbytes==0.41.0
+torch==2.6.0
+
+# Agent tools and utilities
+faiss-cpu==1.9.0.post1
+sentence-transformers==2.2.2
+wikipedia==1.4.0
+duckduckgo-search==4.1.0
+
+# Data processing
+pandas==2.1.3
+numpy==1.24.3
+networkx==3.1
+
+# NLP
+spacy==3.7.2
+nltk==3.8.1
+textblob==0.17.1
+
+# Geospatial
+geopandas==0.14.0
+shapely==2.0.2
+
+# Database
+python-arango==7.7.0
+psycopg2-binary==2.9.7
+sqlalchemy==2.0.23
+alembic==1.12.1
+
+# File handling
+aiofiles==23.2.1
+
+# Web framework
+fastapi==0.104.1
+uvicorn==0.24.0
+
+# Async and HTTP
+aiohttp==3.9.1
+httpx==0.25.2
+
+# Configuration
+python-dotenv==1.0.0
+pydantic==2.5.0
+
+# Cryptography for verifiable credentials
+cryptography==41.0.0
+
+# Logging and utilities
+loguru==0.7.2
+tqdm==4.66.1
+
+# System monitoring
+psutil==5.9.6
+
+# Monitoring and metrics
+prometheus-client==0.19.0
+
+# Error tracking
+sentry-sdk==1.40.0
+
+# Reinforcement Learning
+stable-baselines3==2.0.0
+gymnasium==0.29.0
+ray[rllib]==2.6.0
+optuna==3.3.0
+
+# Machine Learning for Reward Modeling
+scikit-learn==1.3.0
+xgboost==1.7.6
+lightgbm==4.0.0
+
+# Additional utilities for learning
+matplotlib==3.7.2
+seaborn==0.12.2
+
+# Testing framework
+pytest==7.4.3
+pytest-cov==4.1.0
+pytest-asyncio==0.21.1
+
+# Linting and code quality
+flake8==6.1.0
+black==23.11.0
+mypy==1.7.1
+bandit==1.7.6

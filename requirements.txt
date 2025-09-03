@@ -70,9 +70,9 @@ prometheus-client==0.19.0
 # Error tracking
 sentry-sdk==1.40.0
 
-# Reinforcement Learning
-stable-baselines3==2.0.0
-gymnasium==0.29.0
+# Reinforcement Learning  # ==2.0.0 and # ==0.29.0
+stable-baselines3  
+gymnasium  
 ray[rllib]==2.6.0
 optuna==3.3.0
 

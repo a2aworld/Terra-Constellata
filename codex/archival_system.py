@@ -17,7 +17,7 @@ from .models import (
     ContributionType,
     AttributionRecord,
     StrategyDocument,
-    StrategyType
+    StrategyType,
 )
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,11 @@ class ArchivalSystem:
         self.strategies_path = self.storage_path / "strategies"
         self.workflows_path = self.storage_path / "workflows"
 
-        for path in [self.contributions_path, self.strategies_path, self.workflows_path]:
+        for path in [
+            self.contributions_path,
+            self.strategies_path,
+            self.workflows_path,
+        ]:
             path.mkdir(exist_ok=True)
 
         # In-memory caches
@@ -63,7 +67,7 @@ class ArchivalSystem:
         # Load contributions
         for file_path in self.contributions_path.glob("*.json"):
             try:
-                with open(file_path, 'r') as f:
+                with open(file_path, "r") as f:
                     data = json.load(f)
                     contribution = AgentContribution.from_dict(data)
                     self.contributions[contribution.contribution_id] = contribution
@@ -73,14 +77,16 @@ class ArchivalSystem:
         # Load strategies
         for file_path in self.strategies_path.glob("*.json"):
             try:
-                with open(file_path, 'r') as f:
+                with open(file_path, "r") as f:
                     data = json.load(f)
                     strategy = StrategyDocument.from_dict(data)
                     self.strategies[strategy.strategy_id] = strategy
             except Exception as e:
                 logger.error(f"Error loading strategy from {file_path}: {e}")
 
-        logger.info(f"Loaded {len(self.contributions)} contributions and {len(self.strategies)} strategies")
+        logger.info(
+            f"Loaded {len(self.contributions)} contributions and {len(self.strategies)} strategies"
+        )
 
     def archive_contribution(
         self,
@@ -96,7 +102,7 @@ class ArchivalSystem:
         collaboration_partners: Optional[List[str]] = None,
         ai_model: Optional[str] = None,
         ai_provider: Optional[str] = None,
-        human_contributor: Optional[str] = None
+        human_contributor: Optional[str] = None,
     ) -> str:
         """
         Archive an agent contribution.
@@ -137,7 +143,7 @@ class ArchivalSystem:
             timestamp=datetime.utcnow(),
             ai_model=ai_model,
             ai_provider=ai_provider,
-            human_contributor=human_contributor
+            human_contributor=human_contributor,
         )
 
         # Create contribution record
@@ -154,7 +160,7 @@ class ArchivalSystem:
             duration=duration,
             workflow_context=workflow_context,
             collaboration_partners=collaboration_partners or [],
-            attribution_records=[attribution]
+            attribution_records=[attribution],
         )
 
         # Store in memory
@@ -177,7 +183,7 @@ class ArchivalSystem:
         lessons_learned: List[str],
         created_by: str,
         related_contributions: Optional[List[str]] = None,
-        tags: Optional[List[str]] = None
+        tags: Optional[List[str]] = None,
     ) -> str:
         """
         Archive a documented strategy or pattern.
@@ -216,7 +222,7 @@ class ArchivalSystem:
             created_by=created_by,
             created_at=datetime.utcnow(),
             related_contributions=related_contributions or [],
-            tags=tags or []
+            tags=tags or [],
         )
 
         # Store in memory
@@ -239,14 +245,16 @@ class ArchivalSystem:
             Archive ID
         """
         # Generate unique ID
-        workflow_id = workflow_trace.get('workflow_id', 'unknown')
-        archive_id = f"workflow_{workflow_id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+        workflow_id = workflow_trace.get("workflow_id", "unknown")
+        archive_id = (
+            f"workflow_{workflow_id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+        )
 
         # Save workflow trace
         filename = f"{archive_id}.json"
         filepath = self.workflows_path / filename
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(workflow_trace, f, indent=2, default=str)
 
         logger.info(f"Archived workflow trace: {archive_id}")
@@ -264,13 +272,21 @@ class ArchivalSystem:
         """Get all contributions by a specific agent."""
         return [c for c in self.contributions.values() if c.agent_name == agent_name]
 
-    def get_strategies_by_type(self, strategy_type: StrategyType) -> List[StrategyDocument]:
+    def get_strategies_by_type(
+        self, strategy_type: StrategyType
+    ) -> List[StrategyDocument]:
         """Get strategies by type."""
         return [s for s in self.strategies.values() if s.strategy_type == strategy_type]
 
-    def get_contributions_by_type(self, contribution_type: ContributionType) -> List[AgentContribution]:
+    def get_contributions_by_type(
+        self, contribution_type: ContributionType
+    ) -> List[AgentContribution]:
         """Get contributions by type."""
-        return [c for c in self.contributions.values() if c.contribution_type == contribution_type]
+        return [
+            c
+            for c in self.contributions.values()
+            if c.contribution_type == contribution_type
+        ]
 
     def search_contributions(self, query: str) -> List[AgentContribution]:
         """Search contributions by text query."""
@@ -278,9 +294,14 @@ class ArchivalSystem:
         results = []
 
         for contribution in self.contributions.values():
-            if (query_lower in contribution.task_description.lower() or
-                query_lower in contribution.agent_name.lower() or
-                any(query_lower in partner.lower() for partner in contribution.collaboration_partners)):
+            if (
+                query_lower in contribution.task_description.lower()
+                or query_lower in contribution.agent_name.lower()
+                or any(
+                    query_lower in partner.lower()
+                    for partner in contribution.collaboration_partners
+                )
+            ):
                 results.append(contribution)
 
         return results
@@ -291,9 +312,11 @@ class ArchivalSystem:
         results = []
 
         for strategy in self.strategies.values():
-            if (query_lower in strategy.title.lower() or
-                query_lower in strategy.description.lower() or
-                any(query_lower in tag.lower() for tag in strategy.tags)):
+            if (
+                query_lower in strategy.title.lower()
+                or query_lower in strategy.description.lower()
+                or any(query_lower in tag.lower() for tag in strategy.tags)
+            ):
                 results.append(strategy)
 
         return results
@@ -306,7 +329,9 @@ class ArchivalSystem:
         agent_contribution_counts = {}
         for contribution in self.contributions.values():
             agent = contribution.agent_name
-            agent_contribution_counts[agent] = agent_contribution_counts.get(agent, 0) + 1
+            agent_contribution_counts[agent] = (
+                agent_contribution_counts.get(agent, 0) + 1
+            )
 
         strategy_type_counts = {}
         for strategy in self.strategies.values():
@@ -319,12 +344,17 @@ class ArchivalSystem:
             contribution_type_counts[ctype] = contribution_type_counts.get(ctype, 0) + 1
 
         return {
-            'total_contributions': total_contributions,
-            'total_strategies': total_strategies,
-            'agent_contribution_counts': agent_contribution_counts,
-            'strategy_type_counts': strategy_type_counts,
-            'contribution_type_counts': contribution_type_counts,
-            'most_active_agent': max(agent_contribution_counts.keys(), key=lambda k: agent_contribution_counts[k]) if agent_contribution_counts else None
+            "total_contributions": total_contributions,
+            "total_strategies": total_strategies,
+            "agent_contribution_counts": agent_contribution_counts,
+            "strategy_type_counts": strategy_type_counts,
+            "contribution_type_counts": contribution_type_counts,
+            "most_active_agent": max(
+                agent_contribution_counts.keys(),
+                key=lambda k: agent_contribution_counts[k],
+            )
+            if agent_contribution_counts
+            else None,
         }
 
     def _save_contribution(self, contribution: AgentContribution):
@@ -332,7 +362,7 @@ class ArchivalSystem:
         filename = f"{contribution.contribution_id}.json"
         filepath = self.contributions_path / filename
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(contribution.to_dict(), f, indent=2, default=str)
 
     def _save_strategy(self, strategy: StrategyDocument):
@@ -340,5 +370,5 @@ class ArchivalSystem:
         filename = f"{strategy.strategy_id}.json"
         filepath = self.strategies_path / filename
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(strategy.to_dict(), f, indent=2, default=str)

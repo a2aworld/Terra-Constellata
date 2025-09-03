@@ -19,6 +19,7 @@ from abc import ABC, abstractmethod
 @dataclass
 class NoveltyScore:
     """Container for novelty detection results"""
+
     score: float
     algorithm: str
     confidence: float
@@ -29,7 +30,9 @@ class NoveltyAlgorithm(ABC):
     """Abstract base class for novelty detection algorithms"""
 
     @abstractmethod
-    def calculate_novelty(self, data: Any, context: Dict[str, Any] = None) -> NoveltyScore:
+    def calculate_novelty(
+        self, data: Any, context: Dict[str, Any] = None
+    ) -> NoveltyScore:
         """Calculate novelty score for given data"""
         pass
 
@@ -54,7 +57,9 @@ class RPADAlgorithm(NoveltyAlgorithm):
     def get_algorithm_name(self) -> str:
         return "RPAD"
 
-    def calculate_novelty(self, data: Any, context: Dict[str, Any] = None) -> NoveltyScore:
+    def calculate_novelty(
+        self, data: Any, context: Dict[str, Any] = None
+    ) -> NoveltyScore:
         """
         Calculate RPAD novelty score based on pattern rarity
 
@@ -79,7 +84,9 @@ class RPADAlgorithm(NoveltyAlgorithm):
         total_patterns = len(patterns)
 
         if total_patterns == 0:
-            return NoveltyScore(0.0, self.get_algorithm_name(), 0.0, {"error": "No patterns found"})
+            return NoveltyScore(
+                0.0, self.get_algorithm_name(), 0.0, {"error": "No patterns found"}
+            )
 
         # Calculate rarity scores
         rarity_scores = {}
@@ -102,7 +109,9 @@ class RPADAlgorithm(NoveltyAlgorithm):
         else:
             novelty_score = 0.0
 
-        confidence = min(1.0, total_patterns / 100.0)  # Higher confidence with more data
+        confidence = min(
+            1.0, total_patterns / 100.0
+        )  # Higher confidence with more data
 
         return NoveltyScore(
             novelty_score,
@@ -112,8 +121,10 @@ class RPADAlgorithm(NoveltyAlgorithm):
                 "total_patterns": total_patterns,
                 "unique_patterns": len(pattern_counts),
                 "max_rarity_score": max(rarity_scores.values()) if rarity_scores else 0,
-                "patterns_above_threshold": len([s for s in rarity_scores.values() if s > 1.0])
-            }
+                "patterns_above_threshold": len(
+                    [s for s in rarity_scores.values() if s > 1.0]
+                ),
+            },
         )
 
     def _extract_patterns_from_list(self, data: List) -> List[str]:
@@ -136,7 +147,9 @@ class RPADAlgorithm(NoveltyAlgorithm):
         for key, value in data.items():
             patterns.append(f"{key}:{type(value).__name__}")
             if isinstance(value, (list, tuple)):
-                patterns.extend([f"{key}:{item}" for item in value[:5]])  # Limit to first 5 items
+                patterns.extend(
+                    [f"{key}:{item}" for item in value[:5]]
+                )  # Limit to first 5 items
         return patterns
 
     def _extract_patterns_from_dataframe(self, data: pd.DataFrame) -> List[str]:
@@ -167,7 +180,9 @@ class PeculiarityAlgorithm(NoveltyAlgorithm):
     def get_algorithm_name(self) -> str:
         return "Peculiarity_J_Measure"
 
-    def calculate_novelty(self, data: Any, context: Dict[str, Any] = None) -> NoveltyScore:
+    def calculate_novelty(
+        self, data: Any, context: Dict[str, Any] = None
+    ) -> NoveltyScore:
         """
         Calculate peculiarity using J-Measure (information-theoretic approach)
 
@@ -180,17 +195,23 @@ class PeculiarityAlgorithm(NoveltyAlgorithm):
         Returns:
             NoveltyScore with peculiarity assessment
         """
-        if context is None or 'class_label' not in context or 'features' not in context:
-            return NoveltyScore(0.0, self.get_algorithm_name(), 0.0,
-                               {"error": "Missing required context: class_label and features"})
+        if context is None or "class_label" not in context or "features" not in context:
+            return NoveltyScore(
+                0.0,
+                self.get_algorithm_name(),
+                0.0,
+                {"error": "Missing required context: class_label and features"},
+            )
 
-        class_label = context['class_label']
-        features = context['features']
+        class_label = context["class_label"]
+        features = context["features"]
 
         # Calculate prior probability of class
         if isinstance(data, pd.DataFrame):
             total_samples = len(data)
-            class_count = len(data[data.iloc[:, -1] == class_label])  # Assume last column is class
+            class_count = len(
+                data[data.iloc[:, -1] == class_label]
+            )  # Assume last column is class
             prior_prob = class_count / total_samples if total_samples > 0 else 0
         else:
             # For other data types, assume uniform prior
@@ -201,22 +222,30 @@ class PeculiarityAlgorithm(NoveltyAlgorithm):
 
         for feature_name, feature_value in features.items():
             # Calculate P(class|feature)
-            conditional_prob = self._calculate_conditional_probability(data, feature_name, feature_value, class_label)
+            conditional_prob = self._calculate_conditional_probability(
+                data, feature_name, feature_value, class_label
+            )
 
             if conditional_prob > 0 and prior_prob > 0:
                 # J-Measure calculation
-                j_measure = -math.log(conditional_prob, self.base) + math.log(prior_prob, self.base)
+                j_measure = -math.log(conditional_prob, self.base) + math.log(
+                    prior_prob, self.base
+                )
                 peculiarity_scores.append(j_measure)
 
         if peculiarity_scores:
             # Average peculiarity across all features
             avg_peculiarity = np.mean(peculiarity_scores)
             # Normalize to 0-1 scale
-            novelty_score = 1 / (1 + math.exp(-avg_peculiarity))  # Sigmoid normalization
+            novelty_score = 1 / (
+                1 + math.exp(-avg_peculiarity)
+            )  # Sigmoid normalization
         else:
             novelty_score = 0.0
 
-        confidence = min(1.0, len(features) / 10.0)  # Higher confidence with more features
+        confidence = min(
+            1.0, len(features) / 10.0
+        )  # Higher confidence with more features
 
         return NoveltyScore(
             novelty_score,
@@ -224,14 +253,17 @@ class PeculiarityAlgorithm(NoveltyAlgorithm):
             confidence,
             {
                 "peculiarity_scores": peculiarity_scores,
-                "average_peculiarity": np.mean(peculiarity_scores) if peculiarity_scores else 0,
+                "average_peculiarity": np.mean(peculiarity_scores)
+                if peculiarity_scores
+                else 0,
                 "prior_probability": prior_prob,
-                "features_analyzed": len(features)
-            }
+                "features_analyzed": len(features),
+            },
         )
 
-    def _calculate_conditional_probability(self, data: Any, feature_name: str,
-                                        feature_value: Any, class_label: Any) -> float:
+    def _calculate_conditional_probability(
+        self, data: Any, feature_name: str, feature_value: Any, class_label: Any
+    ) -> float:
         """Calculate P(class|feature)"""
         if isinstance(data, pd.DataFrame):
             if feature_name not in data.columns:
@@ -264,7 +296,9 @@ class BeliefChangeAlgorithm(NoveltyAlgorithm):
     def get_algorithm_name(self) -> str:
         return "Belief_Change_Measure"
 
-    def calculate_novelty(self, data: Any, context: Dict[str, Any] = None) -> NoveltyScore:
+    def calculate_novelty(
+        self, data: Any, context: Dict[str, Any] = None
+    ) -> NoveltyScore:
         """
         Calculate belief change using Bayesian updating
 
@@ -278,15 +312,23 @@ class BeliefChangeAlgorithm(NoveltyAlgorithm):
             NoveltyScore with belief change assessment
         """
         if context is None:
-            return NoveltyScore(0.0, self.get_algorithm_name(), 0.0,
-                               {"error": "Missing context for belief change calculation"})
+            return NoveltyScore(
+                0.0,
+                self.get_algorithm_name(),
+                0.0,
+                {"error": "Missing context for belief change calculation"},
+            )
 
-        prior_beliefs = context.get('prior_beliefs', {})
-        likelihoods = context.get('likelihoods', {})
+        prior_beliefs = context.get("prior_beliefs", {})
+        likelihoods = context.get("likelihoods", {})
 
         if not prior_beliefs or not likelihoods:
-            return NoveltyScore(0.0, self.get_algorithm_name(), 0.0,
-                               {"error": "Missing prior_beliefs or likelihoods in context"})
+            return NoveltyScore(
+                0.0,
+                self.get_algorithm_name(),
+                0.0,
+                {"error": "Missing prior_beliefs or likelihoods in context"},
+            )
 
         # Calculate posterior beliefs using Bayes' theorem
         posterior_beliefs = {}
@@ -298,14 +340,21 @@ class BeliefChangeAlgorithm(NoveltyAlgorithm):
 
             # Normalize by evidence (marginal likelihood)
             if evidence > 0:
-                posterior = evidence / sum(likelihoods.get(h, 0.1) * prior_beliefs.get(h, self.prior_belief_strength)
-                                         for h in prior_beliefs.keys())
+                posterior = evidence / sum(
+                    likelihoods.get(h, 0.1)
+                    * prior_beliefs.get(h, self.prior_belief_strength)
+                    for h in prior_beliefs.keys()
+                )
                 posterior_beliefs[hypothesis] = posterior
                 evidence_strength += evidence
 
         if not posterior_beliefs:
-            return NoveltyScore(0.0, self.get_algorithm_name(), 0.0,
-                               {"error": "Could not calculate posterior beliefs"})
+            return NoveltyScore(
+                0.0,
+                self.get_algorithm_name(),
+                0.0,
+                {"error": "Could not calculate posterior beliefs"},
+            )
 
         # Calculate KL-divergence between prior and posterior
         kl_divergence = 0
@@ -319,7 +368,9 @@ class BeliefChangeAlgorithm(NoveltyAlgorithm):
         # Normalize KL-divergence to 0-1 scale
         novelty_score = 1 - math.exp(-abs(kl_divergence))
 
-        confidence = min(1.0, len(prior_beliefs) / 5.0)  # Higher confidence with more hypotheses
+        confidence = min(
+            1.0, len(prior_beliefs) / 5.0
+        )  # Higher confidence with more hypotheses
 
         return NoveltyScore(
             novelty_score,
@@ -330,8 +381,8 @@ class BeliefChangeAlgorithm(NoveltyAlgorithm):
                 "prior_beliefs": prior_beliefs,
                 "posterior_beliefs": posterior_beliefs,
                 "evidence_strength": evidence_strength,
-                "hypotheses_count": len(prior_beliefs)
-            }
+                "hypotheses_count": len(prior_beliefs),
+            },
         )
 
 
@@ -342,13 +393,14 @@ class NoveltyDetector:
 
     def __init__(self):
         self.algorithms = {
-            'rpad': RPADAlgorithm(),
-            'peculiarity': PeculiarityAlgorithm(),
-            'belief_change': BeliefChangeAlgorithm()
+            "rpad": RPADAlgorithm(),
+            "peculiarity": PeculiarityAlgorithm(),
+            "belief_change": BeliefChangeAlgorithm(),
         }
 
-    def detect_novelty(self, data: Any, context: Dict[str, Any] = None,
-                      algorithms: List[str] = None) -> Dict[str, NoveltyScore]:
+    def detect_novelty(
+        self, data: Any, context: Dict[str, Any] = None, algorithms: List[str] = None
+    ) -> Dict[str, NoveltyScore]:
         """
         Detect novelty using specified algorithms
 
@@ -371,14 +423,14 @@ class NoveltyDetector:
                     results[algo_name] = score
                 except Exception as e:
                     results[algo_name] = NoveltyScore(
-                        0.0, algo_name, 0.0,
-                        {"error": str(e)}
+                        0.0, algo_name, 0.0, {"error": str(e)}
                     )
 
         return results
 
-    def calculate_combined_score(self, scores: Dict[str, NoveltyScore],
-                               weights: Dict[str, float] = None) -> float:
+    def calculate_combined_score(
+        self, scores: Dict[str, NoveltyScore], weights: Dict[str, float] = None
+    ) -> float:
         """
         Calculate weighted combination of novelty scores
 

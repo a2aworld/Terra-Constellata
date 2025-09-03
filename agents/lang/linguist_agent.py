@@ -45,18 +45,18 @@ class TextAnalysisTool(BaseTool):
             "english": {
                 "common_words": ["the", "and", "is", "in", "to", "of", "a", "that"],
                 "sentence_enders": [".", "!", "?"],
-                "vowels": "aeiouAEIOU"
+                "vowels": "aeiouAEIOU",
             },
             "spanish": {
                 "common_words": ["el", "la", "de", "que", "y", "en", "un", "es"],
                 "sentence_enders": [".", "!", "¿", "?"],
-                "vowels": "aeiouáéíóúAEIOUÁÉÍÓÚ"
+                "vowels": "aeiouáéíóúAEIOUÁÉÍÓÚ",
             },
             "french": {
                 "common_words": ["le", "la", "et", "à", "un", "il", "être", "et"],
                 "sentence_enders": [".", "!", "?"],
-                "vowels": "aeiouàâéèêëïîôùûüAEIOUÀÂÉÈÊËÏÎÔÙÛÜ"
-            }
+                "vowels": "aeiouàâéèêëïîôùûüAEIOUÀÂÉÈÊËÏÎÔÙÛÜ",
+            },
         }
 
     def _run(self, text: str) -> str:
@@ -93,7 +93,7 @@ class TextAnalysisTool(BaseTool):
     def _basic_statistics(self, text: str) -> str:
         """Calculate basic text statistics."""
         words = text.split()
-        sentences = re.split(r'[.!?]+', text)
+        sentences = re.split(r"[.!?]+", text)
         sentences = [s.strip() for s in sentences if s.strip()]
 
         return f"""=== BASIC STATISTICS ===
@@ -122,7 +122,7 @@ Average sentence length: {len(words) / len(sentences) if sentences else 0:.1f} w
 
     def _analyze_sentence_structure(self, text: str) -> str:
         """Analyze sentence structure."""
-        sentences = re.split(r'[.!?]+', text)
+        sentences = re.split(r"[.!?]+", text)
         sentences = [s.strip() for s in sentences if s.strip()]
 
         if not sentences:
@@ -184,14 +184,14 @@ class TranslationTool(BaseTool):
                 "english": "hello",
                 "spanish": "hola",
                 "french": "bonjour",
-                "german": "hallo"
+                "german": "hallo",
             },
             "goodbye": {
                 "english": "goodbye",
                 "spanish": "adiós",
                 "french": "au revoir",
-                "german": "auf wiedersehen"
-            }
+                "german": "auf wiedersehen",
+            },
         }
 
     def _run(self, query: str) -> str:
@@ -229,10 +229,12 @@ class TranslationTool(BaseTool):
             "Word order differences between languages",
             "Grammatical structures unique to source or target language",
             "Register and formality levels",
-            "Pronunciation and phonetic challenges"
+            "Pronunciation and phonetic challenges",
         ]
 
-        return "=== TRANSLATION CHALLENGES ===\n" + "\n".join(f"• {challenge}" for challenge in challenges)
+        return "=== TRANSLATION CHALLENGES ===\n" + "\n".join(
+            f"• {challenge}" for challenge in challenges
+        )
 
     def _general_translation_analysis(self, query: str) -> str:
         """Perform general translation analysis."""
@@ -306,8 +308,12 @@ Vowel-Consonant ratio: {vowel_count / consonant_count if consonant_count > 0 els
         prefixes = ["un", "in", "dis", "re", "pre", "post"]
         suffixes = ["ing", "ed", "er", "est", "ly", "ness", "ment"]
 
-        prefix_count = sum(1 for word in words for prefix in prefixes if word.startswith(prefix))
-        suffix_count = sum(1 for word in words for suffix in suffixes if word.endswith(suffix))
+        prefix_count = sum(
+            1 for word in words for prefix in prefixes if word.startswith(prefix)
+        )
+        suffix_count = sum(
+            1 for word in words for suffix in suffixes if word.endswith(suffix)
+        )
 
         return f"""=== MORPHOLOGICAL PATTERNS ===
 Words with common prefixes: {prefix_count}
@@ -316,15 +322,15 @@ Average word length: {sum(len(word) for word in words) / len(words):.1f}"""
 
     def _analyze_syntactic_patterns(self, text: str) -> str:
         """Analyze syntactic patterns."""
-        sentences = re.split(r'[.!?]+', text)
+        sentences = re.split(r"[.!?]+", text)
         sentences = [s.strip() for s in sentences if s.strip()]
 
         if not sentences:
             return "=== SYNTACTIC PATTERNS ===\nNo sentences to analyze"
 
         # Simple syntactic analysis
-        question_count = text.count('?')
-        exclamation_count = text.count('!')
+        question_count = text.count("?")
+        exclamation_count = text.count("!")
 
         return f"""=== SYNTACTIC PATTERNS ===
 Total sentences: {len(sentences)}
@@ -349,12 +355,7 @@ class LinguistAgent(BaseSpecialistAgent):
             LinguisticPatternTool(),
         ]
 
-        super().__init__(
-            name="LinguistAgent",
-            llm=llm,
-            tools=tools,
-            **kwargs
-        )
+        super().__init__(name="LinguistAgent", llm=llm, tools=tools, **kwargs)
 
         # Agent-specific attributes
         self.analysis_history = []
@@ -391,21 +392,17 @@ class LinguistAgent(BaseSpecialistAgent):
 
         prompt = PromptTemplate(
             input_variables=["input", "tools", "chat_history", "agent_scratchpad"],
-            template=template
+            template=template,
         )
 
-        agent = create_react_agent(
-            llm=self.llm,
-            tools=self.tools,
-            prompt=prompt
-        )
+        agent = create_react_agent(llm=self.llm, tools=self.tools, prompt=prompt)
 
         return AgentExecutor.from_agent_and_tools(
             agent=agent,
             tools=self.tools,
             memory=self.memory,
             verbose=True,
-            handle_parsing_errors=True
+            handle_parsing_errors=True,
         )
 
     async def process_task(self, task: str, **kwargs) -> Any:
@@ -424,18 +421,18 @@ class LinguistAgent(BaseSpecialistAgent):
 
             # Execute the analysis
             result = await asyncio.get_event_loop().run_in_executor(
-                None,
-                self.agent_executor.run,
-                task
+                None, self.agent_executor.run, task
             )
 
             # Store in analysis history
-            self.analysis_history.append({
-                "task": task,
-                "result": result,
-                "timestamp": datetime.utcnow(),
-                "kwargs": kwargs
-            })
+            self.analysis_history.append(
+                {
+                    "task": task,
+                    "result": result,
+                    "timestamp": datetime.utcnow(),
+                    "kwargs": kwargs,
+                }
+            )
 
             # Cache language profiles
             self._cache_language_profile(task, result)
@@ -453,7 +450,9 @@ class LinguistAgent(BaseSpecialistAgent):
             # Simple caching of language detection results
             self.language_profiles[task[:50]] = result
 
-    async def analyze_text(self, text: str, analysis_type: str = "comprehensive") -> Dict[str, Any]:
+    async def analyze_text(
+        self, text: str, analysis_type: str = "comprehensive"
+    ) -> Dict[str, Any]:
         """
         Analyze text with specified analysis type.
 
@@ -474,10 +473,12 @@ class LinguistAgent(BaseSpecialistAgent):
             "text_preview": text[:200],
             "analysis_type": analysis_type,
             "results": result,
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.utcnow(),
         }
 
-    async def translate_text(self, text: str, source_lang: str, target_lang: str) -> Dict[str, Any]:
+    async def translate_text(
+        self, text: str, source_lang: str, target_lang: str
+    ) -> Dict[str, Any]:
         """
         Translate text between languages.
 
@@ -493,14 +494,16 @@ class LinguistAgent(BaseSpecialistAgent):
 
         # Use translation tool
         translation_tool = self.tools[1]  # TranslationTool
-        result = translation_tool._run(f"translate {text} from {source_lang} to {target_lang}")
+        result = translation_tool._run(
+            f"translate {text} from {source_lang} to {target_lang}"
+        )
 
         return {
             "original_text": text,
             "source_language": source_lang,
             "target_language": target_lang,
             "translation": result,
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.utcnow(),
         }
 
     async def _autonomous_loop(self):
@@ -530,7 +533,9 @@ class LinguistAgent(BaseSpecialistAgent):
     async def _perform_periodic_analysis(self):
         """Perform periodic linguistic analysis tasks."""
         # Example: Analyze recent communications
-        analysis_result = await self.analyze_text("Sample text for periodic analysis", "linguistic")
+        analysis_result = await self.analyze_text(
+            "Sample text for periodic analysis", "linguistic"
+        )
 
         # Share insights if significant patterns found
         if "pattern" in analysis_result.get("results", "").lower():

@@ -76,8 +76,8 @@ class StyleTransfer:
             checkpoint = torch.load(model_path, map_location=self.model.device)
 
             # Load model states
-            self.model.G_AB.load_state_dict(checkpoint['model_state_dict']['G_AB'])
-            self.model.G_BA.load_state_dict(checkpoint['model_state_dict']['G_BA'])
+            self.model.G_AB.load_state_dict(checkpoint["model_state_dict"]["G_AB"])
+            self.model.G_BA.load_state_dict(checkpoint["model_state_dict"]["G_BA"])
 
             # Cache the loaded model
             self.loaded_models[model_name] = checkpoint
@@ -94,7 +94,7 @@ class StyleTransfer:
         input_path: str,
         style_name: str = "default",
         output_dir: Optional[str] = None,
-        direction: str = "A_to_B"
+        direction: str = "A_to_B",
     ) -> str:
         """
         Apply style transfer to an input image.
@@ -131,11 +131,7 @@ class StyleTransfer:
 
         # Postprocess and save
         output_path = self._save_output_image(
-            output_tensor,
-            input_path,
-            style_name,
-            output_dir,
-            direction
+            output_tensor, input_path, style_name, output_dir, direction
         )
 
         logger.info(f"Style transfer completed: {input_path} -> {output_path}")
@@ -147,7 +143,7 @@ class StyleTransfer:
         style_name: str = "default",
         output_dir: Optional[str] = None,
         direction: str = "A_to_B",
-        batch_size: int = 4
+        batch_size: int = 4,
     ) -> List[str]:
         """
         Apply style transfer to multiple images in batches.
@@ -174,7 +170,7 @@ class StyleTransfer:
 
         # Process in batches
         for i in range(0, len(input_paths), batch_size):
-            batch_paths = input_paths[i:i + batch_size]
+            batch_paths = input_paths[i : i + batch_size]
 
             try:
                 # Load batch of images
@@ -193,18 +189,22 @@ class StyleTransfer:
                         batch_output = self.model.G_BA(batch_input)
 
                 # Save each output
-                for j, (input_path, output_tensor) in enumerate(zip(batch_paths, batch_output)):
+                for j, (input_path, output_tensor) in enumerate(
+                    zip(batch_paths, batch_output)
+                ):
                     output_path = self._save_output_image(
                         output_tensor.unsqueeze(0),
                         input_path,
                         style_name,
                         output_dir,
                         direction,
-                        batch_index=i + j
+                        batch_index=i + j,
                     )
                     output_paths.append(output_path)
 
-                logger.info(f"Processed batch {i//batch_size + 1}/{(len(input_paths) + batch_size - 1)//batch_size}")
+                logger.info(
+                    f"Processed batch {i//batch_size + 1}/{(len(input_paths) + batch_size - 1)//batch_size}"
+                )
 
             except Exception as e:
                 logger.error(f"Failed to process batch starting at index {i}: {e}")
@@ -224,7 +224,7 @@ class StyleTransfer:
         """
         try:
             # Load image
-            image = Image.open(image_path).convert('RGB')
+            image = Image.open(image_path).convert("RGB")
 
             # Apply preprocessing
             tensor = self.transform(image, is_train=False)
@@ -245,7 +245,7 @@ class StyleTransfer:
         style_name: str,
         output_dir: Optional[str] = None,
         direction: str = "A_to_B",
-        batch_index: Optional[int] = None
+        batch_index: Optional[int] = None,
     ) -> str:
         """
         Postprocess and save the output image.
@@ -288,7 +288,9 @@ class StyleTransfer:
             if batch_index is not None:
                 output_filename = f"{input_filename}_{style_name}_{direction}_{timestamp}_{batch_index}.png"
             else:
-                output_filename = f"{input_filename}_{style_name}_{direction}_{timestamp}.png"
+                output_filename = (
+                    f"{input_filename}_{style_name}_{direction}_{timestamp}.png"
+                )
 
             output_path = output_dir / output_filename
 
@@ -328,7 +330,7 @@ class StyleTransfer:
         self,
         satellite_path: str,
         style_name: str = "default",
-        output_dir: Optional[str] = None
+        output_dir: Optional[str] = None,
     ) -> str:
         """
         Specialized method for converting satellite imagery to artwork.
@@ -348,14 +350,14 @@ class StyleTransfer:
             input_path=satellite_path,
             style_name=style_name,
             output_dir=output_dir,
-            direction="A_to_B"
+            direction="A_to_B",
         )
 
     def artwork_to_satellite(
         self,
         artwork_path: str,
         style_name: str = "default",
-        output_dir: Optional[str] = None
+        output_dir: Optional[str] = None,
     ) -> str:
         """
         Specialized method for converting artwork to satellite-like imagery.
@@ -375,7 +377,7 @@ class StyleTransfer:
             input_path=artwork_path,
             style_name=style_name,
             output_dir=output_dir,
-            direction="B_to_A"
+            direction="B_to_A",
         )
 
     def blend_styles(
@@ -383,7 +385,7 @@ class StyleTransfer:
         input_path: str,
         style_names: List[str],
         weights: Optional[List[float]] = None,
-        output_dir: Optional[str] = None
+        output_dir: Optional[str] = None,
     ) -> str:
         """
         Blend multiple artistic styles on a single input image.
@@ -431,7 +433,7 @@ class StyleTransfer:
             input_path,
             f"blend_{'_'.join(style_names)}",
             output_dir,
-            "blended"
+            "blended",
         )
 
         return output_path
@@ -449,10 +451,10 @@ class StyleTransfer:
         if style_name in self.loaded_models:
             checkpoint = self.loaded_models[style_name]
             return {
-                'style_name': style_name,
-                'epoch': checkpoint.get('epoch', 'unknown'),
-                'losses': checkpoint.get('losses', {}),
-                'best_loss': checkpoint.get('best_loss', 'unknown'),
-                'loaded_at': datetime.now().isoformat()
+                "style_name": style_name,
+                "epoch": checkpoint.get("epoch", "unknown"),
+                "losses": checkpoint.get("losses", {}),
+                "best_loss": checkpoint.get("best_loss", "unknown"),
+                "loaded_at": datetime.now().isoformat(),
             }
         return None

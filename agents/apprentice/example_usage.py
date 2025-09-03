@@ -35,7 +35,7 @@ async def example_basic_usage():
     agent = ApprenticeAgent(
         llm=None,  # No LLM needed for this example
         model_dir="./models/apprentice_example",
-        data_dir="./data/apprentice_example"
+        data_dir="./data/apprentice_example",
     )
 
     logger.info("Apprentice Agent initialized")
@@ -77,7 +77,7 @@ async def example_training_pipeline():
             domain_b_dir="artwork",
             image_size=256,
             batch_size=1,
-            max_samples=10  # Small sample for demo
+            max_samples=10,  # Small sample for demo
         )
         logger.info("Data loaders created successfully")
     except Exception as e:
@@ -91,7 +91,7 @@ async def example_training_pipeline():
         learning_rate=0.0002,
         sample_interval=10,
         checkpoint_interval=2,
-        log_interval=1
+        log_interval=1,
     )
 
     # Initialize training pipeline
@@ -126,7 +126,9 @@ async def example_style_transfer():
     # Example calls (would work with real trained models and data)
     logger.info("\nExample calls:")
     logger.info("output_path = style_transfer.apply_style('input.jpg', 'my_style')")
-    logger.info("artwork_path = style_transfer.satellite_to_artwork('satellite.jpg', 'impressionist')")
+    logger.info(
+        "artwork_path = style_transfer.satellite_to_artwork('satellite.jpg', 'impressionist')"
+    )
 
     return style_transfer
 
@@ -191,8 +193,7 @@ async def example_a2a_integration():
 
     # Initialize agent with A2A support
     agent = ApprenticeAgent(
-        llm=None,  # No LLM for this example
-        a2a_server_url="http://localhost:8080"
+        llm=None, a2a_server_url="http://localhost:8080"  # No LLM for this example
     )
 
     logger.info("Agent initialized with A2A protocol support")
@@ -205,8 +206,12 @@ async def example_a2a_integration():
 
     # Example A2A calls (would work with running A2A server)
     logger.info("\nExample A2A calls:")
-    logger.info("response = await agent.request_artistic_inspiration('abstract', 'visual')")
-    logger.info("await agent.share_artwork('artwork.jpg', 'My creation', 'surrealist', 'agent2')")
+    logger.info(
+        "response = await agent.request_artistic_inspiration('abstract', 'visual')"
+    )
+    logger.info(
+        "await agent.share_artwork('artwork.jpg', 'My creation', 'surrealist', 'agent2')"
+    )
 
     return agent
 
@@ -228,7 +233,8 @@ async def example_full_workflow():
     logger.info("7. Collaborate with other agents")
 
     logger.info("\nExample code structure:")
-    logger.info("""
+    logger.info(
+        """
 # Setup
 config = ApprenticeConfig()
 config.cyclegan.num_epochs = 200
@@ -246,7 +252,8 @@ output_path = style_transfer.apply_style("input.jpg", "trained_style")
 # A2A Collaboration
 agent = ApprenticeAgent(llm=my_llm)
 await agent.share_artwork(output_path, "Generated artwork", "my_style", "colleague_agent")
-""")
+"""
+    )
 
 
 async def main():

@@ -24,7 +24,7 @@ from ..a2a_protocol.schemas import (
     CreationFeedback,
     ToolProposal,
     NarrativePrompt,
-    CertificationRequest
+    CertificationRequest,
 )
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ class BaseSpecialistAgent(ABC):
         tools: List[BaseTool],
         a2a_server_url: str = "http://localhost:8080",
         memory_size: int = 1000,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize the specialist agent.
@@ -73,9 +73,7 @@ class BaseSpecialistAgent(ABC):
 
         # Initialize memory
         self.memory = ConversationBufferMemory(
-            memory_key="chat_history",
-            return_messages=True,
-            max_token_limit=memory_size
+            memory_key="chat_history", return_messages=True, max_token_limit=memory_size
         )
 
         # Agent state
@@ -153,22 +151,28 @@ class BaseSpecialistAgent(ABC):
             # Archive to Codex if available
             if self.codex_manager:
                 try:
-                    success_metrics = kwargs.get('success_metrics', {'completed': True})
-                    collaboration_partners = kwargs.get('collaboration_partners', [])
+                    success_metrics = kwargs.get("success_metrics", {"completed": True})
+                    collaboration_partners = kwargs.get("collaboration_partners", [])
 
                     self.codex_manager.archive_agent_task(
                         agent_name=self.name,
                         agent_type=self.__class__.__name__,
                         task_description=task,
                         contribution_type="task_execution",
-                        input_data=kwargs.get('input_data', {}),
-                        output_data={'result': str(result)[:1000]},  # Truncate for storage
+                        input_data=kwargs.get("input_data", {}),
+                        output_data={
+                            "result": str(result)[:1000]
+                        },  # Truncate for storage
                         success_metrics=success_metrics,
                         duration=duration,
-                        workflow_context=kwargs.get('workflow_context'),
+                        workflow_context=kwargs.get("workflow_context"),
                         collaboration_partners=collaboration_partners,
-                        ai_model=getattr(self.llm, 'model_name', None) if hasattr(self.llm, 'model_name') else None,
-                        ai_provider=getattr(self.llm, 'provider', None) if hasattr(self.llm, 'provider') else None
+                        ai_model=getattr(self.llm, "model_name", None)
+                        if hasattr(self.llm, "model_name")
+                        else None,
+                        ai_provider=getattr(self.llm, "provider", None)
+                        if hasattr(self.llm, "provider")
+                        else None,
                     )
                 except Exception as e:
                     logger.warning(f"Failed to archive task to Codex: {e}")
@@ -187,21 +191,21 @@ class BaseSpecialistAgent(ABC):
                         agent_type=self.__class__.__name__,
                         task_description=task,
                         contribution_type="task_execution",
-                        input_data=kwargs.get('input_data', {}),
-                        output_data={'error': str(e)},
-                        success_metrics={'completed': False, 'error': str(e)},
+                        input_data=kwargs.get("input_data", {}),
+                        output_data={"error": str(e)},
+                        success_metrics={"completed": False, "error": str(e)},
                         duration=duration,
-                        workflow_context=kwargs.get('workflow_context')
+                        workflow_context=kwargs.get("workflow_context"),
                     )
                 except Exception as archive_error:
-                    logger.warning(f"Failed to archive failed task to Codex: {archive_error}")
+                    logger.warning(
+                        f"Failed to archive failed task to Codex: {archive_error}"
+                    )
 
             raise
 
     async def send_message(
-        self,
-        message: A2AMessage,
-        target_agent: Optional[str] = None
+        self, message: A2AMessage, target_agent: Optional[str] = None
     ) -> Any:
         """
         Send a message via A2A protocol.
@@ -218,14 +222,11 @@ class BaseSpecialistAgent(ABC):
 
         message.target_agent = target_agent
         return await self.a2a_client.send_request(
-            method=self._get_message_method(message),
-            message=message
+            method=self._get_message_method(message), message=message
         )
 
     async def send_notification(
-        self,
-        message: A2AMessage,
-        target_agent: Optional[str] = None
+        self, message: A2AMessage, target_agent: Optional[str] = None
     ):
         """
         Send a notification via A2A protocol.
@@ -239,8 +240,7 @@ class BaseSpecialistAgent(ABC):
 
         message.target_agent = target_agent
         await self.a2a_client.send_notification(
-            method=self._get_message_method(message),
-            message=message
+            method=self._get_message_method(message), message=message
         )
 
     def _get_message_method(self, message: A2AMessage) -> str:
@@ -255,10 +255,7 @@ class BaseSpecialistAgent(ABC):
         return message_type_map.get(type(message), "UNKNOWN_MESSAGE")
 
     async def request_inspiration(
-        self,
-        context: str,
-        domain: str,
-        target_agent: Optional[str] = None
+        self, context: str, domain: str, target_agent: Optional[str] = None
     ) -> Any:
         """
         Request inspiration from another agent.
@@ -272,9 +269,7 @@ class BaseSpecialistAgent(ABC):
             Inspiration response
         """
         message = InspirationRequest(
-            context=context,
-            domain=domain,
-            target_agent=target_agent
+            context=context, domain=domain, target_agent=target_agent
         )
         return await self.send_message(message, target_agent)
 
@@ -284,7 +279,7 @@ class BaseSpecialistAgent(ABC):
         feedback_type: str,
         content: str,
         target_agent: str,
-        rating: Optional[int] = None
+        rating: Optional[int] = None,
     ):
         """
         Provide feedback on creative output.
@@ -301,7 +296,7 @@ class BaseSpecialistAgent(ABC):
             feedback_type=feedback_type,
             content=content,
             rating=rating,
-            target_agent=target_agent
+            target_agent=target_agent,
         )
         await self.send_notification(message, target_agent)
 
@@ -311,7 +306,7 @@ class BaseSpecialistAgent(ABC):
         description: str,
         capabilities: List[str],
         target_agent: str,
-        use_case: str
+        use_case: str,
     ):
         """
         Propose a new tool to another agent.
@@ -328,7 +323,7 @@ class BaseSpecialistAgent(ABC):
             description=description,
             capabilities=capabilities,
             use_case=use_case,
-            target_agent=target_agent
+            target_agent=target_agent,
         )
         await self.send_notification(message, target_agent)
 
@@ -337,7 +332,7 @@ class BaseSpecialistAgent(ABC):
         theme: str,
         elements: List[str],
         target_agent: str,
-        style: str = "narrative"
+        style: str = "narrative",
     ) -> Any:
         """
         Request narrative generation.
@@ -352,10 +347,7 @@ class BaseSpecialistAgent(ABC):
             Narrative response
         """
         message = NarrativePrompt(
-            theme=theme,
-            elements=elements,
-            style=style,
-            target_agent=target_agent
+            theme=theme, elements=elements, style=style, target_agent=target_agent
         )
         return await self.send_message(message, target_agent)
 
@@ -398,10 +390,7 @@ class BaseSpecialistAgent(ABC):
 
     def update_memory(self, input_text: str, output_text: str):
         """Update agent memory with conversation."""
-        self.memory.save_context(
-            {"input": input_text},
-            {"output": output_text}
-        )
+        self.memory.save_context({"input": input_text}, {"output": output_text})
         self.last_activity = datetime.utcnow()
 
         # Archive to Codex if available
@@ -415,7 +404,7 @@ class BaseSpecialistAgent(ABC):
                     input_data={"input": input_text},
                     output_data={"output": output_text},
                     success_metrics={"memory_updated": True},
-                    workflow_context="memory_management"
+                    workflow_context="memory_management",
                 )
             except Exception as e:
                 logger.warning(f"Failed to archive memory update to Codex: {e}")
@@ -433,7 +422,7 @@ class BaseSpecialistAgent(ABC):
             "last_activity": self.last_activity.isoformat(),
             "memory_size": len(self.memory.chat_memory.messages),
             "tools_count": len(self.tools),
-            "a2a_connected": self.a2a_client is not None
+            "a2a_connected": self.a2a_client is not None,
         }
 
 
@@ -459,11 +448,14 @@ class SpecialistAgentRegistry:
     def get_agents_by_type(self, agent_type: str) -> List[BaseSpecialistAgent]:
         """Get agents by type."""
         return [
-            agent for agent in self.agents.values()
+            agent
+            for agent in self.agents.values()
             if agent.__class__.__name__ == agent_type
         ]
 
-    async def broadcast_message(self, message: A2AMessage, exclude_agent: Optional[str] = None):
+    async def broadcast_message(
+        self, message: A2AMessage, exclude_agent: Optional[str] = None
+    ):
         """Broadcast a message to all agents except the sender."""
         for agent_name, agent in self.agents.items():
             if agent_name != exclude_agent:

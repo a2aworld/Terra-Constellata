@@ -37,7 +37,7 @@ class TrainingConfig:
         sample_interval: int = 100,
         checkpoint_interval: int = 10,
         log_interval: int = 10,
-        device: str = "auto"
+        device: str = "auto",
     ):
         self.num_epochs = num_epochs
         self.batch_size = batch_size
@@ -47,7 +47,11 @@ class TrainingConfig:
         self.sample_interval = sample_interval
         self.checkpoint_interval = checkpoint_interval
         self.log_interval = log_interval
-        self.device = torch.device(device if device != "auto" else ("cuda" if torch.cuda.is_available() else "cpu"))
+        self.device = torch.device(
+            device
+            if device != "auto"
+            else ("cuda" if torch.cuda.is_available() else "cpu")
+        )
 
 
 class TrainingMetrics:
@@ -110,7 +114,7 @@ class TrainingPipeline:
         self.model_dir.mkdir(parents=True, exist_ok=True)
 
         self.metrics = TrainingMetrics()
-        self.best_loss = float('inf')
+        self.best_loss = float("inf")
         self.current_epoch = 0
 
         logger.info("Training pipeline initialized")
@@ -119,7 +123,7 @@ class TrainingPipeline:
         self,
         train_loader: DataLoader,
         config: TrainingConfig,
-        resume_from: Optional[str] = None
+        resume_from: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Execute the training pipeline.
@@ -132,7 +136,9 @@ class TrainingPipeline:
         Returns:
             Training results and metrics
         """
-        logger.info(f"Starting training with config: epochs={config.num_epochs}, batch_size={config.batch_size}")
+        logger.info(
+            f"Starting training with config: epochs={config.num_epochs}, batch_size={config.batch_size}"
+        )
 
         # Resume from checkpoint if provided
         if resume_from:
@@ -149,7 +155,7 @@ class TrainingPipeline:
                 epoch_losses = self._train_epoch(train_loader, config)
 
                 # Update metrics
-                current_lr = self.model.optimizer_G.param_groups[0]['lr']
+                current_lr = self.model.optimizer_G.param_groups[0]["lr"]
                 epoch_time = time.time() - epoch_start_time
                 self.metrics.update(epoch_losses, current_lr, epoch_time)
 
@@ -162,7 +168,11 @@ class TrainingPipeline:
                     self.save_checkpoint(epoch, epoch_losses)
 
                 # Save best model
-                total_loss = epoch_losses.get('loss_G', 0) + epoch_losses.get('loss_D_A', 0) + epoch_losses.get('loss_D_B', 0)
+                total_loss = (
+                    epoch_losses.get("loss_G", 0)
+                    + epoch_losses.get("loss_D_A", 0)
+                    + epoch_losses.get("loss_D_B", 0)
+                )
                 if total_loss < self.best_loss:
                     self.best_loss = total_loss
                     self.save_checkpoint(epoch, epoch_losses, is_best=True)
@@ -173,7 +183,9 @@ class TrainingPipeline:
 
         except KeyboardInterrupt:
             logger.info("Training interrupted by user")
-            self.save_checkpoint(self.current_epoch, self.metrics.get_latest_losses(), is_interrupt=True)
+            self.save_checkpoint(
+                self.current_epoch, self.metrics.get_latest_losses(), is_interrupt=True
+            )
 
         except Exception as e:
             logger.error(f"Training failed: {e}")
@@ -181,7 +193,9 @@ class TrainingPipeline:
 
         return self._get_training_results()
 
-    def _train_epoch(self, train_loader: DataLoader, config: TrainingConfig) -> Dict[str, float]:
+    def _train_epoch(
+        self, train_loader: DataLoader, config: TrainingConfig
+    ) -> Dict[str, float]:
         """
         Train for one epoch.
 
@@ -193,11 +207,11 @@ class TrainingPipeline:
             Average losses for the epoch
         """
         epoch_losses = {
-            'loss_G': 0.0,
-            'loss_G_GAN': 0.0,
-            'loss_cycle': 0.0,
-            'loss_D_A': 0.0,
-            'loss_D_B': 0.0
+            "loss_G": 0.0,
+            "loss_G_GAN": 0.0,
+            "loss_cycle": 0.0,
+            "loss_D_A": 0.0,
+            "loss_D_B": 0.0,
         }
 
         num_batches = len(train_loader)
@@ -224,12 +238,20 @@ class TrainingPipeline:
 
         return epoch_losses
 
-    def _log_epoch_progress(self, epoch: int, losses: Dict[str, float], epoch_time: float):
+    def _log_epoch_progress(
+        self, epoch: int, losses: Dict[str, float], epoch_time: float
+    ):
         """Log training progress for an epoch."""
         loss_str = " | ".join([f"{k}: {v:.4f}" for k, v in losses.items()])
         logger.info(f"Epoch {epoch} | Time: {epoch_time:.2f}s | {loss_str}")
 
-    def save_checkpoint(self, epoch: int, losses: Dict[str, float], is_best: bool = False, is_interrupt: bool = False):
+    def save_checkpoint(
+        self,
+        epoch: int,
+        losses: Dict[str, float],
+        is_best: bool = False,
+        is_interrupt: bool = False,
+    ):
         """
         Save model checkpoint.
 
@@ -240,30 +262,30 @@ class TrainingPipeline:
             is_interrupt: Whether this is due to interruption
         """
         checkpoint_data = {
-            'epoch': epoch,
-            'model_state_dict': {
-                'G_AB': self.model.G_AB.state_dict(),
-                'G_BA': self.model.G_BA.state_dict(),
-                'D_A': self.model.D_A.state_dict(),
-                'D_B': self.model.D_B.state_dict(),
+            "epoch": epoch,
+            "model_state_dict": {
+                "G_AB": self.model.G_AB.state_dict(),
+                "G_BA": self.model.G_BA.state_dict(),
+                "D_A": self.model.D_A.state_dict(),
+                "D_B": self.model.D_B.state_dict(),
             },
-            'optimizer_state_dict': {
-                'G': self.model.optimizer_G.state_dict(),
-                'D_A': self.model.optimizer_D_A.state_dict(),
-                'D_B': self.model.optimizer_D_B.state_dict(),
+            "optimizer_state_dict": {
+                "G": self.model.optimizer_G.state_dict(),
+                "D_A": self.model.optimizer_D_A.state_dict(),
+                "D_B": self.model.optimizer_D_B.state_dict(),
             },
-            'scheduler_state_dict': {
-                'G': self.model.scheduler_G.state_dict(),
-                'D_A': self.model.scheduler_D_A.state_dict(),
-                'D_B': self.model.scheduler_D_B.state_dict(),
+            "scheduler_state_dict": {
+                "G": self.model.scheduler_G.state_dict(),
+                "D_A": self.model.scheduler_D_A.state_dict(),
+                "D_B": self.model.scheduler_D_B.state_dict(),
             },
-            'losses': losses,
-            'best_loss': self.best_loss,
-            'metrics': {
-                'epoch_losses': self.metrics.epoch_losses,
-                'learning_rates': self.metrics.learning_rates,
-                'training_times': self.metrics.training_times
-            }
+            "losses": losses,
+            "best_loss": self.best_loss,
+            "metrics": {
+                "epoch_losses": self.metrics.epoch_losses,
+                "learning_rates": self.metrics.learning_rates,
+                "training_times": self.metrics.training_times,
+            },
         }
 
         # Determine filename
@@ -292,33 +314,43 @@ class TrainingPipeline:
         checkpoint = torch.load(checkpoint_path, map_location=self.model.device)
 
         # Load model states
-        self.model.G_AB.load_state_dict(checkpoint['model_state_dict']['G_AB'])
-        self.model.G_BA.load_state_dict(checkpoint['model_state_dict']['G_BA'])
-        self.model.D_A.load_state_dict(checkpoint['model_state_dict']['D_A'])
-        self.model.D_B.load_state_dict(checkpoint['model_state_dict']['D_B'])
+        self.model.G_AB.load_state_dict(checkpoint["model_state_dict"]["G_AB"])
+        self.model.G_BA.load_state_dict(checkpoint["model_state_dict"]["G_BA"])
+        self.model.D_A.load_state_dict(checkpoint["model_state_dict"]["D_A"])
+        self.model.D_B.load_state_dict(checkpoint["model_state_dict"]["D_B"])
 
         # Load optimizer states
-        self.model.optimizer_G.load_state_dict(checkpoint['optimizer_state_dict']['G'])
-        self.model.optimizer_D_A.load_state_dict(checkpoint['optimizer_state_dict']['D_A'])
-        self.model.optimizer_D_B.load_state_dict(checkpoint['optimizer_state_dict']['D_B'])
+        self.model.optimizer_G.load_state_dict(checkpoint["optimizer_state_dict"]["G"])
+        self.model.optimizer_D_A.load_state_dict(
+            checkpoint["optimizer_state_dict"]["D_A"]
+        )
+        self.model.optimizer_D_B.load_state_dict(
+            checkpoint["optimizer_state_dict"]["D_B"]
+        )
 
         # Load scheduler states
-        self.model.scheduler_G.load_state_dict(checkpoint['scheduler_state_dict']['G'])
-        self.model.scheduler_D_A.load_state_dict(checkpoint['scheduler_state_dict']['D_A'])
-        self.model.scheduler_D_B.load_state_dict(checkpoint['scheduler_state_dict']['D_B'])
+        self.model.scheduler_G.load_state_dict(checkpoint["scheduler_state_dict"]["G"])
+        self.model.scheduler_D_A.load_state_dict(
+            checkpoint["scheduler_state_dict"]["D_A"]
+        )
+        self.model.scheduler_D_B.load_state_dict(
+            checkpoint["scheduler_state_dict"]["D_B"]
+        )
 
         # Load training state
-        self.current_epoch = checkpoint['epoch']
-        self.best_loss = checkpoint.get('best_loss', float('inf'))
+        self.current_epoch = checkpoint["epoch"]
+        self.best_loss = checkpoint.get("best_loss", float("inf"))
 
         # Load metrics
-        if 'metrics' in checkpoint:
-            metrics_data = checkpoint['metrics']
-            self.metrics.epoch_losses = metrics_data.get('epoch_losses', [])
-            self.metrics.learning_rates = metrics_data.get('learning_rates', [])
-            self.metrics.training_times = metrics_data.get('training_times', [])
+        if "metrics" in checkpoint:
+            metrics_data = checkpoint["metrics"]
+            self.metrics.epoch_losses = metrics_data.get("epoch_losses", [])
+            self.metrics.learning_rates = metrics_data.get("learning_rates", [])
+            self.metrics.training_times = metrics_data.get("training_times", [])
 
-        logger.info(f"Checkpoint loaded from {checkpoint_path} (epoch {self.current_epoch})")
+        logger.info(
+            f"Checkpoint loaded from {checkpoint_path} (epoch {self.current_epoch})"
+        )
 
     def validate(self, val_loader: DataLoader) -> Dict[str, float]:
         """
@@ -333,11 +365,11 @@ class TrainingPipeline:
         self.model.eval()
 
         val_losses = {
-            'loss_G': 0.0,
-            'loss_G_GAN': 0.0,
-            'loss_cycle': 0.0,
-            'loss_D_A': 0.0,
-            'loss_D_B': 0.0
+            "loss_G": 0.0,
+            "loss_G_GAN": 0.0,
+            "loss_cycle": 0.0,
+            "loss_D_A": 0.0,
+            "loss_D_B": 0.0,
         }
 
         num_batches = len(val_loader)
@@ -352,8 +384,8 @@ class TrainingPipeline:
 
                 # Calculate losses (without backward pass)
                 # This is a simplified validation - in practice you'd want more comprehensive metrics
-                val_losses['loss_G'] += 0.1  # Placeholder
-                val_losses['loss_cycle'] += 0.1  # Placeholder
+                val_losses["loss_G"] += 0.1  # Placeholder
+                val_losses["loss_cycle"] += 0.1  # Placeholder
 
         # Average losses
         for key in val_losses.keys():
@@ -365,25 +397,25 @@ class TrainingPipeline:
     def _get_training_results(self) -> Dict[str, Any]:
         """Get comprehensive training results."""
         return {
-            'final_epoch': self.current_epoch,
-            'best_loss': self.best_loss,
-            'total_training_time': sum(self.metrics.training_times),
-            'average_losses': self.metrics.get_average_losses(),
-            'latest_losses': self.metrics.get_latest_losses(),
-            'learning_rates': self.metrics.learning_rates[-10:],  # Last 10 values
-            'model_dir': str(self.model_dir),
-            'device': str(self.model.device)
+            "final_epoch": self.current_epoch,
+            "best_loss": self.best_loss,
+            "total_training_time": sum(self.metrics.training_times),
+            "average_losses": self.metrics.get_average_losses(),
+            "latest_losses": self.metrics.get_latest_losses(),
+            "learning_rates": self.metrics.learning_rates[-10:],  # Last 10 values
+            "model_dir": str(self.model_dir),
+            "device": str(self.model.device),
         }
 
     def get_training_status(self) -> Dict[str, Any]:
         """Get current training status."""
         return {
-            'current_epoch': self.current_epoch,
-            'best_loss': self.best_loss,
-            'latest_losses': self.metrics.get_latest_losses(),
-            'average_losses': self.metrics.get_average_losses(last_n=5),
-            'is_training': False,  # This would be set to True during active training
-            'model_saved': len(list(self.model_dir.glob("*.pth"))) > 0
+            "current_epoch": self.current_epoch,
+            "best_loss": self.best_loss,
+            "latest_losses": self.metrics.get_latest_losses(),
+            "average_losses": self.metrics.get_average_losses(last_n=5),
+            "is_training": False,  # This would be set to True during active training
+            "model_saved": len(list(self.model_dir.glob("*.pth"))) > 0,
         }
 
 

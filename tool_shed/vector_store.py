@@ -28,7 +28,7 @@ class ToolVectorStore:
         self,
         persist_directory: str = "./tool_shed_db",
         model_name: str = "all-MiniLM-L6-v2",
-        collection_name: str = "tool_shed"
+        collection_name: str = "tool_shed",
     ):
         """
         Initialize the vector store.
@@ -44,7 +44,7 @@ class ToolVectorStore:
         # Initialize ChromaDB client
         self.client = chromadb.PersistentClient(
             path=str(self.persist_directory),
-            settings=Settings(anonymized_telemetry=False)
+            settings=Settings(anonymized_telemetry=False),
         )
 
         # Initialize sentence transformer
@@ -87,7 +87,7 @@ class ToolVectorStore:
                 "security_level": tool.capabilities.security_level,
                 "is_active": str(tool.is_active),
                 "rating": str(tool.rating),
-                "usage_count": str(tool.usage_count)
+                "usage_count": str(tool.usage_count),
             }
 
             # Add to collection
@@ -95,7 +95,7 @@ class ToolVectorStore:
                 ids=[tool.id],
                 embeddings=[embedding],
                 metadatas=[metadata],
-                documents=[tool.documentation]
+                documents=[tool.documentation],
             )
 
             logger.info(f"Added tool {tool.metadata.name} to vector store")
@@ -155,6 +155,7 @@ class ToolVectorStore:
             SearchResult with matching tools
         """
         import time
+
         start_time = time.time()
 
         try:
@@ -171,9 +172,7 @@ class ToolVectorStore:
                 where_clause["security_level"] = query.security_level
 
             if query.min_rating is not None:
-                where_clause["$and"] = [
-                    {"rating": {"$gte": str(query.min_rating)}}
-                ]
+                where_clause["$and"] = [{"rating": {"$gte": str(query.min_rating)}}]
 
             # Add tag filtering if specified
             if query.tags:
@@ -186,7 +185,7 @@ class ToolVectorStore:
                 query_texts=[query.query],
                 n_results=query.limit,
                 where=where_clause if where_clause else None,
-                include=["metadatas", "documents", "distances"]
+                include=["metadatas", "documents", "distances"],
             )
 
             # Process results
@@ -214,19 +213,22 @@ class ToolVectorStore:
                             "author": metadata["author"],
                             "version": metadata["version"],
                             "category": metadata["category"],
-                            "tags": json.loads(metadata.get("tags", "[]"))
+                            "tags": json.loads(metadata.get("tags", "[]")),
                         },
                         capabilities={},  # Would need full retrieval for this
                         code="",  # Not stored in vector DB
-                        documentation=document
+                        documentation=document,
                     )
 
                     tools.append(tool)
-                    semantic_matches.append({
-                        "tool_id": tool_id,
-                        "similarity_score": 1.0 - distance,  # Convert distance to similarity
-                        "metadata": metadata
-                    })
+                    semantic_matches.append(
+                        {
+                            "tool_id": tool_id,
+                            "similarity_score": 1.0
+                            - distance,  # Convert distance to similarity
+                            "metadata": metadata,
+                        }
+                    )
 
             query_time = time.time() - start_time
 
@@ -234,7 +236,7 @@ class ToolVectorStore:
                 tools=tools,
                 total_count=len(tools),
                 query_time=query_time,
-                semantic_matches=semantic_matches
+                semantic_matches=semantic_matches,
             )
 
         except Exception as e:
@@ -243,7 +245,7 @@ class ToolVectorStore:
                 tools=[],
                 total_count=0,
                 query_time=time.time() - start_time,
-                semantic_matches=[]
+                semantic_matches=[],
             )
 
     def get_tool_embedding(self, tool_id: str) -> Optional[List[float]]:
@@ -284,7 +286,7 @@ class ToolVectorStore:
             results = self.collection.query(
                 query_embeddings=[embedding],
                 n_results=limit + 1,  # +1 to exclude the tool itself
-                include=["metadatas", "distances"]
+                include=["metadatas", "distances"],
             )
 
             similar_tools = []
@@ -294,11 +296,13 @@ class ToolVectorStore:
                         distance = results["distances"][0][i]
                         metadata = results["metadatas"][0][i]
 
-                        similar_tools.append({
-                            "tool_id": similar_id,
-                            "similarity_score": 1.0 - distance,
-                            "metadata": metadata
-                        })
+                        similar_tools.append(
+                            {
+                                "tool_id": similar_id,
+                                "similarity_score": 1.0 - distance,
+                                "metadata": metadata,
+                            }
+                        )
 
                         if len(similar_tools) >= limit:
                             break
@@ -316,7 +320,7 @@ class ToolVectorStore:
             return {
                 "total_tools": count,
                 "collection_name": self.collection.name,
-                "embedding_model": self.embedding_model.get_sentence_embedding_dimension()
+                "embedding_model": self.embedding_model.get_sentence_embedding_dimension(),
             }
         except Exception as e:
             logger.error(f"Failed to get collection stats: {e}")

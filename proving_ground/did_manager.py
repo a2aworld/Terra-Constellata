@@ -31,25 +31,27 @@ class DIDDocument:
     def to_dict(self) -> Dict[str, Any]:
         """Convert DID Document to dictionary"""
         # Convert public key to multibase format (simplified)
-        public_key_multibase = base64.b64encode(self.public_key).decode('utf-8')
+        public_key_multibase = base64.b64encode(self.public_key).decode("utf-8")
 
         return {
             "@context": [
                 "https://www.w3.org/ns/did/v1",
-                "https://w3id.org/security/suites/ed25519-2020/v1"
+                "https://w3id.org/security/suites/ed25519-2020/v1",
             ],
             "id": self.did,
             "controller": self.controller,
-            "verificationMethod": [{
-                "id": f"{self.did}#key-1",
-                "type": "Ed25519VerificationKey2020",
-                "controller": self.controller,
-                "publicKeyMultibase": f"z{public_key_multibase}"
-            }],
+            "verificationMethod": [
+                {
+                    "id": f"{self.did}#key-1",
+                    "type": "Ed25519VerificationKey2020",
+                    "controller": self.controller,
+                    "publicKeyMultibase": f"z{public_key_multibase}",
+                }
+            ],
             "authentication": [f"{self.did}#key-1"],
             "assertionMethod": [f"{self.did}#key-1"],
             "created": self.created,
-            "updated": self.updated
+            "updated": self.updated,
         }
 
     def to_json(self) -> str:
@@ -81,13 +83,14 @@ class DIDManager:
 
         # Serialize public key
         public_bytes = public_key.public_bytes(
-            encoding=serialization.Encoding.Raw,
-            format=serialization.PublicFormat.Raw
+            encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
         )
 
         # Create DID identifier from public key hash
         key_hash = hashlib.sha256(public_bytes).digest()
-        did_identifier = base64.urlsafe_b64encode(key_hash[:16]).decode('utf-8').rstrip('=')
+        did_identifier = (
+            base64.urlsafe_b64encode(key_hash[:16]).decode("utf-8").rstrip("=")
+        )
 
         # Create DID
         did = f"did:{method}:{did_identifier}"
@@ -158,7 +161,7 @@ class DIDManager:
             return None
 
         signature = private_key.sign(data)
-        return base64.b64encode(signature).decode('utf-8')
+        return base64.b64encode(signature).decode("utf-8")
 
     def verify_signature(self, did: str, data: bytes, signature: str) -> bool:
         """

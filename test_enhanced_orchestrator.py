@@ -13,6 +13,7 @@ from agents.sentinel.sentinel_orchestrator import SentinelOrchestrator
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 async def test_enhanced_orchestrator():
     """Test the enhanced Sentinel Orchestrator with LangGraph."""
 
@@ -45,7 +46,9 @@ async def test_enhanced_orchestrator():
     except Exception as e:
         logger.error(f"❌ Test failed with error: {e}")
         import traceback
+
         traceback.print_exc()
+
 
 if __name__ == "__main__":
     asyncio.run(test_enhanced_orchestrator())

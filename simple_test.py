@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.primitives import serialization
 
+
 def test_did_creation():
     """Test basic DID creation"""
     print("Testing DID creation...")
@@ -21,14 +22,14 @@ def test_did_creation():
 
     # Serialize public key
     public_bytes = public_key.public_bytes(
-        encoding=serialization.Encoding.Raw,
-        format=serialization.PublicFormat.Raw
+        encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
     )
 
     # Create DID identifier
     import hashlib
+
     key_hash = hashlib.sha256(public_bytes).digest()
-    did_identifier = base64.urlsafe_b64encode(key_hash[:16]).decode('utf-8').rstrip('=')
+    did_identifier = base64.urlsafe_b64encode(key_hash[:16]).decode("utf-8").rstrip("=")
 
     # Create DID
     did = f"did:terra:{did_identifier}"
@@ -45,6 +46,7 @@ def test_did_creation():
 
     return did, private_key, public_bytes
 
+
 def test_vc_structure():
     """Test VC data structure"""
     print("\nTesting VC structure...")
@@ -53,7 +55,7 @@ def test_vc_structure():
     vc = {
         "@context": [
             "https://www.w3.org/2018/credentials/v1",
-            "https://www.w3.org/2018/credentials/examples/v1"
+            "https://www.w3.org/2018/credentials/examples/v1",
         ],
         "id": "urn:uuid:test-123",
         "type": ["VerifiableCredential", "TestCredential"],
@@ -63,8 +65,8 @@ def test_vc_structure():
         "credentialSubject": {
             "id": "did:terra:test-subject",
             "name": "Test Agent",
-            "capability": "certification"
-        }
+            "capability": "certification",
+        },
     }
 
     # Convert to JSON
@@ -73,6 +75,7 @@ def test_vc_structure():
     print(f"VC length: {len(vc_json)} characters")
 
     return vc
+
 
 def main():
     """Run tests"""
@@ -92,8 +95,10 @@ def main():
     except Exception as e:
         print(f"Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 if __name__ == "__main__":
     success = main()

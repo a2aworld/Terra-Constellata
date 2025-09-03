@@ -21,8 +21,9 @@ from agents import (
     ComparativeMythologyAgent,
     LinguistAgent,
     SentinelOrchestrator,
-    agent_registry
+    agent_registry,
 )
+
 
 # Mock LLM for testing (would be replaced with actual LLM like Llama or GPT-J)
 class MockLLM:
@@ -105,8 +106,7 @@ async def test_agent_coordination():
     # Test workflow management
     print("\nTesting workflow management...")
     workflow_result = await sentinel.manage_workflow(
-        "research_analysis",
-        {"topic": "Ancient Civilizations", "scope": "global"}
+        "research_analysis", {"topic": "Ancient Civilizations", "scope": "global"}
     )
     print(f"Workflow Result: {workflow_result}")
 

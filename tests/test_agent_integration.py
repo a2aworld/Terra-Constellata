@@ -71,9 +71,15 @@ async def test_specialist_agent_coordination(agent_registry, mock_llm, sample_da
         pytest.skip("Required specialist agents not available")
 
     # Test individual agent processing
-    atlas_result = await atlas.process_task("Analyze spatial patterns in geographical data")
-    myth_result = await myth_agent.process_task("Compare creation myths across cultures")
-    linguist_result = await linguist.process_task("Analyze linguistic patterns in narratives")
+    atlas_result = await atlas.process_task(
+        "Analyze spatial patterns in geographical data"
+    )
+    myth_result = await myth_agent.process_task(
+        "Compare creation myths across cultures"
+    )
+    linguist_result = await linguist.process_task(
+        "Analyze linguistic patterns in narratives"
+    )
 
     assert atlas_result is not None
     assert myth_result is not None
@@ -89,8 +95,12 @@ async def test_specialist_agent_coordination(agent_registry, mock_llm, sample_da
     myth_analysis = await myth_agent.process_task(myth_task)
 
     # Linguist processes text from both
-    combined_text = f"Geospatial: {atlas_analysis[:100]}... Mythological: {myth_analysis[:100]}..."
-    linguist_analysis = await linguist.process_task(f"Analyze combined text: {combined_text}")
+    combined_text = (
+        f"Geospatial: {atlas_analysis[:100]}... Mythological: {myth_analysis[:100]}..."
+    )
+    linguist_analysis = await linguist.process_task(
+        f"Analyze combined text: {combined_text}"
+    )
 
     assert linguist_analysis is not None
     assert len(linguist_analysis) > 0
@@ -113,13 +123,17 @@ async def test_sentinel_orchestrator_integration(agent_registry, mock_llm, sampl
     # Test workflow creation
     workflow_config = {
         "name": "integrated_analysis",
-        "agents": ["AtlasRelationalAnalyst", "ComparativeMythologyAgent", "LinguistAgent"],
+        "agents": [
+            "AtlasRelationalAnalyst",
+            "ComparativeMythologyAgent",
+            "LinguistAgent",
+        ],
         "data": sample_data,
         "objectives": [
             "Analyze geospatial patterns",
             "Compare mythological narratives",
-            "Extract linguistic features"
-        ]
+            "Extract linguistic features",
+        ],
     }
 
     # Execute orchestrated workflow
@@ -160,18 +174,20 @@ async def test_apprentice_agent_learning(agent_registry, mock_llm, sample_data):
         {
             "input": "Analyze the relationship between Paris and French culture",
             "output": "Paris serves as the cultural and historical heart of France, influencing art, cuisine, and philosophy.",
-            "task_type": "cultural_analysis"
+            "task_type": "cultural_analysis",
         },
         {
             "input": "Compare Greek and Roman mythology",
             "output": "Greek and Roman mythologies share many deities and stories, with Romans adapting Greek gods to their own pantheon.",
-            "task_type": "comparative_mythology"
-        }
+            "task_type": "comparative_mythology",
+        },
     ]
 
     # Train apprentice
     for example in training_examples:
-        await apprentice.learn_from_example(example["input"], example["output"], example["task_type"])
+        await apprentice.learn_from_example(
+            example["input"], example["output"], example["task_type"]
+        )
 
     # Test apprentice performance on similar tasks
     test_task = "Analyze the connection between London and British literature"
@@ -218,9 +234,9 @@ async def test_agent_communication_protocol(agent_registry, a2a_server, mock_llm
             "task": "correlate_geographical_sites_with_mythological_narratives",
             "data": {
                 "locations": ["Delphi", "Olympus", "Troy"],
-                "myth_types": ["heroic", "divine", "foundational"]
-            }
-        }
+                "myth_types": ["heroic", "divine", "foundational"],
+            },
+        },
     }
 
     # Send message through A2A protocol
@@ -228,7 +244,7 @@ async def test_agent_communication_protocol(agent_registry, a2a_server, mock_llm
     assert response is not None
 
     # Test agent response processing
-    if hasattr(myth_agent, 'process_a2a_message'):
+    if hasattr(myth_agent, "process_a2a_message"):
         agent_response = await myth_agent.process_a2a_message(message)
         assert agent_response is not None
 
@@ -335,7 +351,7 @@ async def test_agent_state_persistence(agent_registry, mock_llm, temp_directorie
     learning_data = [
         ("pattern1", "response1", "task_type1"),
         ("pattern2", "response2", "task_type2"),
-        ("pattern3", "response3", "task_type1")
+        ("pattern3", "response3", "task_type1"),
     ]
 
     # Learn patterns
@@ -343,16 +359,17 @@ async def test_agent_state_persistence(agent_registry, mock_llm, temp_directorie
         await apprentice.learn_from_example(pattern, response, task_type)
 
     # Test state persistence (if implemented)
-    if hasattr(apprentice, 'save_state'):
+    if hasattr(apprentice, "save_state"):
         state_file = f"{temp_directories['data']}/apprentice_state.json"
         await apprentice.save_state(state_file)
 
         # Verify state file was created
         import os
+
         assert os.path.exists(state_file)
 
     # Test state retrieval (if implemented)
-    if hasattr(apprentice, 'load_state'):
+    if hasattr(apprentice, "load_state"):
         new_apprentice = type(apprentice)(mock_llm)
         await new_apprentice.load_state(state_file)
 

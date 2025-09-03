@@ -18,24 +18,24 @@ from .operations import (
     get_entity_by_id,
     get_related_entities,
     search_entities_by_name,
-    get_edges_between
+    get_edges_between,
 )
 
 from .ckg import CulturalKnowledgeGraph
 
 __all__ = [
-    'get_db_connection',
-    'create_collections',
-    'insert_mythological_entity',
-    'insert_geographic_feature',
-    'insert_cultural_concept',
-    'insert_text_source',
-    'insert_geospatial_point',
-    'insert_edge',
-    'get_all_entities',
-    'get_entity_by_id',
-    'get_related_entities',
-    'search_entities_by_name',
-    'get_edges_between',
-    'CulturalKnowledgeGraph'
+    "get_db_connection",
+    "create_collections",
+    "insert_mythological_entity",
+    "insert_geographic_feature",
+    "insert_cultural_concept",
+    "insert_text_source",
+    "insert_geospatial_point",
+    "insert_edge",
+    "get_all_entities",
+    "get_entity_by_id",
+    "get_related_entities",
+    "search_entities_by_name",
+    "get_edges_between",
+    "CulturalKnowledgeGraph",
 ]

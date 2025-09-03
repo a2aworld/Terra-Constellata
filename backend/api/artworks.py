@@ -5,9 +5,11 @@ from .. import crud, schemas
 
 router = APIRouter()
 
+
 @router.post("/", response_model=schemas.Artwork)
 def create_artwork(artwork: schemas.ArtworkCreate, db: Session = Depends(get_db)):
     return crud.create_artwork(db=db, artwork=artwork)
+
 
 @router.get("/{multimedia_id}")
 def get_artworks_for_multimedia(multimedia_id: int, db: Session = Depends(get_db)):

@@ -46,6 +46,7 @@ class SemanticSearchEngine:
             Search results with ranking
         """
         import time
+
         start_time = time.time()
 
         try:
@@ -66,10 +67,12 @@ class SemanticSearchEngine:
                 tools=ranked_tools,
                 total_count=len(ranked_tools),
                 query_time=time.time() - start_time,
-                semantic_matches=semantic_matches
+                semantic_matches=semantic_matches,
             )
 
-            logger.info(f"Search completed in {result.query_time:.3f}s, found {result.total_count} tools")
+            logger.info(
+                f"Search completed in {result.query_time:.3f}s, found {result.total_count} tools"
+            )
             return result
 
         except Exception as e:
@@ -78,7 +81,7 @@ class SemanticSearchEngine:
                 tools=[],
                 total_count=0,
                 query_time=time.time() - start_time,
-                semantic_matches=[]
+                semantic_matches=[],
             )
 
     def _apply_filters(self, tools: List[Tool], query: SearchQuery) -> List[Tool]:
@@ -100,13 +103,16 @@ class SemanticSearchEngine:
 
         # Filter by security level
         if query.security_level:
-            filtered = [t for t in filtered if t.capabilities.security_level == query.security_level]
+            filtered = [
+                t
+                for t in filtered
+                if t.capabilities.security_level == query.security_level
+            ]
 
         # Filter by tags (if not already done by vector store)
         if query.tags:
             filtered = [
-                t for t in filtered
-                if any(tag in t.metadata.tags for tag in query.tags)
+                t for t in filtered if any(tag in t.metadata.tags for tag in query.tags)
             ]
 
         # Filter by recency (last updated within X days)
@@ -210,7 +216,9 @@ class SemanticSearchEngine:
             score += 0.2
 
         # Tag matching
-        matching_tags = [tag for tag in tool.metadata.tags if query_lower in tag.lower()]
+        matching_tags = [
+            tag for tag in tool.metadata.tags if query_lower in tag.lower()
+        ]
         if matching_tags:
             score += 0.2 * min(len(matching_tags) / len(tool.metadata.tags), 1.0)
 
@@ -220,11 +228,12 @@ class SemanticSearchEngine:
 
         # Function matching
         matching_functions = [
-            func for func in tool.capabilities.functions
-            if query_lower in func.lower()
+            func for func in tool.capabilities.functions if query_lower in func.lower()
         ]
         if matching_functions:
-            score += 0.1 * min(len(matching_functions) / len(tool.capabilities.functions), 1.0)
+            score += 0.1 * min(
+                len(matching_functions) / len(tool.capabilities.functions), 1.0
+            )
 
         return min(score, 1.0)
 
@@ -241,7 +250,9 @@ class SemanticSearchEngine:
         """
         return self.vector_store.get_similar_tools(tool_id, limit)
 
-    def suggest_tools(self, context: str, required_capabilities: List[str] = None) -> List[Tool]:
+    def suggest_tools(
+        self, context: str, required_capabilities: List[str] = None
+    ) -> List[Tool]:
         """
         Suggest tools based on context and required capabilities.
 
@@ -253,10 +264,7 @@ class SemanticSearchEngine:
             Suggested tools
         """
         # Create a search query based on context
-        query = SearchQuery(
-            query=context,
-            limit=10
-        )
+        query = SearchQuery(query=context, limit=10)
 
         results = self.search(query)
         tools = results.tools
@@ -265,7 +273,9 @@ class SemanticSearchEngine:
             # Filter tools that have the required capabilities
             filtered_tools = []
             for tool in tools:
-                if any(cap in tool.capabilities.functions for cap in required_capabilities):
+                if any(
+                    cap in tool.capabilities.functions for cap in required_capabilities
+                ):
                     filtered_tools.append(tool)
             tools = filtered_tools
 
@@ -301,7 +311,9 @@ class SemanticSearchEngine:
 
         return recent_tools[:limit]
 
-    def get_tools_by_category(self, category: str, sort_by: str = "rating") -> List[Tool]:
+    def get_tools_by_category(
+        self, category: str, sort_by: str = "rating"
+    ) -> List[Tool]:
         """
         Get tools by category with sorting.
 
@@ -350,7 +362,7 @@ class SemanticSearchEngine:
         query: str,
         filters: Dict[str, Any] = None,
         sort_by: str = "relevance",
-        limit: int = 20
+        limit: int = 20,
     ) -> SearchResult:
         """
         Perform advanced search with complex filters and sorting.
@@ -365,10 +377,7 @@ class SemanticSearchEngine:
             Advanced search results
         """
         # Build search query
-        search_query = SearchQuery(
-            query=query,
-            limit=limit
-        )
+        search_query = SearchQuery(query=query, limit=limit)
 
         # Apply filters
         if filters:

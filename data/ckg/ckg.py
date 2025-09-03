@@ -16,15 +16,22 @@ from .operations import (
     get_entity_by_id,
     get_related_entities,
     search_entities_by_name,
-    get_edges_between
+    get_edges_between,
 )
+
 
 class CulturalKnowledgeGraph:
     """
     Main class for Cultural Knowledge Graph operations.
     """
 
-    def __init__(self, host='http://localhost:8529', username='root', password='', database='ckg_db'):
+    def __init__(
+        self,
+        host="http://localhost:8529",
+        username="root",
+        password="",
+        database="ckg_db",
+    ):
         """
         Initialize the CKG instance.
 
@@ -45,7 +52,10 @@ class CulturalKnowledgeGraph:
         Establish connection to the database and create schema if needed.
         """
         from .connection import get_db_connection
-        self.db = get_db_connection(self.host, self.username, self.password, self.database)
+
+        self.db = get_db_connection(
+            self.host, self.username, self.password, self.database
+        )
         create_collections()
         return self.db
 
@@ -64,15 +74,15 @@ class CulturalKnowledgeGraph:
             self.connect()
 
         entity_type = entity_type.lower()
-        if entity_type == 'mythological':
+        if entity_type == "mythological":
             return insert_mythological_entity(**kwargs)
-        elif entity_type == 'geographic':
+        elif entity_type == "geographic":
             return insert_geographic_feature(**kwargs)
-        elif entity_type == 'cultural':
+        elif entity_type == "cultural":
             return insert_cultural_concept(**kwargs)
-        elif entity_type == 'text':
+        elif entity_type == "text":
             return insert_text_source(**kwargs)
-        elif entity_type == 'geospatial':
+        elif entity_type == "geospatial":
             return insert_geospatial_point(**kwargs)
         else:
             raise ValueError(f"Unknown entity type: {entity_type}")
@@ -93,7 +103,9 @@ class CulturalKnowledgeGraph:
         if not self.db:
             self.connect()
 
-        return insert_edge(relationship_type, from_id, to_id, kwargs if kwargs else None)
+        return insert_edge(
+            relationship_type, from_id, to_id, kwargs if kwargs else None
+        )
 
     def query_entities(self, collection_name, filters=None):
         """
@@ -109,8 +121,8 @@ class CulturalKnowledgeGraph:
         if not self.db:
             self.connect()
 
-        if filters and 'name' in filters:
-            return search_entities_by_name(collection_name, filters['name'])
+        if filters and "name" in filters:
+            return search_entities_by_name(collection_name, filters["name"])
         else:
             return get_all_entities(collection_name)
 
@@ -130,7 +142,7 @@ class CulturalKnowledgeGraph:
 
         return get_entity_by_id(collection_name, entity_id)
 
-    def get_related(self, entity_id, relationship_type, direction='OUTBOUND'):
+    def get_related(self, entity_id, relationship_type, direction="OUTBOUND"):
         """
         Get entities related to the given entity.
 

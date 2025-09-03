@@ -17,7 +17,8 @@ from .schemas import GeospatialAnomalyIdentified, InspirationRequest, CreationFe
 # Import existing agent components
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from data.ckg import CulturalKnowledgeGraph
 from data.ckg.operations import insert_text_source, insert_mythological_entity
@@ -37,11 +38,19 @@ class IntegratedCKGAgent:
 
     def _setup_a2a_handlers(self):
         """Setup A2A message handlers"""
-        self.a2a_server.register_method("GEOSPATIAL_ANOMALY_IDENTIFIED", self._handle_geospatial_anomaly)
-        self.a2a_server.register_method("INSPIRATION_REQUEST", self._handle_inspiration_request)
-        self.a2a_server.register_method("CREATION_FEEDBACK", self._handle_creation_feedback)
+        self.a2a_server.register_method(
+            "GEOSPATIAL_ANOMALY_IDENTIFIED", self._handle_geospatial_anomaly
+        )
+        self.a2a_server.register_method(
+            "INSPIRATION_REQUEST", self._handle_inspiration_request
+        )
+        self.a2a_server.register_method(
+            "CREATION_FEEDBACK", self._handle_creation_feedback
+        )
 
-    async def _handle_geospatial_anomaly(self, message: GeospatialAnomalyIdentified) -> Dict[str, Any]:
+    async def _handle_geospatial_anomaly(
+        self, message: GeospatialAnomalyIdentified
+    ) -> Dict[str, Any]:
         """Handle incoming geospatial anomaly messages"""
         logger.info(f"Received geospatial anomaly: {message.description}")
 
@@ -57,7 +66,7 @@ class IntegratedCKGAgent:
                 "status": "processed",
                 "anomaly_id": message.message_id,
                 "related_entities": related_entities,
-                "cultural_context": self._get_cultural_context(message.location)
+                "cultural_context": self._get_cultural_context(message.location),
             }
 
             return response
@@ -66,7 +75,9 @@ class IntegratedCKGAgent:
             logger.error(f"Error processing geospatial anomaly: {e}")
             return {"status": "error", "message": str(e)}
 
-    async def _handle_inspiration_request(self, message: InspirationRequest) -> Dict[str, Any]:
+    async def _handle_inspiration_request(
+        self, message: InspirationRequest
+    ) -> Dict[str, Any]:
         """Handle inspiration requests"""
         logger.info(f"Received inspiration request: {message.context}")
 
@@ -78,7 +89,7 @@ class IntegratedCKGAgent:
             response = {
                 "status": "inspired",
                 "inspiration": self._generate_inspiration(message, inspiration_data),
-                "sources": inspiration_data
+                "sources": inspiration_data,
             }
 
             return response
@@ -87,7 +98,9 @@ class IntegratedCKGAgent:
             logger.error(f"Error processing inspiration request: {e}")
             return {"status": "error", "message": str(e)}
 
-    async def _handle_creation_feedback(self, message: CreationFeedback) -> Dict[str, Any]:
+    async def _handle_creation_feedback(
+        self, message: CreationFeedback
+    ) -> Dict[str, Any]:
         """Handle creation feedback"""
         logger.info(f"Received creation feedback: {message.feedback_type}")
 
@@ -98,7 +111,7 @@ class IntegratedCKGAgent:
                 "feedback_type": message.feedback_type,
                 "content": message.content,
                 "rating": message.rating,
-                "timestamp": message.timestamp
+                "timestamp": message.timestamp,
             }
 
             # Ingest feedback into CKG
@@ -116,7 +129,7 @@ class IntegratedCKGAgent:
         return {
             "nearby_myths": ["Example myth 1", "Example myth 2"],
             "cultural_significance": "High cultural significance area",
-            "historical_events": ["Event 1", "Event 2"]
+            "historical_events": ["Event 1", "Event 2"],
         }
 
     def _generate_inspiration(self, request: InspirationRequest, data: list) -> str:
@@ -131,11 +144,13 @@ class IntegratedCKGAgent:
             location=anomaly_data["location"],
             confidence=anomaly_data["confidence"],
             description=anomaly_data["description"],
-            data_source=anomaly_data["source"]
+            data_source=anomaly_data["source"],
         )
 
         try:
-            response = await self.a2a_client.send_request("GEOSPATIAL_ANOMALY_IDENTIFIED", anomaly)
+            response = await self.a2a_client.send_request(
+                "GEOSPATIAL_ANOMALY_IDENTIFIED", anomaly
+            )
             logger.info(f"Anomaly sent successfully: {response}")
             return response
         except Exception as e:
@@ -144,30 +159,33 @@ class IntegratedCKGAgent:
 
     async def request_inspiration(self, context: str, domain: str):
         """Request inspiration from other agents"""
-        inspiration_req = InspirationRequest(
-            context=context,
-            domain=domain
-        )
+        inspiration_req = InspirationRequest(context=context, domain=domain)
 
         try:
-            response = await self.a2a_client.send_request("INSPIRATION_REQUEST", inspiration_req)
+            response = await self.a2a_client.send_request(
+                "INSPIRATION_REQUEST", inspiration_req
+            )
             logger.info(f"Inspiration received: {response}")
             return response
         except Exception as e:
             logger.error(f"Failed to request inspiration: {e}")
             return None
 
-    async def send_feedback(self, original_request_id: str, feedback: str, rating: int = None):
+    async def send_feedback(
+        self, original_request_id: str, feedback: str, rating: int = None
+    ):
         """Send creation feedback"""
         feedback_msg = CreationFeedback(
             original_request_id=original_request_id,
             feedback_type="constructive",
             content=feedback,
-            rating=rating
+            rating=rating,
         )
 
         try:
-            response = await self.a2a_client.send_notification("CREATION_FEEDBACK", feedback_msg)
+            response = await self.a2a_client.send_notification(
+                "CREATION_FEEDBACK", feedback_msg
+            )
             logger.info("Feedback sent successfully")
         except Exception as e:
             logger.error(f"Failed to send feedback: {e}")
@@ -194,8 +212,7 @@ class IntegratedCKGAgent:
                     # Request inspiration if needed
                     if self._needs_inspiration(text):
                         inspiration = await self.request_inspiration(
-                            f"Process text from {url}",
-                            "cultural_knowledge"
+                            f"Process text from {url}", "cultural_knowledge"
                         )
 
                     # Ingest to CKG
@@ -228,6 +245,7 @@ class IntegratedCKGAgent:
 
 # Example usage
 if __name__ == "__main__":
+
     async def main():
         agent = IntegratedCKGAgent("ckg_agent")
 
@@ -240,7 +258,7 @@ if __name__ == "__main__":
             "location": {"lat": 40.7128, "lon": -74.0060},
             "confidence": 0.85,
             "description": "Unusual concentration of mythological references",
-            "source": "text_analysis"
+            "source": "text_analysis",
         }
 
         async with agent.a2a_client:

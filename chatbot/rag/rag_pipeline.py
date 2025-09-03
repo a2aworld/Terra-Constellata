@@ -23,18 +23,21 @@ from .vector_store import LoreWeaverVectorStore
 
 logger = logging.getLogger(__name__)
 
+
 class LoreWeaverRAG:
     """
     RAG pipeline for the Lore Weaver chatbot.
     Combines retrieval from CKG and PostGIS with generative AI for storytelling.
     """
 
-    def __init__(self,
-                 openai_api_key: Optional[str] = None,
-                 model_name: str = "gpt-3.5-turbo",
-                 temperature: float = 0.7,
-                 use_langsmith: bool = True,
-                 langsmith_project: str = "lore-weaver-chatbot"):
+    def __init__(
+        self,
+        openai_api_key: Optional[str] = None,
+        model_name: str = "gpt-3.5-turbo",
+        temperature: float = 0.7,
+        use_langsmith: bool = True,
+        langsmith_project: str = "lore-weaver-chatbot",
+    ):
         """
         Initialize the RAG pipeline.
 
@@ -104,7 +107,7 @@ Instructions:
 
 Your response should be engaging, informative, and immersive:
 """,
-            input_variables=["context", "question"]
+            input_variables=["context", "question"],
         )
 
         # Follow-up question prompt for clarification
@@ -126,7 +129,7 @@ Response format:
 - If clarification needed: "CLARIFY: [specific questions]"
 - If ready to respond: "READY: [brief summary of understanding]"
 """,
-            input_variables=["question", "context"]
+            input_variables=["question", "context"],
         )
 
     def initialize_llm(self):
@@ -142,7 +145,7 @@ Response format:
             model_name=self.model_name,
             temperature=self.temperature,
             openai_api_key=self.openai_api_key,
-            callbacks=callbacks
+            callbacks=callbacks,
         )
 
         logger.info(f"Initialized LLM: {self.model_name}")
@@ -161,9 +164,9 @@ Response format:
             retriever=retriever,
             chain_type_kwargs={
                 "prompt": self.storytelling_prompt,
-                "document_variable_name": "context"
+                "document_variable_name": "context",
             },
-            return_source_documents=True
+            return_source_documents=True,
         )
 
         logger.info("QA chain initialized")
@@ -180,10 +183,7 @@ Response format:
         postgis_stats = self.vector_store.load_postgis_data()
         logger.info(f"PostGIS loading stats: {postgis_stats}")
 
-        return {
-            'ckg': ckg_stats,
-            'postgis': postgis_stats
-        }
+        return {"ckg": ckg_stats, "postgis": postgis_stats}
 
     def query(self, question: str, k: int = 5) -> Dict[str, Any]:
         """
@@ -204,32 +204,32 @@ Response format:
             clarification_result = self._check_clarification_needed(question)
             if clarification_result.startswith("CLARIFY:"):
                 return {
-                    'answer': clarification_result.replace("CLARIFY:", "").strip(),
-                    'needs_clarification': True,
-                    'source_documents': [],
-                    'metadata': {}
+                    "answer": clarification_result.replace("CLARIFY:", "").strip(),
+                    "needs_clarification": True,
+                    "source_documents": [],
+                    "metadata": {},
                 }
 
             # Process the query
             result = self.qa_chain({"query": question})
 
             # Extract and enhance metadata
-            metadata = self._extract_metadata(result.get('source_documents', []))
+            metadata = self._extract_metadata(result.get("source_documents", []))
 
             return {
-                'answer': result['result'],
-                'needs_clarification': False,
-                'source_documents': result.get('source_documents', []),
-                'metadata': metadata
+                "answer": result["result"],
+                "needs_clarification": False,
+                "source_documents": result.get("source_documents", []),
+                "metadata": metadata,
             }
 
         except Exception as e:
             logger.error(f"Error processing query: {e}")
             return {
-                'answer': f"I apologize, but I encountered an error while processing your query: {str(e)}",
-                'needs_clarification': False,
-                'source_documents': [],
-                'metadata': {'error': str(e)}
+                "answer": f"I apologize, but I encountered an error while processing your query: {str(e)}",
+                "needs_clarification": False,
+                "source_documents": [],
+                "metadata": {"error": str(e)},
             }
 
     def _check_clarification_needed(self, question: str) -> str:
@@ -241,10 +241,7 @@ Response format:
 
             # Use LLM to check if clarification is needed
             chain = self.clarification_prompt | self.llm
-            result = chain.invoke({
-                "question": question,
-                "context": context
-            })
+            result = chain.invoke({"question": question, "context": context})
 
             return result.content.strip()
 
@@ -255,53 +252,55 @@ Response format:
     def _extract_metadata(self, source_documents: List[Document]) -> Dict[str, Any]:
         """Extract metadata from source documents."""
         metadata = {
-            'sources': [],
-            'entities': [],
-            'locations': [],
-            'collections': set()
+            "sources": [],
+            "entities": [],
+            "locations": [],
+            "collections": set(),
         }
 
         for doc in source_documents:
             meta = doc.metadata
 
             # Track sources
-            source = meta.get('source', 'unknown')
-            metadata['sources'].append(source)
+            source = meta.get("source", "unknown")
+            metadata["sources"].append(source)
 
             # Track collections
-            if 'collection' in meta:
-                metadata['collections'].add(meta['collection'])
+            if "collection" in meta:
+                metadata["collections"].add(meta["collection"])
 
             # Extract entities and locations from content
             content = doc.page_content.lower()
 
             # Simple entity extraction (can be enhanced with NER)
-            if 'name:' in content:
-                name_part = content.split('name:')[1].split('|')[0].strip()
+            if "name:" in content:
+                name_part = content.split("name:")[1].split("|")[0].strip()
                 if name_part and len(name_part) > 2:
-                    metadata['entities'].append(name_part)
+                    metadata["entities"].append(name_part)
 
             # Extract location info
-            if 'location:' in content:
-                loc_part = content.split('location:')[1].split('|')[0].strip()
+            if "location:" in content:
+                loc_part = content.split("location:")[1].split("|")[0].strip()
                 if loc_part:
-                    metadata['locations'].append(loc_part)
+                    metadata["locations"].append(loc_part)
 
         # Convert sets to lists
-        metadata['collections'] = list(metadata['collections'])
+        metadata["collections"] = list(metadata["collections"])
 
         return metadata
 
     def get_stats(self) -> Dict[str, Any]:
         """Get statistics about the RAG system."""
         return {
-            'vector_store': self.vector_store.get_collection_stats(),
-            'model': self.model_name,
-            'temperature': self.temperature,
-            'langsmith_enabled': self.use_langsmith
+            "vector_store": self.vector_store.get_collection_stats(),
+            "model": self.model_name,
+            "temperature": self.temperature,
+            "langsmith_enabled": self.use_langsmith,
         }
 
-    def update_feedback(self, query: str, response: str, rating: int, feedback: Optional[str] = None):
+    def update_feedback(
+        self, query: str, response: str, rating: int, feedback: Optional[str] = None
+    ):
         """
         Update the system with user feedback for reinforcement learning.
 
@@ -316,11 +315,11 @@ Response format:
         # based on user feedback
 
         feedback_data = {
-            'query': query,
-            'response': response,
-            'rating': rating,
-            'feedback': feedback,
-            'timestamp': None  # Would add timestamp
+            "query": query,
+            "response": response,
+            "rating": rating,
+            "feedback": feedback,
+            "timestamp": None,  # Would add timestamp
         }
 
         logger.info(f"Feedback received: {feedback_data}")

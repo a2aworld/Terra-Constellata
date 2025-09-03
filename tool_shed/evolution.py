@@ -12,8 +12,12 @@ from packaging import version
 import re
 
 from .models import (
-    Tool, ToolVersion, ToolEvolutionRequest,
-    ToolRegistryEntry, ToolMetadata, ToolCapabilities
+    Tool,
+    ToolVersion,
+    ToolEvolutionRequest,
+    ToolRegistryEntry,
+    ToolMetadata,
+    ToolCapabilities,
 )
 from .registry import ToolRegistry
 
@@ -118,7 +122,9 @@ class CompatibilityChecker:
             "attribute_removed": re.compile(r"self\.(\w+)\s*="),
         }
 
-    def check_compatibility(self, old_code: str, new_code: str) -> Tuple[bool, List[str]]:
+    def check_compatibility(
+        self, old_code: str, new_code: str
+    ) -> Tuple[bool, List[str]]:
         """
         Check backward compatibility between code versions.
 
@@ -132,10 +138,14 @@ class CompatibilityChecker:
         issues = []
 
         # Extract functions from old code
-        old_functions = set(self.compatibility_patterns["function_removed"].findall(old_code))
+        old_functions = set(
+            self.compatibility_patterns["function_removed"].findall(old_code)
+        )
 
         # Extract functions from new code
-        new_functions = set(self.compatibility_patterns["function_removed"].findall(new_code))
+        new_functions = set(
+            self.compatibility_patterns["function_removed"].findall(new_code)
+        )
 
         # Check for removed functions
         removed_functions = old_functions - new_functions
@@ -143,10 +153,14 @@ class CompatibilityChecker:
             issues.append(f"Removed functions: {', '.join(removed_functions)}")
 
         # Extract classes from old code
-        old_classes = set(self.compatibility_patterns["class_removed"].findall(old_code))
+        old_classes = set(
+            self.compatibility_patterns["class_removed"].findall(old_code)
+        )
 
         # Extract classes from new code
-        new_classes = set(self.compatibility_patterns["class_removed"].findall(new_code))
+        new_classes = set(
+            self.compatibility_patterns["class_removed"].findall(new_code)
+        )
 
         # Check for removed classes
         removed_classes = old_classes - new_classes
@@ -183,7 +197,7 @@ class ToolEvolutionManager:
         description: str,
         proposed_changes: Dict[str, Any],
         requester_agent: str,
-        priority: str = "medium"
+        priority: str = "medium",
     ) -> str:
         """
         Create a new evolution request for a tool.
@@ -205,7 +219,7 @@ class ToolEvolutionManager:
             description=description,
             proposed_changes=proposed_changes,
             requester_agent=requester_agent,
-            priority=priority
+            priority=priority,
         )
 
         request_id = await self.registry.submit_evolution_request(request)
@@ -213,10 +227,7 @@ class ToolEvolutionManager:
         return request_id
 
     async def approve_evolution_request(
-        self,
-        request_id: str,
-        reviewer_agent: str,
-        new_version: Optional[str] = None
+        self, request_id: str, reviewer_agent: str, new_version: Optional[str] = None
     ) -> bool:
         """
         Approve an evolution request and apply changes.
@@ -257,7 +268,9 @@ class ToolEvolutionManager:
             )
 
             # Apply changes to create new tool version
-            updated_tool = self._apply_evolution_changes(current_tool, request, new_version)
+            updated_tool = self._apply_evolution_changes(
+                current_tool, request, new_version
+            )
 
             # Update tool in registry
             success = await self.registry.update_tool(
@@ -267,7 +280,9 @@ class ToolEvolutionManager:
             if success:
                 # Mark request as approved
                 request.status = "approved"
-                logger.info(f"Evolution request {request_id} approved, tool updated to {new_version}")
+                logger.info(
+                    f"Evolution request {request_id} approved, tool updated to {new_version}"
+                )
             else:
                 logger.error(f"Failed to update tool {request.tool_id}")
 
@@ -278,10 +293,7 @@ class ToolEvolutionManager:
             return False
 
     async def reject_evolution_request(
-        self,
-        request_id: str,
-        reviewer_agent: str,
-        reason: str
+        self, request_id: str, reviewer_agent: str, reason: str
     ) -> bool:
         """
         Reject an evolution request.
@@ -331,10 +343,7 @@ class ToolEvolutionManager:
             return "patch"
 
     def _apply_evolution_changes(
-        self,
-        current_tool: Tool,
-        request: ToolEvolutionRequest,
-        new_version: str
+        self, current_tool: Tool, request: ToolEvolutionRequest, new_version: str
     ) -> Tool:
         """
         Apply evolution changes to create updated tool.
@@ -376,7 +385,10 @@ class ToolEvolutionManager:
 
         # Check backward compatibility
         if current_tool.code and updated_tool.code:
-            is_compatible, compatibility_issues = self.compatibility_checker.check_compatibility(
+            (
+                is_compatible,
+                compatibility_issues,
+            ) = self.compatibility_checker.check_compatibility(
                 current_tool.code, updated_tool.code
             )
 
@@ -417,11 +429,13 @@ class ToolEvolutionManager:
 
         # Analyze usage patterns
         if tool.usage_count > 100:
-            suggestions.append({
-                "type": "optimization",
-                "description": "High usage suggests optimization opportunities",
-                "priority": "medium"
-            })
+            suggestions.append(
+                {
+                    "type": "optimization",
+                    "description": "High usage suggests optimization opportunities",
+                    "priority": "medium",
+                }
+            )
 
         # Check for outdated dependencies
         # This would require dependency analysis
@@ -435,27 +449,28 @@ class ToolEvolutionManager:
                     feature_requests.append(review.get("content", ""))
 
             if feature_requests:
-                suggestions.append({
-                    "type": "enhancement",
-                    "description": f"Common feature requests: {', '.join(feature_requests[:3])}",
-                    "priority": "medium"
-                })
+                suggestions.append(
+                    {
+                        "type": "enhancement",
+                        "description": f"Common feature requests: {', '.join(feature_requests[:3])}",
+                        "priority": "medium",
+                    }
+                )
 
         # Check for security improvements
         if tool.capabilities.security_level == "low":
-            suggestions.append({
-                "type": "security",
-                "description": "Consider improving security level",
-                "priority": "high"
-            })
+            suggestions.append(
+                {
+                    "type": "security",
+                    "description": "Consider improving security level",
+                    "priority": "high",
+                }
+            )
 
         return suggestions
 
     def create_migration_path(
-        self,
-        tool_id: str,
-        from_version: str,
-        to_version: str
+        self, tool_id: str, from_version: str, to_version: str
     ) -> Optional[Dict[str, Any]]:
         """
         Create a migration path between versions.
@@ -492,23 +507,29 @@ class ToolEvolutionManager:
             "to_version": to_version,
             "is_breaking_change": is_breaking,
             "migration_steps": [],
-            "compatibility_issues": []
+            "compatibility_issues": [],
         }
 
         if is_breaking:
-            migration_path["migration_steps"].append({
-                "step": "review_breaking_changes",
-                "description": "Review breaking changes in the changelog"
-            })
-            migration_path["migration_steps"].append({
-                "step": "update_code",
-                "description": "Update code to handle API changes"
-            })
+            migration_path["migration_steps"].append(
+                {
+                    "step": "review_breaking_changes",
+                    "description": "Review breaking changes in the changelog",
+                }
+            )
+            migration_path["migration_steps"].append(
+                {
+                    "step": "update_code",
+                    "description": "Update code to handle API changes",
+                }
+            )
 
-        migration_path["migration_steps"].append({
-            "step": "test_integration",
-            "description": "Test integration with updated tool"
-        })
+        migration_path["migration_steps"].append(
+            {
+                "step": "test_integration",
+                "description": "Test integration with updated tool",
+            }
+        )
 
         return migration_path
 
@@ -528,10 +549,12 @@ class ToolEvolutionManager:
 
         for ver in versions:
             if ver.deprecation_warnings:
-                deprecation_events.append({
-                    "version": ver.version,
-                    "warnings": ver.deprecation_warnings,
-                    "created_at": ver.created_at
-                })
+                deprecation_events.append(
+                    {
+                        "version": ver.version,
+                        "warnings": ver.deprecation_warnings,
+                        "created_at": ver.created_at,
+                    }
+                )
 
         return deprecation_events

@@ -95,7 +95,7 @@ async def analyze_postgis_query_performance(connection):
         {
             "name": "Simple count",
             "query": "SELECT COUNT(*) FROM locations",
-            "description": "Basic count query"
+            "description": "Basic count query",
         },
         {
             "name": "Spatial bounding box",
@@ -104,7 +104,7 @@ async def analyze_postgis_query_performance(connection):
                 WHERE ST_Within(geom, ST_MakeEnvelope(-180, -90, 180, 90, 4326))
                 LIMIT 100
             """,
-            "description": "Spatial bounding box query"
+            "description": "Spatial bounding box query",
         },
         {
             "name": "Distance calculation",
@@ -114,7 +114,7 @@ async def analyze_postgis_query_performance(connection):
                 ORDER BY distance
                 LIMIT 50
             """,
-            "description": "Distance calculation with ordering"
+            "description": "Distance calculation with ordering",
         },
         {
             "name": "Complex spatial join",
@@ -124,8 +124,8 @@ async def analyze_postgis_query_performance(connection):
                 WHERE ST_DWithin(l1.geom, l2.geom, 10000) AND l1.name < l2.name
                 LIMIT 25
             """,
-            "description": "Complex spatial join operation"
-        }
+            "description": "Complex spatial join operation",
+        },
     ]
 
     performance_results = []
@@ -145,18 +145,22 @@ async def analyze_postgis_query_performance(connection):
         min_time = min(execution_times)
         max_time = max(execution_times)
 
-        performance_results.append({
-            "name": test_query["name"],
-            "description": test_query["description"],
-            "avg_time": avg_time,
-            "min_time": min_time,
-            "max_time": max_time,
-            "result_count": len(result) if result else 0
-        })
+        performance_results.append(
+            {
+                "name": test_query["name"],
+                "description": test_query["description"],
+                "avg_time": avg_time,
+                "min_time": min_time,
+                "max_time": max_time,
+                "result_count": len(result) if result else 0,
+            }
+        )
 
-        logger.info(f"PostGIS Query '{test_query['name']}': "
-                    f"Avg {avg_time:.4f}s, Min {min_time:.4f}s, Max {max_time:.4f}s, "
-                    f"Results: {len(result) if result else 0}")
+        logger.info(
+            f"PostGIS Query '{test_query['name']}': "
+            f"Avg {avg_time:.4f}s, Min {min_time:.4f}s, Max {max_time:.4f}s, "
+            f"Results: {len(result) if result else 0}"
+        )
 
     return performance_results
 
@@ -171,7 +175,7 @@ async def analyze_ckg_query_performance(connection):
                 COLLECT WITH COUNT INTO length
                 RETURN length
             """,
-            "description": "Basic count query"
+            "description": "Basic count query",
         },
         {
             "name": "Filtered query",
@@ -180,7 +184,7 @@ async def analyze_ckg_query_performance(connection):
                 FILTER doc.latitude > 0 AND doc.latitude < 90
                 RETURN doc
             """,
-            "description": "Filtered geospatial query"
+            "description": "Filtered geospatial query",
         },
         {
             "name": "Graph traversal",
@@ -196,8 +200,8 @@ async def analyze_ckg_query_performance(connection):
                                 culture: myth.culture
                             }
             """,
-            "description": "Graph traversal query"
-        }
+            "description": "Graph traversal query",
+        },
     ]
 
     performance_results = []
@@ -217,18 +221,22 @@ async def analyze_ckg_query_performance(connection):
         min_time = min(execution_times)
         max_time = max(execution_times)
 
-        performance_results.append({
-            "name": test_query["name"],
-            "description": test_query["description"],
-            "avg_time": avg_time,
-            "min_time": min_time,
-            "max_time": max_time,
-            "result_count": len(result) if result else 0
-        })
+        performance_results.append(
+            {
+                "name": test_query["name"],
+                "description": test_query["description"],
+                "avg_time": avg_time,
+                "min_time": min_time,
+                "max_time": max_time,
+                "result_count": len(result) if result else 0,
+            }
+        )
 
-        logger.info(f"CKG Query '{test_query['name']}': "
-                    f"Avg {avg_time:.4f}s, Min {min_time:.4f}s, Max {max_time:.4f}s, "
-                    f"Results: {len(result) if result else 0}")
+        logger.info(
+            f"CKG Query '{test_query['name']}': "
+            f"Avg {avg_time:.4f}s, Min {min_time:.4f}s, Max {max_time:.4f}s, "
+            f"Results: {len(result) if result else 0}"
+        )
 
     return performance_results
 
@@ -244,7 +252,7 @@ async def compare_cross_database_performance(postgis_conn, ckg_conn):
                 FOR doc IN geospatial_entities
                 COLLECT WITH COUNT INTO length
                 RETURN length
-            """
+            """,
         },
         {
             "name": "Filtered entities",
@@ -257,8 +265,8 @@ async def compare_cross_database_performance(postgis_conn, ckg_conn):
                 FILTER doc.latitude > 0
                 COLLECT WITH COUNT INTO length
                 RETURN length
-            """
-        }
+            """,
+        },
     ]
 
     comparison_results = []
@@ -283,16 +291,20 @@ async def compare_cross_database_performance(postgis_conn, ckg_conn):
         postgis_avg = sum(postgis_times) / len(postgis_times)
         ckg_avg = sum(ckg_times) / len(ckg_times)
 
-        comparison_results.append({
-            "scenario": scenario["name"],
-            "postgis_avg": postgis_avg,
-            "ckg_avg": ckg_avg,
-            "performance_ratio": ckg_avg / postgis_avg if postgis_avg > 0 else 0
-        })
+        comparison_results.append(
+            {
+                "scenario": scenario["name"],
+                "postgis_avg": postgis_avg,
+                "ckg_avg": ckg_avg,
+                "performance_ratio": ckg_avg / postgis_avg if postgis_avg > 0 else 0,
+            }
+        )
 
-        logger.info(f"Cross-DB comparison '{scenario['name']}': "
-                    f"PostGIS {postgis_avg:.4f}s, CKG {ckg_avg:.4f}s, "
-                    f"Ratio: {ckg_avg/postgis_avg:.2f}x")
+        logger.info(
+            f"Cross-DB comparison '{scenario['name']}': "
+            f"PostGIS {postgis_avg:.4f}s, CKG {ckg_avg:.4f}s, "
+            f"Ratio: {ckg_avg/postgis_avg:.2f}x"
+        )
 
     return comparison_results
 
@@ -302,27 +314,33 @@ async def test_spatial_index_effectiveness(connection):
     # Test query performance with and without spatial index
     test_points = [
         (-74.0, 40.7),  # New York area
-        (2.3, 48.8),    # Paris area
-        (-118.2, 34.0), # Los Angeles area
-        (139.7, 35.7)   # Tokyo area
+        (2.3, 48.8),  # Paris area
+        (-118.2, 34.0),  # Los Angeles area
+        (139.7, 35.7),  # Tokyo area
     ]
 
     for lon, lat in test_points:
         # Test distance query
         start_time = time.time()
-        result = await connection.fetch("""
+        result = await connection.fetch(
+            """
             SELECT name, ST_Distance(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)) as distance
             FROM locations
             WHERE ST_DWithin(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326), 100000)
             ORDER BY distance
             LIMIT 10
-        """, lon, lat)
+        """,
+            lon,
+            lat,
+        )
         end_time = time.time()
 
         query_time = end_time - start_time
 
-        logger.info(f"Spatial query near ({lon:.1f}, {lat:.1f}): "
-                    f"{query_time:.4f}s, {len(result)} results")
+        logger.info(
+            f"Spatial query near ({lon:.1f}, {lat:.1f}): "
+            f"{query_time:.4f}s, {len(result)} results"
+        )
 
         # Analyze if spatial index is being used (would need EXPLAIN ANALYZE)
 
@@ -334,13 +352,13 @@ async def test_regular_index_effectiveness(connection):
         {
             "name": "Entity filter",
             "query": "SELECT COUNT(*) FROM locations WHERE entity = 'city'",
-            "description": "Filter by entity type"
+            "description": "Filter by entity type",
         },
         {
             "name": "Name search",
             "query": "SELECT COUNT(*) FROM locations WHERE name LIKE 'New%'",
-            "description": "Name prefix search"
-        }
+            "description": "Name prefix search",
+        },
     ]
 
     for test_query in test_queries:
@@ -350,15 +368,18 @@ async def test_regular_index_effectiveness(connection):
 
         query_time = end_time - start_time
 
-        logger.info(f"Regular index query '{test_query['name']}': "
-                    f"{query_time:.4f}s, result: {result[0]['count'] if result else 0}")
+        logger.info(
+            f"Regular index query '{test_query['name']}': "
+            f"{query_time:.4f}s, result: {result[0]['count'] if result else 0}"
+        )
 
 
 async def analyze_index_usage_statistics(connection):
     """Analyze database index usage statistics."""
     try:
         # Get index statistics from PostgreSQL
-        index_stats = await connection.fetch("""
+        index_stats = await connection.fetch(
+            """
             SELECT
                 schemaname,
                 tablename,
@@ -369,14 +390,17 @@ async def analyze_index_usage_statistics(connection):
             FROM pg_stat_user_indexes
             WHERE schemaname = 'public'
             ORDER BY idx_scan DESC
-        """)
+        """
+        )
 
         logger.info("Database index usage statistics:")
         for stat in index_stats[:10]:  # Top 10 indexes
-            logger.info(f"  {stat['tablename']}.{stat['indexname']}: "
-                        f"scans={stat['idx_scan']}, "
-                        f"tuples_read={stat['idx_tup_read']}, "
-                        f"tuples_fetched={stat['idx_tup_fetch']}")
+            logger.info(
+                f"  {stat['tablename']}.{stat['indexname']}: "
+                f"scans={stat['idx_scan']}, "
+                f"tuples_read={stat['idx_tup_read']}, "
+                f"tuples_fetched={stat['idx_tup_fetch']}"
+            )
 
     except Exception as e:
         logger.warning(f"Could not retrieve index statistics: {e}")
@@ -392,7 +416,7 @@ async def analyze_query_plans(connection):
         FROM locations l1, locations l2
         WHERE ST_DWithin(l1.geom, l2.geom, 1000) AND l1.name != l2.name
         LIMIT 5
-        """
+        """,
     ]
 
     for query in test_queries:
@@ -419,7 +443,7 @@ async def test_query_rewriting(connection):
                 WHERE name IN (
                     SELECT name FROM locations WHERE latitude > 0
                 )
-            """
+            """,
         },
         {
             "name": "Join",
@@ -427,14 +451,14 @@ async def test_query_rewriting(connection):
                 SELECT l1.name FROM locations l1
                 JOIN locations l2 ON l1.name = l2.name
                 WHERE l2.latitude > 0
-            """
+            """,
         },
         {
             "name": "Direct filter",
             "query": """
                 SELECT name FROM locations WHERE latitude > 0
-            """
-        }
+            """,
+        },
     ]
 
     for variant in query_variants:
@@ -444,8 +468,10 @@ async def test_query_rewriting(connection):
 
         query_time = end_time - start_time
 
-        logger.info(f"Query variant '{variant['name']}': "
-                    f"{query_time:.4f}s, {len(result)} results")
+        logger.info(
+            f"Query variant '{variant['name']}': "
+            f"{query_time:.4f}s, {len(result)} results"
+        )
 
 
 async def test_parameterized_queries(connection):
@@ -475,7 +501,9 @@ async def test_parameterized_queries(connection):
 
     logger.info(f"Parameterized query: {param_avg:.6f}s avg")
     logger.info(f"Non-parameterized query: {nonparam_avg:.6f}s avg")
-    logger.info(f"Performance difference: {((nonparam_avg - param_avg) / param_avg * 100):+.1f}%")
+    logger.info(
+        f"Performance difference: {((nonparam_avg - param_avg) / param_avg * 100):+.1f}%"
+    )
 
 
 async def test_connection_pool_sizing(connection):
@@ -501,8 +529,10 @@ async def test_connection_pool_sizing(connection):
         total_time = end_time - start_time
         avg_time_per_query = total_time / pool_size
 
-        logger.info(f"  Pool size {pool_size}: {total_time:.3f}s total, "
-                    f"{avg_time_per_query:.4f}s per query")
+        logger.info(
+            f"  Pool size {pool_size}: {total_time:.3f}s total, "
+            f"{avg_time_per_query:.4f}s per query"
+        )
 
 
 async def test_connection_reuse_efficiency(connection):
@@ -522,9 +552,13 @@ async def test_connection_reuse_efficiency(connection):
     # For now, just measure the reuse efficiency
 
     reuse_avg = sum(reuse_times) / len(reuse_times)
-    reuse_stddev = (sum((x - reuse_avg) ** 2 for x in reuse_times) / len(reuse_times)) ** 0.5
+    reuse_stddev = (
+        sum((x - reuse_avg) ** 2 for x in reuse_times) / len(reuse_times)
+    ) ** 0.5
 
-    logger.info(f"Connection reuse - Avg: {reuse_avg:.6f}s, StdDev: {reuse_stddev:.6f}s")
+    logger.info(
+        f"Connection reuse - Avg: {reuse_avg:.6f}s, StdDev: {reuse_stddev:.6f}s"
+    )
     logger.info(f"Connection efficiency: {reuse_stddev/reuse_avg:.2%} variability")
 
 
@@ -542,7 +576,7 @@ async def test_connection_pool_under_load(connection):
         result = await connection.fetch("SELECT COUNT(*) FROM locations")
         end_time_query = time.time()
 
-        total_time += (end_time_query - start_time)
+        total_time += end_time_query - start_time
         query_count += 1
 
         # Small delay to prevent overwhelming
@@ -551,9 +585,11 @@ async def test_connection_pool_under_load(connection):
     avg_query_time = total_time / query_count
     qps = query_count / load_duration
 
-    logger.info(f"Connection pool under load - Duration: {load_duration}s, "
-                f"Queries: {query_count}, QPS: {qps:.1f}, "
-                f"Avg query time: {avg_query_time:.4f}s")
+    logger.info(
+        f"Connection pool under load - Duration: {load_duration}s, "
+        f"Queries: {query_count}, QPS: {qps:.1f}, "
+        f"Avg query time: {avg_query_time:.4f}s"
+    )
 
 
 if __name__ == "__main__":

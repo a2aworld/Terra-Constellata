@@ -5,9 +5,11 @@ from .. import crud, schemas
 
 router = APIRouter()
 
+
 @router.post("/", response_model=schemas.Map)
 def create_map(map_data: schemas.MapCreate, db: Session = Depends(get_db)):
     return crud.create_map(db=db, map_data=map_data)
+
 
 @router.get("/{content_id}")
 def get_maps_for_content(content_id: int, db: Session = Depends(get_db)):

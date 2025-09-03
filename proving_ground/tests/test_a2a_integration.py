@@ -25,10 +25,10 @@ class TestA2AIntegration(unittest.TestCase):
             name="TestProvingGroundManager",
             llm=self.mock_llm,
             tools=self.mock_tools,
-            a2a_server_url="http://localhost:8080"
+            a2a_server_url="http://localhost:8080",
         )
 
-    @patch('..manager.A2AClient')
+    @patch("..manager.A2AClient")
     async def test_a2a_connection(self, mock_a2a_client):
         """Test A2A client connection"""
         mock_client_instance = Mock()
@@ -61,7 +61,7 @@ class TestA2AIntegration(unittest.TestCase):
             subject="test_subject",
             certification_type="agent_certification",
             evidence={"test": "data"},
-            criteria=["communication"]
+            criteria=["communication"],
         )
 
         # Send message
@@ -83,7 +83,7 @@ class TestA2AIntegration(unittest.TestCase):
             subject="test_subject",
             certification_type="agent_certification",
             evidence={"test": "data"},
-            criteria=["communication"]
+            criteria=["communication"],
         )
 
         # Send notification
@@ -100,9 +100,7 @@ class TestA2AIntegration(unittest.TestCase):
 
         # Request inspiration
         result = await self.manager.request_inspiration(
-            context="test context",
-            domain="mythology",
-            target_agent="inspiration_agent"
+            context="test context", domain="mythology", target_agent="inspiration_agent"
         )
 
         self.assertIsNotNone(result)
@@ -121,7 +119,7 @@ class TestA2AIntegration(unittest.TestCase):
             feedback_type="positive",
             content="Great work!",
             target_agent="feedback_agent",
-            rating=5
+            rating=5,
         )
 
         mock_client.send_notification.assert_called_once()
@@ -139,7 +137,7 @@ class TestA2AIntegration(unittest.TestCase):
             description="A test tool",
             capabilities=["test"],
             target_agent="tool_agent",
-            use_case="Testing"
+            use_case="Testing",
         )
 
         mock_client.send_notification.assert_called_once()
@@ -155,7 +153,7 @@ class TestA2AIntegration(unittest.TestCase):
         result = await self.manager.request_narrative(
             theme="test theme",
             elements=["element1", "element2"],
-            target_agent="narrative_agent"
+            target_agent="narrative_agent",
         )
 
         self.assertIsNotNone(result)
@@ -164,10 +162,9 @@ class TestA2AIntegration(unittest.TestCase):
     async def test_handle_certification_request_via_a2a(self):
         """Test handling certification requests received via A2A"""
         # Mock process_task
-        self.manager.process_task = AsyncMock(return_value={
-            'status': 'certified',
-            'certificate_vc': 'mock_vc_jwt'
-        })
+        self.manager.process_task = AsyncMock(
+            return_value={"status": "certified", "certificate_vc": "mock_vc_jwt"}
+        )
 
         # Create certification request
         request = CertificationRequest(
@@ -175,14 +172,14 @@ class TestA2AIntegration(unittest.TestCase):
             subject="agent_to_certify",
             certification_type="agent_certification",
             evidence={"performance": "good"},
-            criteria=["communication", "security", "reliability"]
+            criteria=["communication", "security", "reliability"],
         )
 
         # Handle request
         result = await self.manager.handle_certification_request(request)
 
-        self.assertIn('status', result)
-        self.assertEqual(result['status'], 'certified')
+        self.assertIn("status", result)
+        self.assertEqual(result["status"], "certified")
         self.manager.process_task.assert_called_once()
 
     async def test_autonomous_operation_loop(self):
@@ -192,7 +189,7 @@ class TestA2AIntegration(unittest.TestCase):
         self.manager._cleanup_expired_credentials = AsyncMock()
 
         # Mock asyncio.sleep to avoid infinite loop
-        with patch('asyncio.sleep', AsyncMock()) as mock_sleep:
+        with patch("asyncio.sleep", AsyncMock()) as mock_sleep:
             # Start autonomous operation
             self.manager.is_active = True
 
@@ -228,12 +225,12 @@ class TestA2AIntegration(unittest.TestCase):
 
         status = self.manager.get_status()
 
-        self.assertIn('name', status)
-        self.assertIn('is_active', status)
-        self.assertIn('a2a_connected', status)
-        self.assertEqual(status['is_active'], True)
-        self.assertEqual(status['a2a_connected'], True)
+        self.assertIn("name", status)
+        self.assertIn("is_active", status)
+        self.assertIn("a2a_connected", status)
+        self.assertEqual(status["is_active"], True)
+        self.assertEqual(status["a2a_connected"], True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

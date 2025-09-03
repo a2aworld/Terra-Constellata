@@ -29,20 +29,24 @@ class ImageTransform:
         self.image_size = image_size
 
         # Training transforms with augmentation
-        self.train_transform = transforms.Compose([
-            transforms.Resize(int(image_size * 1.12), Image.BICUBIC),
-            transforms.RandomCrop(image_size),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-        ])
+        self.train_transform = transforms.Compose(
+            [
+                transforms.Resize(int(image_size * 1.12), Image.BICUBIC),
+                transforms.RandomCrop(image_size),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            ]
+        )
 
         # Test transforms without augmentation
-        self.test_transform = transforms.Compose([
-            transforms.Resize(image_size, Image.BICUBIC),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-        ])
+        self.test_transform = transforms.Compose(
+            [
+                transforms.Resize(image_size, Image.BICUBIC),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            ]
+        )
 
     def __call__(self, image: Image.Image, is_train: bool = True) -> torch.Tensor:
         """Apply transformations to an image."""
@@ -67,7 +71,7 @@ class UnpairedImageDataset(Dataset):
         domain_b_dir: str = "domain_b",
         image_size: int = 256,
         is_train: bool = True,
-        max_samples: Optional[int] = None
+        max_samples: Optional[int] = None,
     ):
         """
         Initialize the unpaired dataset.
@@ -112,10 +116,10 @@ class UnpairedImageDataset(Dataset):
             logger.warning(f"Directory {directory} does not exist")
             return []
 
-        image_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.webp'}
+        image_extensions = {".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".webp"}
         image_paths = []
 
-        for file_path in directory.rglob('*'):
+        for file_path in directory.rglob("*"):
             if file_path.is_file() and file_path.suffix.lower() in image_extensions:
                 image_paths.append(file_path)
 
@@ -154,7 +158,7 @@ class UnpairedImageDataset(Dataset):
     def _load_image(self, path: Path) -> torch.Tensor:
         """Load and transform a single image."""
         try:
-            image = Image.open(path).convert('RGB')
+            image = Image.open(path).convert("RGB")
             return self.transform(image, self.is_train)
         except Exception as e:
             logger.error(f"Error loading image {path}: {e}")
@@ -176,7 +180,7 @@ class SatelliteArtDataset(Dataset):
         artwork_dir: str,
         image_size: int = 256,
         is_train: bool = True,
-        satellite_preprocessing: bool = True
+        satellite_preprocessing: bool = True,
     ):
         """
         Initialize the satellite-art dataset.
@@ -213,12 +217,14 @@ class SatelliteArtDataset(Dataset):
     def _get_satellite_transform(self) -> transforms.Compose:
         """Get transforms optimized for satellite imagery."""
         if self.satellite_preprocessing:
-            return transforms.Compose([
-                transforms.Resize(self.image_size, Image.BICUBIC),
-                transforms.ToTensor(),
-                # Normalize satellite imagery (typically 0-255 range)
-                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-            ])
+            return transforms.Compose(
+                [
+                    transforms.Resize(self.image_size, Image.BICUBIC),
+                    transforms.ToTensor(),
+                    # Normalize satellite imagery (typically 0-255 range)
+                    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                ]
+            )
         else:
             return ImageTransform(self.image_size)
 
@@ -228,10 +234,10 @@ class SatelliteArtDataset(Dataset):
             logger.warning(f"Directory {directory} does not exist")
             return []
 
-        image_extensions = {'.jpg', '.jpeg', '.png', '.tif', '.tiff'}
+        image_extensions = {".jpg", ".jpeg", ".png", ".tif", ".tiff"}
         image_paths = []
 
-        for file_path in directory.rglob('*'):
+        for file_path in directory.rglob("*"):
             if file_path.is_file() and file_path.suffix.lower() in image_extensions:
                 image_paths.append(file_path)
 
@@ -247,11 +253,11 @@ class SatelliteArtDataset(Dataset):
 
         try:
             # Load satellite image
-            satellite_image = Image.open(satellite_path).convert('RGB')
+            satellite_image = Image.open(satellite_path).convert("RGB")
             satellite_tensor = self.satellite_transform(satellite_image)
 
             # Load artwork image
-            artwork_image = Image.open(artwork_path).convert('RGB')
+            artwork_image = Image.open(artwork_path).convert("RGB")
             artwork_tensor = self.artwork_transform(artwork_image, self.is_train)
 
             return satellite_tensor, artwork_tensor
@@ -267,7 +273,7 @@ def create_data_loader(
     batch_size: int = 1,
     shuffle: bool = True,
     num_workers: int = 0,
-    pin_memory: bool = False
+    pin_memory: bool = False,
 ) -> DataLoader:
     """
     Create a DataLoader with optimized settings.
@@ -288,7 +294,7 @@ def create_data_loader(
         shuffle=shuffle,
         num_workers=num_workers,
         pin_memory=pin_memory,
-        drop_last=True
+        drop_last=True,
     )
 
 
@@ -298,7 +304,7 @@ def create_unpaired_data_loaders(
     domain_b_dir: str = "domain_b",
     image_size: int = 256,
     batch_size: int = 1,
-    max_samples: Optional[int] = None
+    max_samples: Optional[int] = None,
 ) -> Tuple[DataLoader, DataLoader]:
     """
     Create train and test data loaders for unpaired datasets.
@@ -321,7 +327,7 @@ def create_unpaired_data_loaders(
         domain_b_dir=domain_b_dir,
         image_size=image_size,
         is_train=True,
-        max_samples=max_samples
+        max_samples=max_samples,
     )
 
     # Create test dataset (smaller subset)
@@ -331,11 +337,13 @@ def create_unpaired_data_loaders(
         domain_b_dir=domain_b_dir,
         image_size=image_size,
         is_train=False,
-        max_samples=min(max_samples // 10 if max_samples else 100, 100)
+        max_samples=min(max_samples // 10 if max_samples else 100, 100),
     )
 
     # Create data loaders
-    train_loader = create_data_loader(train_dataset, batch_size=batch_size, shuffle=True)
+    train_loader = create_data_loader(
+        train_dataset, batch_size=batch_size, shuffle=True
+    )
     test_loader = create_data_loader(test_dataset, batch_size=batch_size, shuffle=False)
 
     return train_loader, test_loader
@@ -346,7 +354,7 @@ def create_satellite_art_data_loaders(
     artwork_dir: str,
     image_size: int = 256,
     batch_size: int = 1,
-    satellite_preprocessing: bool = True
+    satellite_preprocessing: bool = True,
 ) -> Tuple[DataLoader, DataLoader]:
     """
     Create data loaders for satellite to artwork translation.
@@ -367,7 +375,7 @@ def create_satellite_art_data_loaders(
         artwork_dir=artwork_dir,
         image_size=image_size,
         is_train=True,
-        satellite_preprocessing=satellite_preprocessing
+        satellite_preprocessing=satellite_preprocessing,
     )
 
     # Create test dataset
@@ -376,11 +384,13 @@ def create_satellite_art_data_loaders(
         artwork_dir=artwork_dir,
         image_size=image_size,
         is_train=False,
-        satellite_preprocessing=satellite_preprocessing
+        satellite_preprocessing=satellite_preprocessing,
     )
 
     # Create data loaders
-    train_loader = create_data_loader(train_dataset, batch_size=batch_size, shuffle=True)
+    train_loader = create_data_loader(
+        train_dataset, batch_size=batch_size, shuffle=True
+    )
     test_loader = create_data_loader(test_dataset, batch_size=batch_size, shuffle=False)
 
     return train_loader, test_loader

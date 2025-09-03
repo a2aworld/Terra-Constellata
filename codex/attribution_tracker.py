@@ -50,17 +50,25 @@ class AttributionTracker:
         """Load existing attribution records from storage."""
         for file_path in self.storage_path.glob("*.json"):
             try:
-                with open(file_path, 'r') as f:
+                with open(file_path, "r") as f:
                     data = json.load(f)
                     record = AttributionRecord.from_dict(data)
-                    self.attribution_records[record.agent_name + "_" + record.timestamp.isoformat()] = record
+                    self.attribution_records[
+                        record.agent_name + "_" + record.timestamp.isoformat()
+                    ] = record
 
                     # Update indexes
-                    self.agent_attributions[record.agent_name].append(record.agent_name + "_" + record.timestamp.isoformat())
+                    self.agent_attributions[record.agent_name].append(
+                        record.agent_name + "_" + record.timestamp.isoformat()
+                    )
                     if record.ai_model:
-                        self.model_attributions[record.ai_model].append(record.agent_name + "_" + record.timestamp.isoformat())
+                        self.model_attributions[record.ai_model].append(
+                            record.agent_name + "_" + record.timestamp.isoformat()
+                        )
                     if record.ai_provider:
-                        self.provider_attributions[record.ai_provider].append(record.agent_name + "_" + record.timestamp.isoformat())
+                        self.provider_attributions[record.ai_provider].append(
+                            record.agent_name + "_" + record.timestamp.isoformat()
+                        )
 
             except Exception as e:
                 logger.error(f"Error loading attribution record from {file_path}: {e}")
@@ -76,7 +84,7 @@ class AttributionTracker:
         ai_provider: Optional[str] = None,
         human_contributor: Optional[str] = None,
         contribution_weight: float = 1.0,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """
         Record a new attribution.
@@ -106,7 +114,7 @@ class AttributionTracker:
             ai_provider=ai_provider,
             human_contributor=human_contributor,
             contribution_weight=contribution_weight,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         # Generate unique ID
@@ -128,7 +136,9 @@ class AttributionTracker:
         logger.info(f"Recorded attribution for {agent_name}: {record_id}")
         return record_id
 
-    def get_agent_attributions(self, agent_name: str, days: Optional[int] = None) -> List[AttributionRecord]:
+    def get_agent_attributions(
+        self, agent_name: str, days: Optional[int] = None
+    ) -> List[AttributionRecord]:
         """
         Get attribution records for a specific agent.
 
@@ -140,7 +150,11 @@ class AttributionTracker:
             List of attribution records
         """
         record_ids = self.agent_attributions.get(agent_name, [])
-        records = [self.attribution_records[rid] for rid in record_ids if rid in self.attribution_records]
+        records = [
+            self.attribution_records[rid]
+            for rid in record_ids
+            if rid in self.attribution_records
+        ]
 
         if days:
             cutoff_date = datetime.utcnow() - timedelta(days=days)
@@ -148,7 +162,9 @@ class AttributionTracker:
 
         return sorted(records, key=lambda r: r.timestamp, reverse=True)
 
-    def get_model_attributions(self, ai_model: str, days: Optional[int] = None) -> List[AttributionRecord]:
+    def get_model_attributions(
+        self, ai_model: str, days: Optional[int] = None
+    ) -> List[AttributionRecord]:
         """
         Get attribution records for a specific AI model.
 
@@ -160,7 +176,11 @@ class AttributionTracker:
             List of attribution records
         """
         record_ids = self.model_attributions.get(ai_model, [])
-        records = [self.attribution_records[rid] for rid in record_ids if rid in self.attribution_records]
+        records = [
+            self.attribution_records[rid]
+            for rid in record_ids
+            if rid in self.attribution_records
+        ]
 
         if days:
             cutoff_date = datetime.utcnow() - timedelta(days=days)
@@ -168,7 +188,9 @@ class AttributionTracker:
 
         return sorted(records, key=lambda r: r.timestamp, reverse=True)
 
-    def get_provider_attributions(self, ai_provider: str, days: Optional[int] = None) -> List[AttributionRecord]:
+    def get_provider_attributions(
+        self, ai_provider: str, days: Optional[int] = None
+    ) -> List[AttributionRecord]:
         """
         Get attribution records for a specific AI provider.
 
@@ -180,7 +202,11 @@ class AttributionTracker:
             List of attribution records
         """
         record_ids = self.provider_attributions.get(ai_provider, [])
-        records = [self.attribution_records[rid] for rid in record_ids if rid in self.attribution_records]
+        records = [
+            self.attribution_records[rid]
+            for rid in record_ids
+            if rid in self.attribution_records
+        ]
 
         if days:
             cutoff_date = datetime.utcnow() - timedelta(days=days)
@@ -193,7 +219,7 @@ class AttributionTracker:
         agent_name: Optional[str] = None,
         ai_model: Optional[str] = None,
         ai_provider: Optional[str] = None,
-        days: Optional[int] = None
+        days: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
         Get a summary of contributions.
@@ -237,24 +263,23 @@ class AttributionTracker:
         # AI models and providers
         models_used = set(r.ai_model for r in records if r.ai_model)
         providers_used = set(r.ai_provider for r in records if r.ai_provider)
-        human_contributors = set(r.human_contributor for r in records if r.human_contributor)
+        human_contributors = set(
+            r.human_contributor for r in records if r.human_contributor
+        )
 
         return {
-            'total_contributions': total_contributions,
-            'total_weight': total_weight,
-            'contribution_types': dict(type_counts),
-            'agent_types': dict(agent_type_counts),
-            'ai_models_used': list(models_used),
-            'ai_providers_used': list(providers_used),
-            'human_contributors': list(human_contributors),
-            'avg_contribution_weight': total_weight / max(total_contributions, 1)
+            "total_contributions": total_contributions,
+            "total_weight": total_weight,
+            "contribution_types": dict(type_counts),
+            "agent_types": dict(agent_type_counts),
+            "ai_models_used": list(models_used),
+            "ai_providers_used": list(providers_used),
+            "human_contributors": list(human_contributors),
+            "avg_contribution_weight": total_weight / max(total_contributions, 1),
         }
 
     def get_top_contributors(
-        self,
-        by: str = "weight",
-        limit: int = 10,
-        days: Optional[int] = None
+        self, by: str = "weight", limit: int = 10, days: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """
         Get top contributors by various metrics.
@@ -279,7 +304,9 @@ class AttributionTracker:
             for record in records:
                 agent_weights[record.agent_name] += record.contribution_weight
 
-            sorted_agents = sorted(agent_weights.items(), key=lambda x: x[1], reverse=True)
+            sorted_agents = sorted(
+                agent_weights.items(), key=lambda x: x[1], reverse=True
+            )
 
         elif by == "count":
             # Group by agent and count contributions
@@ -287,7 +314,9 @@ class AttributionTracker:
             for record in records:
                 agent_counts[record.agent_name] += 1
 
-            sorted_agents = sorted(agent_counts.items(), key=lambda x: x[1], reverse=True)
+            sorted_agents = sorted(
+                agent_counts.items(), key=lambda x: x[1], reverse=True
+            )
 
         elif by == "recent":
             # Sort by timestamp and get most recent contributors
@@ -308,11 +337,7 @@ class AttributionTracker:
             return []
 
         return [
-            {
-                'agent_name': agent,
-                'score': score,
-                'metric': by
-            }
+            {"agent_name": agent, "score": score, "metric": by}
             for agent, score in sorted_agents[:limit]
         ]
 
@@ -320,7 +345,7 @@ class AttributionTracker:
         self,
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
-        include_individual_records: bool = False
+        include_individual_records: bool = False,
     ) -> Dict[str, Any]:
         """
         Generate a comprehensive attribution report.
@@ -344,16 +369,38 @@ class AttributionTracker:
         # Overall statistics
         total_records = len(records)
         date_range = {
-            'start': start_date.isoformat() if start_date else None,
-            'end': end_date.isoformat() if end_date else None
+            "start": start_date.isoformat() if start_date else None,
+            "end": end_date.isoformat() if end_date else None,
         }
 
         # Agent statistics
-        agent_stats = self.get_contribution_summary(days=None if not start_date else (end_date - start_date).days if end_date else None)
+        agent_stats = self.get_contribution_summary(
+            days=None
+            if not start_date
+            else (end_date - start_date).days
+            if end_date
+            else None
+        )
 
         # Top contributors
-        top_by_weight = self.get_top_contributors(by="weight", limit=5, days=None if not start_date else (end_date - start_date).days if end_date else None)
-        top_by_count = self.get_top_contributors(by="count", limit=5, days=None if not start_date else (end_date - start_date).days if end_date else None)
+        top_by_weight = self.get_top_contributors(
+            by="weight",
+            limit=5,
+            days=None
+            if not start_date
+            else (end_date - start_date).days
+            if end_date
+            else None,
+        )
+        top_by_count = self.get_top_contributors(
+            by="count",
+            limit=5,
+            days=None
+            if not start_date
+            else (end_date - start_date).days
+            if end_date
+            else None,
+        )
 
         # Contribution type distribution
         type_distribution = defaultdict(int)
@@ -373,21 +420,27 @@ class AttributionTracker:
                 provider_distribution[record.ai_provider] += 1
 
         report = {
-            'report_generated_at': datetime.utcnow().isoformat(),
-            'date_range': date_range,
-            'total_records': total_records,
-            'agent_statistics': agent_stats,
-            'top_contributors_by_weight': top_by_weight,
-            'top_contributors_by_count': top_by_count,
-            'contribution_type_distribution': dict(type_distribution),
-            'ai_model_usage': dict(model_usage),
-            'ai_provider_distribution': dict(provider_distribution),
-            'most_used_ai_model': max(model_usage.keys(), key=lambda k: model_usage[k]) if model_usage else None,
-            'most_used_ai_provider': max(provider_distribution.keys(), key=lambda k: provider_distribution[k]) if provider_distribution else None
+            "report_generated_at": datetime.utcnow().isoformat(),
+            "date_range": date_range,
+            "total_records": total_records,
+            "agent_statistics": agent_stats,
+            "top_contributors_by_weight": top_by_weight,
+            "top_contributors_by_count": top_by_count,
+            "contribution_type_distribution": dict(type_distribution),
+            "ai_model_usage": dict(model_usage),
+            "ai_provider_distribution": dict(provider_distribution),
+            "most_used_ai_model": max(model_usage.keys(), key=lambda k: model_usage[k])
+            if model_usage
+            else None,
+            "most_used_ai_provider": max(
+                provider_distribution.keys(), key=lambda k: provider_distribution[k]
+            )
+            if provider_distribution
+            else None,
         }
 
         if include_individual_records:
-            report['individual_records'] = [record.to_dict() for record in records]
+            report["individual_records"] = [record.to_dict() for record in records]
 
         return report
 
@@ -405,33 +458,46 @@ class AttributionTracker:
         try:
             if format == "json":
                 data = {
-                    'exported_at': datetime.utcnow().isoformat(),
-                    'records': [record.to_dict() for record in self.attribution_records.values()]
+                    "exported_at": datetime.utcnow().isoformat(),
+                    "records": [
+                        record.to_dict() for record in self.attribution_records.values()
+                    ],
                 }
-                with open(filepath, 'w') as f:
+                with open(filepath, "w") as f:
                     json.dump(data, f, indent=2, default=str)
 
             elif format == "csv":
                 import csv
-                with open(filepath, 'w', newline='') as f:
+
+                with open(filepath, "w", newline="") as f:
                     writer = csv.writer(f)
                     # Write header
-                    writer.writerow([
-                        'agent_name', 'agent_type', 'contribution_type', 'timestamp',
-                        'ai_model', 'ai_provider', 'human_contributor', 'contribution_weight'
-                    ])
+                    writer.writerow(
+                        [
+                            "agent_name",
+                            "agent_type",
+                            "contribution_type",
+                            "timestamp",
+                            "ai_model",
+                            "ai_provider",
+                            "human_contributor",
+                            "contribution_weight",
+                        ]
+                    )
                     # Write records
                     for record in self.attribution_records.values():
-                        writer.writerow([
-                            record.agent_name,
-                            record.agent_type,
-                            record.contribution_type.value,
-                            record.timestamp.isoformat(),
-                            record.ai_model or '',
-                            record.ai_provider or '',
-                            record.human_contributor or '',
-                            record.contribution_weight
-                        ])
+                        writer.writerow(
+                            [
+                                record.agent_name,
+                                record.agent_type,
+                                record.contribution_type.value,
+                                record.timestamp.isoformat(),
+                                record.ai_model or "",
+                                record.ai_provider or "",
+                                record.human_contributor or "",
+                                record.contribution_weight,
+                            ]
+                        )
 
             logger.info(f"Exported attribution data to {filepath}")
             return True
@@ -445,5 +511,5 @@ class AttributionTracker:
         filename = f"{record_id}.json"
         filepath = self.storage_path / filename
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(record.to_dict(), f, indent=2, default=str)

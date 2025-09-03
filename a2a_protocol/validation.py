@@ -18,7 +18,7 @@ from .schemas import (
     JSONRPCErrorResponse,
     JSONRPCNotification,
     MESSAGE_TYPES,
-    get_message_class
+    get_message_class,
 )
 
 logger = logging.getLogger(__name__)
@@ -28,9 +28,9 @@ class MessageValidator:
     """Validator for A2A protocol messages"""
 
     @staticmethod
-    def validate_jsonrpc_message(raw_message: str) -> Union[
-        JSONRPCRequest, JSONRPCNotification, JSONRPCErrorResponse
-    ]:
+    def validate_jsonrpc_message(
+        raw_message: str,
+    ) -> Union[JSONRPCRequest, JSONRPCNotification, JSONRPCErrorResponse]:
         """
         Validate and parse a raw JSON-RPC message.
 
@@ -85,7 +85,9 @@ class MessageValidator:
             )
 
     @staticmethod
-    def validate_a2a_message(method: str, params: Dict[str, Any]) -> Optional[A2AMessage]:
+    def validate_a2a_message(
+        method: str, params: Dict[str, Any]
+    ) -> Optional[A2AMessage]:
         """
         Validate A2A message parameters against the expected schema.
 
@@ -121,17 +123,18 @@ class MessageValidator:
             True if valid, False otherwise
         """
         # Example business rules
-        if hasattr(message, 'confidence') and message.confidence < 0.1:
+        if hasattr(message, "confidence") and message.confidence < 0.1:
             logger.warning(f"Low confidence message: {message.confidence}")
             return False
 
-        if hasattr(message, 'rating') and message.rating is not None:
+        if hasattr(message, "rating") and message.rating is not None:
             if not (1 <= message.rating <= 5):
                 logger.error(f"Invalid rating: {message.rating}")
                 return False
 
         # Check timestamp is not in future
         from datetime import datetime
+
         if message.timestamp > datetime.utcnow():
             logger.warning("Message timestamp is in the future")
             return False
@@ -139,17 +142,22 @@ class MessageValidator:
         return True
 
     @staticmethod
-    def _create_error_response(code: int, message: str, data: Any, msg_id: Any) -> JSONRPCErrorResponse:
+    def _create_error_response(
+        code: int, message: str, data: Any, msg_id: Any
+    ) -> JSONRPCErrorResponse:
         """Create a JSON-RPC error response"""
         error = JSONRPCError(code=code, message=message, data=data)
         return JSONRPCErrorResponse(error=error, id=msg_id)
 
     @staticmethod
-    def create_success_response(result: Any, msg_id: Union[str, int]) -> JSONRPCResponse:
+    def create_success_response(
+        result: Any, msg_id: Union[str, int]
+    ) -> JSONRPCResponse:
         """Create a JSON-RPC success response"""
         return JSONRPCResponse(result=result, id=msg_id)
 
 
 class ValidationError(Exception):
     """Custom exception for validation errors"""
+
     pass

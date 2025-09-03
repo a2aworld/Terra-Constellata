@@ -10,31 +10,31 @@ router = APIRouter()
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+
 @router.post("/upload", response_model=schemas.Multimedia)
 async def upload_file(
-    file: UploadFile = File(...),
-    content_id: int = None,
-    db: Session = Depends(get_db)
+    file: UploadFile = File(...), content_id: int = None, db: Session = Depends(get_db)
 ):
     if not content_id:
         raise HTTPException(status_code=400, detail="content_id is required")
 
     file_path = f"{UPLOAD_DIR}/{file.filename}"
-    
-    async with aiofiles.open(file_path, 'wb') as out_file:
+
+    async with aiofiles.open(file_path, "wb") as out_file:
         content = await file.read()
         await out_file.write(content)
 
     # Determine file type
-    file_type = file.content_type.split('/')[0] if file.content_type else 'unknown'
+    file_type = file.content_type.split("/")[0] if file.content_type else "unknown"
 
     multimedia_data = schemas.MultimediaCreate(
-        filename=file.filename,
-        file_type=file_type,
-        content_id=content_id
+        filename=file.filename, file_type=file_type, content_id=content_id
     )
 
-    return crud.create_multimedia(db=db, multimedia=multimedia_data, file_path=file_path)
+    return crud.create_multimedia(
+        db=db, multimedia=multimedia_data, file_path=file_path
+    )
+
 
 @router.get("/{multimedia_id}", response_model=schemas.Multimedia)
 def get_multimedia(multimedia_id: int, db: Session = Depends(get_db)):

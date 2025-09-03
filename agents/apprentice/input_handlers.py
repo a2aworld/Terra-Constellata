@@ -31,7 +31,9 @@ class SatelliteImageProcessor:
     - Resolution normalization
     """
 
-    def __init__(self, target_size: int = 256, normalize_range: Tuple[float, float] = (0, 1)):
+    def __init__(
+        self, target_size: int = 256, normalize_range: Tuple[float, float] = (0, 1)
+    ):
         """
         Initialize the satellite image processor.
 
@@ -43,22 +45,28 @@ class SatelliteImageProcessor:
         self.normalize_range = normalize_range
 
         # Satellite-specific transforms
-        self.preprocess_transforms = transforms.Compose([
-            transforms.Resize(target_size, Image.BICUBIC),
-            transforms.ToTensor(),
-        ])
+        self.preprocess_transforms = transforms.Compose(
+            [
+                transforms.Resize(target_size, Image.BICUBIC),
+                transforms.ToTensor(),
+            ]
+        )
 
         # Enhancement transforms for better style transfer
-        self.enhancement_transforms = transforms.Compose([
-            transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1),
-            transforms.RandomAffine(degrees=5, translate=(0.05, 0.05), scale=(0.95, 1.05)),
-        ])
+        self.enhancement_transforms = transforms.Compose(
+            [
+                transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1),
+                transforms.RandomAffine(
+                    degrees=5, translate=(0.05, 0.05), scale=(0.95, 1.05)
+                ),
+            ]
+        )
 
     def process_satellite_image(
         self,
         image_path: str,
         apply_enhancements: bool = True,
-        extract_metadata: bool = True
+        extract_metadata: bool = True,
     ) -> Tuple[torch.Tensor, Optional[Dict[str, Any]]]:
         """
         Process a satellite image for style transfer.
@@ -73,7 +81,7 @@ class SatelliteImageProcessor:
         """
         try:
             # Load image
-            image = Image.open(image_path).convert('RGB')
+            image = Image.open(image_path).convert("RGB")
 
             # Extract metadata if requested
             metadata = None
@@ -115,11 +123,15 @@ class SatelliteImageProcessor:
         image = enhancer.enhance(1.2)
 
         # Apply slight sharpening
-        image = image.filter(ImageFilter.UnsharpMask(radius=1, percent=150, threshold=3))
+        image = image.filter(
+            ImageFilter.UnsharpMask(radius=1, percent=150, threshold=3)
+        )
 
         return image
 
-    def _extract_satellite_metadata(self, image_path: str, image: Image.Image) -> Dict[str, Any]:
+    def _extract_satellite_metadata(
+        self, image_path: str, image: Image.Image
+    ) -> Dict[str, Any]:
         """
         Extract metadata from satellite image.
 
@@ -131,39 +143,39 @@ class SatelliteImageProcessor:
             Metadata dictionary
         """
         metadata = {
-            'source_path': image_path,
-            'image_size': image.size,
-            'mode': image.mode,
-            'timestamp': datetime.now().isoformat(),
-            'image_type': 'satellite'
+            "source_path": image_path,
+            "image_size": image.size,
+            "mode": image.mode,
+            "timestamp": datetime.now().isoformat(),
+            "image_type": "satellite",
         }
 
         # Try to extract EXIF data if available
         try:
             exif_data = image._getexif()
             if exif_data:
-                metadata['exif'] = dict(exif_data)
+                metadata["exif"] = dict(exif_data)
         except Exception:
             pass
 
         # Extract filename-based metadata
         filename = Path(image_path).stem
-        if 'lat' in filename.lower() or 'lon' in filename.lower():
+        if "lat" in filename.lower() or "lon" in filename.lower():
             # Try to parse coordinates from filename
-            metadata['coordinates'] = self._parse_coordinates_from_filename(filename)
+            metadata["coordinates"] = self._parse_coordinates_from_filename(filename)
 
         return metadata
 
-    def _parse_coordinates_from_filename(self, filename: str) -> Optional[Dict[str, float]]:
+    def _parse_coordinates_from_filename(
+        self, filename: str
+    ) -> Optional[Dict[str, float]]:
         """Parse geographic coordinates from filename (simplified implementation)."""
         # This is a placeholder - in a real implementation, you'd parse
         # actual coordinate formats from satellite imagery filenames
         return None
 
     def batch_process_satellite_images(
-        self,
-        image_paths: List[str],
-        batch_size: int = 4
+        self, image_paths: List[str], batch_size: int = 4
     ) -> List[Tuple[torch.Tensor, Optional[Dict[str, Any]]]]:
         """
         Process multiple satellite images in batches.
@@ -178,7 +190,7 @@ class SatelliteImageProcessor:
         results = []
 
         for i in range(0, len(image_paths), batch_size):
-            batch_paths = image_paths[i:i + batch_size]
+            batch_paths = image_paths[i : i + batch_size]
 
             for path in batch_paths:
                 try:
@@ -204,10 +216,7 @@ class GeospatialDataHandler:
         self.satellite_processor = SatelliteImageProcessor(target_size)
 
     def process_geospatial_data(
-        self,
-        data_source: str,
-        data_type: str = "satellite",
-        **kwargs
+        self, data_source: str, data_type: str = "satellite", **kwargs
     ) -> Tuple[torch.Tensor, Dict[str, Any]]:
         """
         Process geospatial data for artistic rendering.
@@ -229,11 +238,15 @@ class GeospatialDataHandler:
         else:
             raise ValueError(f"Unsupported geospatial data type: {data_type}")
 
-    def _process_satellite_data(self, image_path: str, **kwargs) -> Tuple[torch.Tensor, Dict[str, Any]]:
+    def _process_satellite_data(
+        self, image_path: str, **kwargs
+    ) -> Tuple[torch.Tensor, Dict[str, Any]]:
         """Process satellite imagery data."""
         return self.satellite_processor.process_satellite_image(image_path, **kwargs)
 
-    def _process_elevation_data(self, data_path: str, **kwargs) -> Tuple[torch.Tensor, Dict[str, Any]]:
+    def _process_elevation_data(
+        self, data_path: str, **kwargs
+    ) -> Tuple[torch.Tensor, Dict[str, Any]]:
         """
         Process elevation/dem data.
 
@@ -241,31 +254,37 @@ class GeospatialDataHandler:
         you'd load DEM data and convert it to visual representation.
         """
         # Placeholder implementation
-        dummy_image = Image.new('RGB', (self.target_size, self.target_size), color='gray')
+        dummy_image = Image.new(
+            "RGB", (self.target_size, self.target_size), color="gray"
+        )
         tensor = TF.to_tensor(dummy_image)
 
         metadata = {
-            'data_type': 'elevation',
-            'source_path': data_path,
-            'processing_method': 'placeholder'
+            "data_type": "elevation",
+            "source_path": data_path,
+            "processing_method": "placeholder",
         }
 
         return tensor, metadata
 
-    def _process_landcover_data(self, data_path: str, **kwargs) -> Tuple[torch.Tensor, Dict[str, Any]]:
+    def _process_landcover_data(
+        self, data_path: str, **kwargs
+    ) -> Tuple[torch.Tensor, Dict[str, Any]]:
         """
         Process land cover classification data.
 
         This is a placeholder for land cover processing.
         """
         # Placeholder implementation
-        dummy_image = Image.new('RGB', (self.target_size, self.target_size), color='green')
+        dummy_image = Image.new(
+            "RGB", (self.target_size, self.target_size), color="green"
+        )
         tensor = TF.to_tensor(dummy_image)
 
         metadata = {
-            'data_type': 'landcover',
-            'source_path': data_path,
-            'processing_method': 'placeholder'
+            "data_type": "landcover",
+            "source_path": data_path,
+            "processing_method": "placeholder",
         }
 
         return tensor, metadata
@@ -285,17 +304,19 @@ class MultiModalInputHandler:
         self.geospatial_handler = GeospatialDataHandler(target_size)
 
         # Standard image transforms
-        self.image_transforms = transforms.Compose([
-            transforms.Resize(target_size, Image.BICUBIC),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-        ])
+        self.image_transforms = transforms.Compose(
+            [
+                transforms.Resize(target_size, Image.BICUBIC),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            ]
+        )
 
     def process_input(
         self,
         input_source: Union[str, Dict[str, Any]],
         input_type: str = "auto",
-        **kwargs
+        **kwargs,
     ) -> Tuple[torch.Tensor, Dict[str, Any]]:
         """
         Process input of various types.
@@ -314,7 +335,9 @@ class MultiModalInputHandler:
 
         # Process based on type
         if input_type == "satellite":
-            return self.satellite_processor.process_satellite_image(str(input_source), **kwargs)
+            return self.satellite_processor.process_satellite_image(
+                str(input_source), **kwargs
+            )
         elif input_type in ["elevation", "landcover"]:
             return self.geospatial_handler.process_geospatial_data(
                 str(input_source), input_type, **kwargs
@@ -338,12 +361,14 @@ class MultiModalInputHandler:
             path = Path(input_source)
 
             # Check file extension
-            if path.suffix.lower() in ['.tif', '.tiff', '.jp2']:
+            if path.suffix.lower() in [".tif", ".tiff", ".jp2"]:
                 return "satellite"
-            elif path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.bmp']:
+            elif path.suffix.lower() in [".jpg", ".jpeg", ".png", ".bmp"]:
                 # Check filename for satellite indicators
-                if any(keyword in path.name.lower() for keyword in
-                       ['satellite', 'landsat', 'sentinel', 'modis', 'geo']):
+                if any(
+                    keyword in path.name.lower()
+                    for keyword in ["satellite", "landsat", "sentinel", "modis", "geo"]
+                ):
                     return "satellite"
                 else:
                     return "image"
@@ -354,9 +379,7 @@ class MultiModalInputHandler:
             return "geospatial"
 
     def _process_standard_image(
-        self,
-        image_path: str,
-        **kwargs
+        self, image_path: str, **kwargs
     ) -> Tuple[torch.Tensor, Dict[str, Any]]:
         """
         Process standard image files.
@@ -370,16 +393,16 @@ class MultiModalInputHandler:
         """
         try:
             # Load and process image
-            image = Image.open(image_path).convert('RGB')
+            image = Image.open(image_path).convert("RGB")
             tensor = self.image_transforms(image)
 
             # Extract basic metadata
             metadata = {
-                'source_path': image_path,
-                'image_size': image.size,
-                'mode': image.mode,
-                'input_type': 'standard_image',
-                'timestamp': datetime.now().isoformat()
+                "source_path": image_path,
+                "image_size": image.size,
+                "mode": image.mode,
+                "input_type": "standard_image",
+                "timestamp": datetime.now().isoformat(),
             }
 
             return tensor, metadata
@@ -392,7 +415,7 @@ class MultiModalInputHandler:
         self,
         input_sources: List[Union[str, Dict[str, Any]]],
         composition_method: str = "overlay",
-        **kwargs
+        **kwargs,
     ) -> Tuple[torch.Tensor, Dict[str, Any]]:
         """
         Create composite input from multiple sources.
@@ -428,10 +451,10 @@ class MultiModalInputHandler:
 
         # Combine metadata
         composite_metadata = {
-            'composition_method': composition_method,
-            'input_count': len(input_sources),
-            'inputs': metadata_list,
-            'timestamp': datetime.now().isoformat()
+            "composition_method": composition_method,
+            "input_count": len(input_sources),
+            "inputs": metadata_list,
+            "timestamp": datetime.now().isoformat(),
         }
 
         return composite, composite_metadata
@@ -474,9 +497,7 @@ class InputPipeline:
         self.processing_history = []
 
     def process(
-        self,
-        inputs: Union[str, List[str], Dict[str, Any]],
-        **kwargs
+        self, inputs: Union[str, List[str], Dict[str, Any]], **kwargs
     ) -> List[Tuple[torch.Tensor, Dict[str, Any]]]:
         """
         Process inputs through the pipeline.
@@ -510,18 +531,20 @@ class InputPipeline:
             results.append(result)
 
         # Record processing history
-        self.processing_history.append({
-            'timestamp': datetime.now().isoformat(),
-            'input_count': len(results) if isinstance(inputs, list) else 1,
-            'kwargs': kwargs
-        })
+        self.processing_history.append(
+            {
+                "timestamp": datetime.now().isoformat(),
+                "input_count": len(results) if isinstance(inputs, list) else 1,
+                "kwargs": kwargs,
+            }
+        )
 
         return results
 
     def get_processing_stats(self) -> Dict[str, Any]:
         """Get processing statistics."""
         return {
-            'total_processed': len(self.processing_history),
-            'processing_history': self.processing_history[-10:],  # Last 10 entries
-            'target_size': self.target_size
+            "total_processed": len(self.processing_history),
+            "processing_history": self.processing_history[-10:],  # Last 10 entries
+            "target_size": self.target_size,
         }

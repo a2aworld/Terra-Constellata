@@ -24,6 +24,7 @@ from chatbot.rag.vector_store import LoreWeaverVectorStore
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class LoreWeaverTester:
     """Test suite for Lore Weaver chatbot components."""
 
@@ -36,16 +37,16 @@ class LoreWeaverTester:
         logger.info("Setting up test environment...")
 
         # Set test environment variables
-        os.environ.setdefault('OPENAI_API_KEY', 'test-key')
-        os.environ.setdefault('USE_LANGSMITH', 'false')
+        os.environ.setdefault("OPENAI_API_KEY", "test-key")
+        os.environ.setdefault("USE_LANGSMITH", "false")
 
         # Initialize RAG with test settings
         try:
             self.rag = LoreWeaverRAG(
-                openai_api_key='test-key',
-                model_name='gpt-3.5-turbo',
+                openai_api_key="test-key",
+                model_name="gpt-3.5-turbo",
                 temperature=0.7,
-                use_langsmith=False
+                use_langsmith=False,
             )
             logger.info("Test environment setup complete")
             return True
@@ -58,20 +59,22 @@ class LoreWeaverTester:
         logger.info("Testing vector store initialization...")
 
         try:
-            vector_store = LoreWeaverVectorStore(use_chroma=False)  # Use FAISS for testing
+            vector_store = LoreWeaverVectorStore(
+                use_chroma=False
+            )  # Use FAISS for testing
             stats = vector_store.get_collection_stats()
 
             result = {
-                'test': 'vector_store_initialization',
-                'status': 'passed',
-                'details': f'Vector store initialized successfully. Stats: {stats}'
+                "test": "vector_store_initialization",
+                "status": "passed",
+                "details": f"Vector store initialized successfully. Stats: {stats}",
             }
 
         except Exception as e:
             result = {
-                'test': 'vector_store_initialization',
-                'status': 'failed',
-                'details': f'Vector store initialization failed: {str(e)}'
+                "test": "vector_store_initialization",
+                "status": "failed",
+                "details": f"Vector store initialization failed: {str(e)}",
             }
 
         self.test_results.append(result)
@@ -89,16 +92,16 @@ class LoreWeaverTester:
             stats = self.rag.get_stats()
 
             result = {
-                'test': 'rag_pipeline_initialization',
-                'status': 'passed',
-                'details': f'RAG pipeline initialized. Model: {stats.get("model", "unknown")}'
+                "test": "rag_pipeline_initialization",
+                "status": "passed",
+                "details": f'RAG pipeline initialized. Model: {stats.get("model", "unknown")}',
             }
 
         except Exception as e:
             result = {
-                'test': 'rag_pipeline_initialization',
-                'status': 'failed',
-                'details': f'RAG pipeline initialization failed: {str(e)}'
+                "test": "rag_pipeline_initialization",
+                "status": "failed",
+                "details": f"RAG pipeline initialization failed: {str(e)}",
             }
 
         self.test_results.append(result)
@@ -112,7 +115,7 @@ class LoreWeaverTester:
             "Tell me about mythological mountains",
             "What are some famous cultural landmarks?",
             "Describe the geography of ancient civilizations",
-            "What mythological creatures are associated with water?"
+            "What mythological creatures are associated with water?",
         ]
 
         results = []
@@ -124,30 +127,30 @@ class LoreWeaverTester:
                 # Note: This would normally call the actual API
                 # For testing, we'll simulate the response structure
                 simulated_response = {
-                    'answer': f"Simulated response for: {query}",
-                    'needs_clarification': False,
-                    'source_documents': [],
-                    'metadata': {
-                        'sources': ['ckg', 'postgis'],
-                        'entities': ['test_entity'],
-                        'locations': ['test_location']
-                    }
+                    "answer": f"Simulated response for: {query}",
+                    "needs_clarification": False,
+                    "source_documents": [],
+                    "metadata": {
+                        "sources": ["ckg", "postgis"],
+                        "entities": ["test_entity"],
+                        "locations": ["test_location"],
+                    },
                 }
 
                 result = {
-                    'test': f'sample_query_{test_queries.index(query)}',
-                    'status': 'passed',
-                    'query': query,
-                    'response_length': len(simulated_response['answer']),
-                    'details': 'Query processed successfully (simulated)'
+                    "test": f"sample_query_{test_queries.index(query)}",
+                    "status": "passed",
+                    "query": query,
+                    "response_length": len(simulated_response["answer"]),
+                    "details": "Query processed successfully (simulated)",
                 }
 
             except Exception as e:
                 result = {
-                    'test': f'sample_query_{test_queries.index(query)}',
-                    'status': 'failed',
-                    'query': query,
-                    'details': f'Query failed: {str(e)}'
+                    "test": f"sample_query_{test_queries.index(query)}",
+                    "status": "failed",
+                    "query": query,
+                    "details": f"Query failed: {str(e)}",
                 }
 
             results.append(result)
@@ -168,20 +171,20 @@ class LoreWeaverTester:
                 query="Test query",
                 response="Test response",
                 rating=5,
-                feedback="Great system!"
+                feedback="Great system!",
             )
 
             result = {
-                'test': 'feedback_system',
-                'status': 'passed',
-                'details': f'Feedback submitted successfully: {feedback_data}'
+                "test": "feedback_system",
+                "status": "passed",
+                "details": f"Feedback submitted successfully: {feedback_data}",
             }
 
         except Exception as e:
             result = {
-                'test': 'feedback_system',
-                'status': 'failed',
-                'details': f'Feedback system test failed: {str(e)}'
+                "test": "feedback_system",
+                "status": "failed",
+                "details": f"Feedback system test failed: {str(e)}",
             }
 
         self.test_results.append(result)
@@ -202,17 +205,17 @@ class LoreWeaverTester:
             duration = end_time - start_time
 
             result = {
-                'test': 'performance_test',
-                'status': 'passed',
-                'duration': f'{duration:.2f}s',
-                'details': f'Performance test completed in {duration:.2f} seconds'
+                "test": "performance_test",
+                "status": "passed",
+                "duration": f"{duration:.2f}s",
+                "details": f"Performance test completed in {duration:.2f} seconds",
             }
 
         except Exception as e:
             result = {
-                'test': 'performance_test',
-                'status': 'failed',
-                'details': f'Performance test failed: {str(e)}'
+                "test": "performance_test",
+                "status": "failed",
+                "details": f"Performance test failed: {str(e)}",
             }
 
         self.test_results.append(result)
@@ -225,9 +228,9 @@ class LoreWeaverTester:
         # Setup
         if not self.setup_test_environment():
             return {
-                'status': 'failed',
-                'message': 'Test environment setup failed',
-                'results': []
+                "status": "failed",
+                "message": "Test environment setup failed",
+                "results": [],
             }
 
         # Run tests
@@ -238,28 +241,30 @@ class LoreWeaverTester:
         self.run_performance_test()
 
         # Summarize results
-        passed = sum(1 for r in self.test_results if r['status'] == 'passed')
-        failed = sum(1 for r in self.test_results if r['status'] == 'failed')
+        passed = sum(1 for r in self.test_results if r["status"] == "passed")
+        failed = sum(1 for r in self.test_results if r["status"] == "failed")
         total = len(self.test_results)
 
         summary = {
-            'status': 'passed' if failed == 0 else 'failed',
-            'total_tests': total,
-            'passed': passed,
-            'failed': failed,
-            'success_rate': f'{passed/total*100:.1f}%',
-            'results': self.test_results
+            "status": "passed" if failed == 0 else "failed",
+            "total_tests": total,
+            "passed": passed,
+            "failed": failed,
+            "success_rate": f"{passed/total*100:.1f}%",
+            "results": self.test_results,
         }
 
-        logger.info(f"Test summary: {passed}/{total} tests passed ({summary['success_rate']})")
+        logger.info(
+            f"Test summary: {passed}/{total} tests passed ({summary['success_rate']})"
+        )
 
         return summary
 
     def print_test_report(self, summary: Dict[str, Any]):
         """Print detailed test report."""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("LORE WEAVER CHATBOT TEST REPORT")
-        print("="*60)
+        print("=" * 60)
 
         print(f"\nOverall Status: {summary['status'].upper()}")
         print(f"Total Tests: {summary['total_tests']}")
@@ -267,17 +272,18 @@ class LoreWeaverTester:
         print(f"Failed: {summary['failed']}")
         print(f"Success Rate: {summary['success_rate']}")
 
-        print("\n" + "-"*60)
+        print("\n" + "-" * 60)
         print("DETAILED RESULTS")
-        print("-"*60)
+        print("-" * 60)
 
-        for result in summary['results']:
-            status_icon = "✅" if result['status'] == 'passed' else "❌"
+        for result in summary["results"]:
+            status_icon = "✅" if result["status"] == "passed" else "❌"
             print(f"\n{status_icon} {result['test']}")
             print(f"   Status: {result['status']}")
             print(f"   Details: {result['details']}")
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
+
 
 def main():
     """Main test execution function."""
@@ -289,7 +295,8 @@ def main():
     tester.print_test_report(summary)
 
     # Exit with appropriate code
-    sys.exit(0 if summary['status'] == 'passed' else 1)
+    sys.exit(0 if summary["status"] == "passed" else 1)
+
 
 if __name__ == "__main__":
     main()

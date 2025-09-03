@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 class DiscoveryState(TypedDict):
     """State for the autonomous discovery workflow."""
+
     current_phase: str
     creative_territories: List[Dict[str, Any]]
     dispatched_tasks: Dict[str, Dict[str, Any]]
@@ -67,40 +68,40 @@ class AgentCoordinationTool(BaseTool):
                 "relational_data_analysis",
                 "graph_database_queries",
                 "spatial_relationship_analysis",
-                "pattern_discovery"
+                "pattern_discovery",
             ],
             "ComparativeMythologyAgent": [
                 "myth_comparison",
                 "cultural_context_analysis",
                 "archetype_identification",
-                "cross_cultural_studies"
+                "cross_cultural_studies",
             ],
             "LinguistAgent": [
                 "text_analysis",
                 "language_identification",
                 "translation_services",
-                "linguistic_pattern_recognition"
+                "linguistic_pattern_recognition",
             ],
             "InspirationEngine": [
                 "creative_generation",
                 "idea_synthesis",
-                "inspirational_content_creation"
+                "inspirational_content_creation",
             ],
             "LoreWeaverAgent": [
                 "narrative_construction",
                 "story_weaving",
-                "mythical_lore_integration"
+                "mythical_lore_integration",
             ],
             "AestheticCognitionAgent": [
                 "aesthetic_analysis",
                 "beauty_recognition",
-                "artistic_evaluation"
+                "artistic_evaluation",
             ],
             "ToolSmithAgent": [
                 "tool_creation",
                 "capability_enhancement",
-                "system_optimization"
-            ]
+                "system_optimization",
+            ],
         }
 
     def _run(self, coordination_request: str) -> str:
@@ -115,11 +116,20 @@ class AgentCoordinationTool(BaseTool):
         """
         try:
             # Parse the coordination request
-            if "assign" in coordination_request.lower() or "task" in coordination_request.lower():
+            if (
+                "assign" in coordination_request.lower()
+                or "task" in coordination_request.lower()
+            ):
                 return self._assign_task_to_agent(coordination_request)
-            elif "monitor" in coordination_request.lower() or "status" in coordination_request.lower():
+            elif (
+                "monitor" in coordination_request.lower()
+                or "status" in coordination_request.lower()
+            ):
                 return self._monitor_agent_status()
-            elif "conflict" in coordination_request.lower() or "resolve" in coordination_request.lower():
+            elif (
+                "conflict" in coordination_request.lower()
+                or "resolve" in coordination_request.lower()
+            ):
                 return self._resolve_agent_conflicts(coordination_request)
             else:
                 return self._general_coordination(coordination_request)
@@ -137,7 +147,7 @@ class AgentCoordinationTool(BaseTool):
             "inspiration": "InspirationEngine",
             "narrative": "LoreWeaverAgent",
             "aesthetic": "AestheticCognitionAgent",
-            "tool": "ToolSmithAgent"
+            "tool": "ToolSmithAgent",
         }
 
         assigned_agent = "General"
@@ -159,9 +169,13 @@ class AgentCoordinationTool(BaseTool):
                 status = agent.get_status()
                 status_report.append(f"\n{agent_name}:")
                 status_report.append(f"  Active: {status.get('is_active', False)}")
-                status_report.append(f"  Last Activity: {status.get('last_activity', 'Unknown')}")
+                status_report.append(
+                    f"  Last Activity: {status.get('last_activity', 'Unknown')}"
+                )
                 status_report.append(f"  Tools: {status.get('tools_count', 0)}")
-                status_report.append(f"  A2A Connected: {status.get('a2a_connected', False)}")
+                status_report.append(
+                    f"  A2A Connected: {status.get('a2a_connected', False)}"
+                )
 
         return "\n".join(status_report)
 
@@ -200,19 +214,31 @@ class WorkflowManagementTool(BaseTool):
                     {"agent": "InspirationEngine", "task": "Generate creative ideas"},
                     {"agent": "LinguistAgent", "task": "Refine language and structure"},
                     {"agent": "LoreWeaverAgent", "task": "Weave narrative elements"},
-                    {"agent": "AestheticCognitionAgent", "task": "Evaluate aesthetic quality"}
+                    {
+                        "agent": "AestheticCognitionAgent",
+                        "task": "Evaluate aesthetic quality",
+                    },
                 ],
-                "dependencies": {"1": [], "2": [1], "3": [2], "4": [3]}
+                "dependencies": {"1": [], "2": [1], "3": [2], "4": [3]},
             },
             "research_analysis": {
                 "steps": [
-                    {"agent": "Atlas_Relational_Analyst", "task": "Analyze data relationships"},
-                    {"agent": "ComparativeMythologyAgent", "task": "Provide cultural context"},
+                    {
+                        "agent": "Atlas_Relational_Analyst",
+                        "task": "Analyze data relationships",
+                    },
+                    {
+                        "agent": "ComparativeMythologyAgent",
+                        "task": "Provide cultural context",
+                    },
                     {"agent": "LinguistAgent", "task": "Analyze linguistic patterns"},
-                    {"agent": "ToolSmithAgent", "task": "Create analysis tools if needed"}
+                    {
+                        "agent": "ToolSmithAgent",
+                        "task": "Create analysis tools if needed",
+                    },
                 ],
-                "dependencies": {"1": [], "2": [1], "3": [1], "4": [1, 2, 3]}
-            }
+                "dependencies": {"1": [], "2": [1], "3": [1], "4": [1, 2, 3]},
+            },
         }
 
     def _run(self, workflow_request: str) -> str:
@@ -226,9 +252,15 @@ class WorkflowManagementTool(BaseTool):
             Workflow management results
         """
         try:
-            if "create" in workflow_request.lower() or "design" in workflow_request.lower():
+            if (
+                "create" in workflow_request.lower()
+                or "design" in workflow_request.lower()
+            ):
                 return self._design_workflow(workflow_request)
-            elif "track" in workflow_request.lower() or "progress" in workflow_request.lower():
+            elif (
+                "track" in workflow_request.lower()
+                or "progress" in workflow_request.lower()
+            ):
                 return self._track_workflow_progress()
             elif "optimize" in workflow_request.lower():
                 return self._optimize_workflow(workflow_request)
@@ -269,7 +301,9 @@ class WorkflowManagementTool(BaseTool):
         for workflow_id, workflow in self.active_workflows.items():
             progress_report.append(f"\nWorkflow {workflow_id}:")
             progress_report.append(f"  Status: {workflow.get('status', 'Unknown')}")
-            progress_report.append(f"  Completed Steps: {workflow.get('completed_steps', 0)}")
+            progress_report.append(
+                f"  Completed Steps: {workflow.get('completed_steps', 0)}"
+            )
             progress_report.append(f"  Total Steps: {workflow.get('total_steps', 0)}")
 
         return "\n".join(progress_report)
@@ -312,9 +346,15 @@ class SystemMonitoringTool(BaseTool):
             Monitoring results
         """
         try:
-            if "health" in monitoring_request.lower() or "status" in monitoring_request.lower():
+            if (
+                "health" in monitoring_request.lower()
+                or "status" in monitoring_request.lower()
+            ):
                 return self._generate_health_report()
-            elif "performance" in monitoring_request.lower() or "metrics" in monitoring_request.lower():
+            elif (
+                "performance" in monitoring_request.lower()
+                or "metrics" in monitoring_request.lower()
+            ):
                 return self._analyze_performance_metrics()
             elif "bottleneck" in monitoring_request.lower():
                 return self._identify_bottlenecks()
@@ -330,8 +370,12 @@ class SystemMonitoringTool(BaseTool):
 
         # Agent health
         agents = agent_registry.list_agents()
-        active_agents = sum(1 for name in agents if agent_registry.get_agent(name) and
-                            agent_registry.get_agent(name).is_active)
+        active_agents = sum(
+            1
+            for name in agents
+            if agent_registry.get_agent(name)
+            and agent_registry.get_agent(name).is_active
+        )
 
         report.append(f"Active Agents: {active_agents}/{len(agents)}")
 
@@ -357,10 +401,12 @@ class SystemMonitoringTool(BaseTool):
             "Throughput: 100 tasks/minute",
             "Agent Utilization: 85%",
             "Memory Usage: 60%",
-            "Network Latency: 50ms"
+            "Network Latency: 50ms",
         ]
 
-        return "=== PERFORMANCE METRICS ===\n" + "\n".join(f"• {metric}" for metric in metrics)
+        return "=== PERFORMANCE METRICS ===\n" + "\n".join(
+            f"• {metric}" for metric in metrics
+        )
 
     def _identify_bottlenecks(self) -> str:
         """Identify system bottlenecks."""
@@ -368,10 +414,12 @@ class SystemMonitoringTool(BaseTool):
             "High agent communication latency",
             "Database query optimization needed",
             "Memory usage spikes during peak hours",
-            "Network bandwidth limitations"
+            "Network bandwidth limitations",
         ]
 
-        return "=== IDENTIFIED BOTTLENECKS ===\n" + "\n".join(f"• {bottleneck}" for bottleneck in bottlenecks)
+        return "=== IDENTIFIED BOTTLENECKS ===\n" + "\n".join(
+            f"• {bottleneck}" for bottleneck in bottlenecks
+        )
 
     def _general_system_monitoring(self, request: str) -> str:
         """Perform general system monitoring."""
@@ -396,7 +444,11 @@ class CreativeTerritoryScannerTool(BaseTool):
         super().__init__()
         self.ckg_ops = CKGOperations()
         self.postgis_conn = PostGISConnection()
-        self.postgis_queries = GeospatialQueries(self.postgis_conn) if self.postgis_conn.connect() else None
+        self.postgis_queries = (
+            GeospatialQueries(self.postgis_conn)
+            if self.postgis_conn.connect()
+            else None
+        )
 
     def _run(self, scan_request: str) -> str:
         """
@@ -411,7 +463,10 @@ class CreativeTerritoryScannerTool(BaseTool):
         try:
             if "unmapped" in scan_request.lower() or "entities" in scan_request.lower():
                 return self._scan_unmapped_entities()
-            elif "contradict" in scan_request.lower() or "conflict" in scan_request.lower():
+            elif (
+                "contradict" in scan_request.lower()
+                or "conflict" in scan_request.lower()
+            ):
                 return self._scan_contradictory_clusters()
             elif "gap" in scan_request.lower():
                 return self._scan_knowledge_gaps()
@@ -429,7 +484,9 @@ class CreativeTerritoryScannerTool(BaseTool):
 
             result = ["=== UNMAPPED MYTHOLOGICAL ENTITIES ==="]
             for entity in unmapped_entities[:10]:  # Limit to top 10
-                result.append(f"• {entity.get('name', 'Unknown')}: {entity.get('description', 'No description')}")
+                result.append(
+                    f"• {entity.get('name', 'Unknown')}: {entity.get('description', 'No description')}"
+                )
 
             if len(unmapped_entities) > 10:
                 result.append(f"... and {len(unmapped_entities) - 10} more")
@@ -446,7 +503,9 @@ class CreativeTerritoryScannerTool(BaseTool):
 
             result = ["=== CONTRADICTORY INFORMATION CLUSTERS ==="]
             for cluster in contradictory_clusters[:10]:
-                result.append(f"• {cluster.get('entity', 'Unknown')}: {cluster.get('conflict_description', 'Multiple conflicting sources')}")
+                result.append(
+                    f"• {cluster.get('entity', 'Unknown')}: {cluster.get('conflict_description', 'Multiple conflicting sources')}"
+                )
 
             if len(contradictory_clusters) > 10:
                 result.append(f"... and {len(contradictory_clusters) - 10} more")
@@ -463,7 +522,9 @@ class CreativeTerritoryScannerTool(BaseTool):
 
             result = ["=== KNOWLEDGE GAPS ==="]
             for gap in knowledge_gaps[:10]:
-                result.append(f"• Missing connection: {gap.get('from_entity', 'Unknown')} → {gap.get('to_entity', 'Unknown')}")
+                result.append(
+                    f"• Missing connection: {gap.get('from_entity', 'Unknown')} → {gap.get('to_entity', 'Unknown')}"
+                )
 
             if len(knowledge_gaps) > 10:
                 result.append(f"... and {len(knowledge_gaps) - 10} more")
@@ -514,11 +575,20 @@ class AgentDispatcherTool(BaseTool):
             Dispatch results
         """
         try:
-            if "myth" in dispatch_request.lower() or "comparative" in dispatch_request.lower():
+            if (
+                "myth" in dispatch_request.lower()
+                or "comparative" in dispatch_request.lower()
+            ):
                 return self._dispatch_to_mythology_agent(dispatch_request)
-            elif "language" in dispatch_request.lower() or "linguist" in dispatch_request.lower():
+            elif (
+                "language" in dispatch_request.lower()
+                or "linguist" in dispatch_request.lower()
+            ):
                 return self._dispatch_to_linguist_agent(dispatch_request)
-            elif "atlas" in dispatch_request.lower() or "relational" in dispatch_request.lower():
+            elif (
+                "atlas" in dispatch_request.lower()
+                or "relational" in dispatch_request.lower()
+            ):
                 return self._dispatch_to_atlas_agent(dispatch_request)
             else:
                 return self._dispatch_intelligent(dispatch_request)
@@ -528,7 +598,9 @@ class AgentDispatcherTool(BaseTool):
 
     def _dispatch_to_mythology_agent(self, task: str) -> str:
         """Dispatch task to Comparative Mythology Agent."""
-        return self._send_task_to_agent("ComparativeMythologyAgent", task, "mythology_analysis")
+        return self._send_task_to_agent(
+            "ComparativeMythologyAgent", task, "mythology_analysis"
+        )
 
     def _dispatch_to_linguist_agent(self, task: str) -> str:
         """Dispatch task to Linguist Agent."""
@@ -536,7 +608,9 @@ class AgentDispatcherTool(BaseTool):
 
     def _dispatch_to_atlas_agent(self, task: str) -> str:
         """Dispatch task to Atlas Relational Analyst."""
-        return self._send_task_to_agent("Atlas_Relational_Analyst", task, "relational_analysis")
+        return self._send_task_to_agent(
+            "Atlas_Relational_Analyst", task, "relational_analysis"
+        )
 
     def _dispatch_intelligent(self, task: str) -> str:
         """Intelligently dispatch task to most appropriate agent."""
@@ -550,7 +624,9 @@ class AgentDispatcherTool(BaseTool):
         else:
             return self._dispatch_to_mythology_agent(task)  # Default to mythology
 
-    async def _send_task_to_agent(self, agent_name: str, task: str, task_type: str) -> str:
+    async def _send_task_to_agent(
+        self, agent_name: str, task: str, task_type: str
+    ) -> str:
         """Send task to specific agent via A2A protocol."""
         try:
             self.task_counter += 1
@@ -561,11 +637,13 @@ class AgentDispatcherTool(BaseTool):
                 sender_agent=self.orchestrator.name,
                 context=task,
                 domain=task_type,
-                target_agent=agent_name
+                target_agent=agent_name,
             )
 
             # Send via A2A
-            response = await self.orchestrator.send_message(inspiration_request, agent_name)
+            response = await self.orchestrator.send_message(
+                inspiration_request, agent_name
+            )
 
             # Track dispatched task
             self.dispatched_tasks[task_id] = {
@@ -574,7 +652,7 @@ class AgentDispatcherTool(BaseTool):
                 "task_type": task_type,
                 "timestamp": datetime.utcnow(),
                 "status": "dispatched",
-                "response": response
+                "response": response,
             }
 
             return f"=== TASK DISPATCHED ===\nTask ID: {task_id}\nAgent: {agent_name}\nTask: {task}\nStatus: Dispatched"
@@ -611,12 +689,7 @@ class SentinelOrchestrator(BaseSpecialistAgent):
             AgentDispatcherTool(self),  # Pass self reference
         ]
 
-        super().__init__(
-            name="Sentinel_Orchestrator",
-            llm=llm,
-            tools=tools,
-            **kwargs
-        )
+        super().__init__(name="Sentinel_Orchestrator", llm=llm, tools=tools, **kwargs)
 
         # Orchestrator-specific attributes
         self.active_workflows = {}
@@ -651,10 +724,7 @@ class SentinelOrchestrator(BaseSpecialistAgent):
         workflow.add_conditional_edges(
             "generate_report",
             self._should_continue_discovery,
-            {
-                True: "scan_territories",
-                False: END
-            }
+            {True: "scan_territories", False: END},
         )
 
         return workflow.compile()
@@ -673,7 +743,7 @@ class SentinelOrchestrator(BaseSpecialistAgent):
             **state,
             "current_phase": "scanning",
             "creative_territories": territories,
-            "iteration_count": state.get("iteration_count", 0) + 1
+            "iteration_count": state.get("iteration_count", 0) + 1,
         }
 
     def _dispatch_agents_node(self, state: DiscoveryState) -> DiscoveryState:
@@ -695,13 +765,13 @@ class SentinelOrchestrator(BaseSpecialistAgent):
                     "territory": territory,
                     "task": task_description,
                     "dispatch_result": dispatch_result,
-                    "timestamp": datetime.utcnow()
+                    "timestamp": datetime.utcnow(),
                 }
 
         return {
             **state,
             "current_phase": "dispatching",
-            "dispatched_tasks": dispatched_tasks
+            "dispatched_tasks": dispatched_tasks,
         }
 
     def _collect_responses_node(self, state: DiscoveryState) -> DiscoveryState:
@@ -717,13 +787,13 @@ class SentinelOrchestrator(BaseSpecialistAgent):
             agent_responses[task_id] = {
                 "response": f"Analysis completed for {task_info['territory'].get('name', 'territory')}",
                 "agent": task_info.get("agent", "unknown"),
-                "timestamp": datetime.utcnow()
+                "timestamp": datetime.utcnow(),
             }
 
         return {
             **state,
             "current_phase": "collecting",
-            "agent_responses": agent_responses
+            "agent_responses": agent_responses,
         }
 
     def _synthesize_insights_node(self, state: DiscoveryState) -> DiscoveryState:
@@ -737,18 +807,21 @@ class SentinelOrchestrator(BaseSpecialistAgent):
         for task_id, response in responses.items():
             insight = {
                 "task_id": task_id,
-                "territory": next((t for t in territories if t.get("name") in response.get("response", "")), {}),
+                "territory": next(
+                    (
+                        t
+                        for t in territories
+                        if t.get("name") in response.get("response", "")
+                    ),
+                    {},
+                ),
                 "analysis": response.get("response", ""),
                 "synthesized_insight": self._synthesize_single_insight(response),
-                "timestamp": datetime.utcnow()
+                "timestamp": datetime.utcnow(),
             }
             insights.append(insight)
 
-        return {
-            **state,
-            "current_phase": "synthesizing",
-            "insights": insights
-        }
+        return {**state, "current_phase": "synthesizing", "insights": insights}
 
     def _generate_report_node(self, state: DiscoveryState) -> DiscoveryState:
         """Node for generating final discovery report."""
@@ -759,11 +832,7 @@ class SentinelOrchestrator(BaseSpecialistAgent):
 
         report = self._create_discovery_report(insights, territories)
 
-        return {
-            **state,
-            "current_phase": "reporting",
-            "final_report": report
-        }
+        return {**state, "current_phase": "reporting", "final_report": report}
 
     def _should_continue_discovery(self, state: DiscoveryState) -> bool:
         """Determine if discovery should continue."""
@@ -779,7 +848,7 @@ class SentinelOrchestrator(BaseSpecialistAgent):
         territories = []
 
         # Simple parsing - in real implementation, this would be more sophisticated
-        lines = scan_result.split('\n')
+        lines = scan_result.split("\n")
         current_section = None
 
         for line in lines:
@@ -793,9 +862,13 @@ class SentinelOrchestrator(BaseSpecialistAgent):
                 # Extract territory information
                 territory = {
                     "type": current_section,
-                    "name": line[2:].split(":")[0].strip() if ":" in line else line[2:].strip(),
-                    "description": line[2:].split(":")[1].strip() if ":" in line else "",
-                    "discovered_at": datetime.utcnow()
+                    "name": line[2:].split(":")[0].strip()
+                    if ":" in line
+                    else line[2:].strip(),
+                    "description": line[2:].split(":")[1].strip()
+                    if ":" in line
+                    else "",
+                    "discovered_at": datetime.utcnow(),
                 }
                 territories.append(territory)
 
@@ -817,7 +890,7 @@ class SentinelOrchestrator(BaseSpecialistAgent):
 
     def _extract_task_id_from_result(self, result: str) -> Optional[str]:
         """Extract task ID from dispatch result."""
-        for line in result.split('\n'):
+        for line in result.split("\n"):
             if "Task ID:" in line:
                 return line.split("Task ID:")[1].strip()
         return None
@@ -828,7 +901,9 @@ class SentinelOrchestrator(BaseSpecialistAgent):
         analysis = response.get("response", "")
         return f"Synthesized insight: {analysis[:100]}..."
 
-    def _create_discovery_report(self, insights: List[Dict[str, Any]], territories: List[Dict[str, Any]]) -> str:
+    def _create_discovery_report(
+        self, insights: List[Dict[str, Any]], territories: List[Dict[str, Any]]
+    ) -> str:
         """Create comprehensive discovery report."""
         report_lines = ["=== AUTONOMOUS DISCOVERY REPORT ==="]
 
@@ -839,11 +914,15 @@ class SentinelOrchestrator(BaseSpecialistAgent):
         report_lines.append("KEY FINDINGS:")
         for i, insight in enumerate(insights, 1):
             territory_name = insight.get("territory", {}).get("name", "Unknown")
-            report_lines.append(f"{i}. {territory_name}: {insight.get('synthesized_insight', '')}")
+            report_lines.append(
+                f"{i}. {territory_name}: {insight.get('synthesized_insight', '')}"
+            )
 
         report_lines.append("")
         report_lines.append("RECOMMENDATIONS:")
-        report_lines.append("• Further investigation needed for high-priority territories")
+        report_lines.append(
+            "• Further investigation needed for high-priority territories"
+        )
         report_lines.append("• Cross-agent collaboration for complex insights")
         report_lines.append("• Integration of findings into knowledge graph")
 
@@ -880,21 +959,17 @@ class SentinelOrchestrator(BaseSpecialistAgent):
 
         prompt = PromptTemplate(
             input_variables=["input", "tools", "chat_history", "agent_scratchpad"],
-            template=template
+            template=template,
         )
 
-        agent = create_react_agent(
-            llm=self.llm,
-            tools=self.tools,
-            prompt=prompt
-        )
+        agent = create_react_agent(llm=self.llm, tools=self.tools, prompt=prompt)
 
         return AgentExecutor.from_agent_and_tools(
             agent=agent,
             tools=self.tools,
             memory=self.memory,
             verbose=True,
-            handle_parsing_errors=True
+            handle_parsing_errors=True,
         )
 
     async def process_task(self, task: str, **kwargs) -> Any:
@@ -917,18 +992,18 @@ class SentinelOrchestrator(BaseSpecialistAgent):
             else:
                 # Use traditional LangChain agent for other tasks
                 result = await asyncio.get_event_loop().run_in_executor(
-                    None,
-                    self.agent_executor.run,
-                    task
+                    None, self.agent_executor.run, task
                 )
 
                 # Log coordination activity
-                self.coordination_log.append({
-                    "task": task,
-                    "result": result,
-                    "timestamp": datetime.utcnow(),
-                    "kwargs": kwargs
-                })
+                self.coordination_log.append(
+                    {
+                        "task": task,
+                        "result": result,
+                        "timestamp": datetime.utcnow(),
+                        "kwargs": kwargs,
+                    }
+                )
 
                 # Update performance metrics
                 self._update_performance_metrics(task, result)
@@ -939,7 +1014,9 @@ class SentinelOrchestrator(BaseSpecialistAgent):
             logger.error(f"Error processing orchestration task: {e}")
             return f"Orchestration failed: {str(e)}"
 
-    async def start_autonomous_discovery(self, max_iterations: int = 3, **kwargs) -> Dict[str, Any]:
+    async def start_autonomous_discovery(
+        self, max_iterations: int = 3, **kwargs
+    ) -> Dict[str, Any]:
         """
         Start the autonomous discovery process using LangGraph.
 
@@ -962,7 +1039,7 @@ class SentinelOrchestrator(BaseSpecialistAgent):
                 "insights": [],
                 "final_report": None,
                 "iteration_count": 0,
-                "max_iterations": max_iterations
+                "max_iterations": max_iterations,
             }
 
             # Ensure A2A connection
@@ -971,38 +1048,37 @@ class SentinelOrchestrator(BaseSpecialistAgent):
 
             # Run the discovery graph
             final_state = await asyncio.get_event_loop().run_in_executor(
-                None,
-                self.discovery_graph.invoke,
-                initial_state
+                None, self.discovery_graph.invoke, initial_state
             )
 
             # Store final state
             self.current_discovery_state = final_state
 
             # Log discovery completion
-            self.coordination_log.append({
-                "task": "autonomous_discovery",
-                "result": final_state.get("final_report", "Discovery completed"),
-                "timestamp": datetime.utcnow(),
-                "iterations": final_state.get("iteration_count", 0),
-                "territories_found": len(final_state.get("creative_territories", [])),
-                "insights_generated": len(final_state.get("insights", []))
-            })
+            self.coordination_log.append(
+                {
+                    "task": "autonomous_discovery",
+                    "result": final_state.get("final_report", "Discovery completed"),
+                    "timestamp": datetime.utcnow(),
+                    "iterations": final_state.get("iteration_count", 0),
+                    "territories_found": len(
+                        final_state.get("creative_territories", [])
+                    ),
+                    "insights_generated": len(final_state.get("insights", [])),
+                }
+            )
 
             return {
                 "status": "completed",
                 "report": final_state.get("final_report"),
                 "territories_found": len(final_state.get("creative_territories", [])),
                 "insights_generated": len(final_state.get("insights", [])),
-                "iterations_completed": final_state.get("iteration_count", 0)
+                "iterations_completed": final_state.get("iteration_count", 0),
             }
 
         except Exception as e:
             logger.error(f"Error in autonomous discovery: {e}")
-            return {
-                "status": "failed",
-                "error": str(e)
-            }
+            return {"status": "failed", "error": str(e)}
 
     def _update_performance_metrics(self, task: str, result: str):
         """Update agent performance metrics."""
@@ -1016,11 +1092,13 @@ class SentinelOrchestrator(BaseSpecialistAgent):
         if task_type not in self.agent_performance_metrics:
             self.agent_performance_metrics[task_type] = []
 
-        self.agent_performance_metrics[task_type].append({
-            "timestamp": datetime.utcnow(),
-            "success": "failed" not in result.lower(),
-            "task": task
-        })
+        self.agent_performance_metrics[task_type].append(
+            {
+                "timestamp": datetime.utcnow(),
+                "success": "failed" not in result.lower(),
+                "task": task,
+            }
+        )
 
     async def coordinate_agents(self, task_description: str) -> Dict[str, Any]:
         """
@@ -1039,10 +1117,12 @@ class SentinelOrchestrator(BaseSpecialistAgent):
         return {
             "task": task_description,
             "coordination_plan": result,
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.utcnow(),
         }
 
-    async def manage_workflow(self, workflow_type: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def manage_workflow(
+        self, workflow_type: str, parameters: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Manage a complex workflow across multiple agents.
 
@@ -1055,21 +1135,23 @@ class SentinelOrchestrator(BaseSpecialistAgent):
         """
         # Use workflow management tool
         workflow_tool = self.tools[1]  # WorkflowManagementTool
-        result = workflow_tool._run(f"manage {workflow_type} workflow with parameters: {parameters}")
+        result = workflow_tool._run(
+            f"manage {workflow_type} workflow with parameters: {parameters}"
+        )
 
         workflow_id = f"workflow_{len(self.active_workflows) + 1}"
         self.active_workflows[workflow_id] = {
             "type": workflow_type,
             "parameters": parameters,
             "status": "active",
-            "start_time": datetime.utcnow()
+            "start_time": datetime.utcnow(),
         }
 
         return {
             "workflow_id": workflow_id,
             "type": workflow_type,
             "management_plan": result,
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.utcnow(),
         }
 
     async def monitor_system_health(self) -> Dict[str, Any]:
@@ -1087,7 +1169,7 @@ class SentinelOrchestrator(BaseSpecialistAgent):
             "report": result,
             "timestamp": datetime.utcnow(),
             "active_agents": len(agent_registry.list_agents()),
-            "system_status": "healthy"  # Would be determined by actual monitoring
+            "system_status": "healthy",  # Would be determined by actual monitoring
         }
 
         self.system_health_history.append(health_report)
@@ -1127,7 +1209,9 @@ class SentinelOrchestrator(BaseSpecialistAgent):
 
         # Take action if system health is poor
         if "unhealthy" in health_report.get("system_status", "").lower():
-            logger.warning("System health issues detected, initiating corrective actions")
+            logger.warning(
+                "System health issues detected, initiating corrective actions"
+            )
 
     async def _monitor_agent_activities(self):
         """Monitor activities of all agents."""
@@ -1152,7 +1236,8 @@ class SentinelOrchestrator(BaseSpecialistAgent):
         cutoff_time = current_time.timestamp() - 3600  # 1 hour ago
 
         self.active_workflows = {
-            wf_id: wf for wf_id, wf in self.active_workflows.items()
+            wf_id: wf
+            for wf_id, wf in self.active_workflows.items()
             if wf.get("start_time", current_time).timestamp() > cutoff_time
         }
 

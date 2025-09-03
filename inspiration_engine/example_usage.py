@@ -12,7 +12,7 @@ import sys
 import os
 
 # Add the parent directory to the path to import from terra-constellata
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from inspiration_engine import InspirationEngine
 from inspiration_engine.algorithms import NoveltyDetector
@@ -20,8 +20,7 @@ from inspiration_engine.prompt_ranking import PromptRanker
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -35,9 +34,20 @@ async def basic_novelty_detection_example():
 
     # Sample data with some rare patterns
     data = [
-        "apple", "banana", "apple", "cherry", "apple", "banana",
-        "dragon_fruit", "elderberry", "dragon_fruit", "fig",
-        "dragon_fruit", "grapefruit", "honeydew", "dragon_fruit"
+        "apple",
+        "banana",
+        "apple",
+        "cherry",
+        "apple",
+        "banana",
+        "dragon_fruit",
+        "elderberry",
+        "dragon_fruit",
+        "fig",
+        "dragon_fruit",
+        "grapefruit",
+        "honeydew",
+        "dragon_fruit",
     ]
 
     print(f"Analyzing data: {data}")
@@ -68,7 +78,9 @@ async def mythology_inspiration_example():
         # Initialize connections (this will work if databases are available)
         initialized = await engine.initialize()
         if not initialized:
-            print("Warning: Could not initialize database connections. Using mock data.")
+            print(
+                "Warning: Could not initialize database connections. Using mock data."
+            )
     except Exception as e:
         print(f"Warning: Could not initialize engine: {e}. Using mock data.")
 
@@ -76,13 +88,13 @@ async def mythology_inspiration_example():
     inspiration = await engine.generate_inspiration(
         domain="mythology",
         context={"theme": "transformation", "elements": ["hero", "monster", "quest"]},
-        num_prompts=3
+        num_prompts=3,
     )
 
     print(f"Generated {len(inspiration['top_prompts'])} prompts for mythology domain")
     print(f"Diversity Score: {inspiration['ranking']['diversity_score']:.3f}")
 
-    for i, prompt in enumerate(inspiration['top_prompts'], 1):
+    for i, prompt in enumerate(inspiration["top_prompts"], 1):
         print(f"\nPrompt {i}:")
         print(f"Content: {prompt['content']}")
         print(f"Creative Potential: {prompt['creative_potential']:.3f}")
@@ -116,7 +128,7 @@ async def geospatial_analysis_example():
         # Add some mythical locations
         {"lat": 36.1699, "lon": -115.1398, "entity": "mythical", "name": "Atlantis"},
         {"lat": 27.1751, "lon": 78.0421, "entity": "mythical", "name": "Shangri-La"},
-        {"lat": 55.7558, "lon": 37.6173, "entity": "mythical", "name": "El Dorado"}
+        {"lat": 55.7558, "lon": 37.6173, "entity": "mythical", "name": "El Dorado"},
     ]
 
     # Initialize engine for analysis
@@ -125,8 +137,7 @@ async def geospatial_analysis_example():
     try:
         # Analyze the geospatial data for novelty
         analysis_result = await engine.analyze_novelty(
-            geospatial_data,
-            context={"domain": "geography", "data_type": "geospatial"}
+            geospatial_data, context={"domain": "geography", "data_type": "geospatial"}
         )
 
         print("Geospatial Data Analysis:")
@@ -134,9 +145,9 @@ async def geospatial_analysis_example():
         print(f"Is Novel: {analysis_result['is_novel']}")
         print(f"Data Summary: {analysis_result['data_summary']}")
 
-        if analysis_result['novelty_scores']:
+        if analysis_result["novelty_scores"]:
             print("\nAlgorithm Scores:")
-            for algo, score_info in analysis_result['novelty_scores'].items():
+            for algo, score_info in analysis_result["novelty_scores"].items():
                 print(f"{algo}: {score_info['score']:.3f}")
 
     except Exception as e:
@@ -155,35 +166,35 @@ async def prompt_ranking_example():
     # Create sample prompts
     sample_prompts = [
         {
-            'id': 'myth_1',
-            'content': 'Explore the mythological significance of mountains in ancient cultures',
-            'domain': 'mythology',
-            'metadata': {'complexity': 'high', 'scope': 'cultural'}
+            "id": "myth_1",
+            "content": "Explore the mythological significance of mountains in ancient cultures",
+            "domain": "mythology",
+            "metadata": {"complexity": "high", "scope": "cultural"},
         },
         {
-            'id': 'geo_1',
-            'content': 'Describe how the geography of a region shapes its cultural development',
-            'domain': 'geography',
-            'metadata': {'complexity': 'medium', 'scope': 'regional'}
+            "id": "geo_1",
+            "content": "Describe how the geography of a region shapes its cultural development",
+            "domain": "geography",
+            "metadata": {"complexity": "medium", "scope": "regional"},
         },
         {
-            'id': 'narr_1',
-            'content': 'Create a narrative that bridges ancient myths with modern technology',
-            'domain': 'narrative',
-            'metadata': {'complexity': 'high', 'scope': 'global'}
+            "id": "narr_1",
+            "content": "Create a narrative that bridges ancient myths with modern technology",
+            "domain": "narrative",
+            "metadata": {"complexity": "high", "scope": "global"},
         },
         {
-            'id': 'myth_2',
-            'content': 'Investigate the role of water in creation myths across different civilizations',
-            'domain': 'mythology',
-            'metadata': {'complexity': 'medium', 'scope': 'comparative'}
+            "id": "myth_2",
+            "content": "Investigate the role of water in creation myths across different civilizations",
+            "domain": "mythology",
+            "metadata": {"complexity": "medium", "scope": "comparative"},
         },
         {
-            'id': 'cult_1',
-            'content': 'Examine how traditional rituals have evolved in contemporary society',
-            'domain': 'cultural',
-            'metadata': {'complexity': 'medium', 'scope': 'temporal'}
-        }
+            "id": "cult_1",
+            "content": "Examine how traditional rituals have evolved in contemporary society",
+            "domain": "cultural",
+            "metadata": {"complexity": "medium", "scope": "temporal"},
+        },
     ]
 
     # Create prompt ranker
@@ -216,21 +227,21 @@ async def collaborative_session_example():
     print("Setting up collaborative inspiration session...")
 
     session_config = {
-        'topic': 'Ancient Civilizations and Modern Technology',
-        'participants': ['mythology_agent', 'geography_agent', 'narrative_agent'],
-        'duration_minutes': 30,
-        'objectives': [
-            'Identify connections between ancient myths and modern technology',
-            'Generate creative prompts for interdisciplinary exploration',
-            'Share novel insights across domains'
-        ]
+        "topic": "Ancient Civilizations and Modern Technology",
+        "participants": ["mythology_agent", "geography_agent", "narrative_agent"],
+        "duration_minutes": 30,
+        "objectives": [
+            "Identify connections between ancient myths and modern technology",
+            "Generate creative prompts for interdisciplinary exploration",
+            "Share novel insights across domains",
+        ],
     }
 
     print(f"Session Topic: {session_config['topic']}")
     print(f"Participants: {', '.join(session_config['participants'])}")
     print(f"Duration: {session_config['duration_minutes']} minutes")
     print("Objectives:")
-    for i, obj in enumerate(session_config['objectives'], 1):
+    for i, obj in enumerate(session_config["objectives"], 1):
         print(f"  {i}. {obj}")
 
     print("\nNote: This is a mock example. In a real implementation,")

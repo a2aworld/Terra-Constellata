@@ -10,6 +10,7 @@ from loguru import logger
 # Project root
 PROJECT_ROOT = Path(__file__).parent
 
+
 def setup_logging(log_level: str = "INFO", log_to_file: bool = True):
     """Configure logging for the entire application."""
 
@@ -23,7 +24,7 @@ def setup_logging(log_level: str = "INFO", log_to_file: bool = True):
         level=log_level,
         colorize=True,
         backtrace=True,
-        diagnose=True
+        diagnose=True,
     )
 
     # File handler with JSON format for production
@@ -38,7 +39,7 @@ def setup_logging(log_level: str = "INFO", log_to_file: bool = True):
             rotation="10 MB",
             retention="30 days",
             encoding="utf-8",
-            serialize=False  # Set to True for JSON serialization
+            serialize=False,  # Set to True for JSON serialization
         )
 
         # Separate error log
@@ -51,7 +52,7 @@ def setup_logging(log_level: str = "INFO", log_to_file: bool = True):
             retention="30 days",
             encoding="utf-8",
             backtrace=True,
-            diagnose=True
+            diagnose=True,
         )
 
     # Add custom log levels for business logic
@@ -60,52 +61,52 @@ def setup_logging(log_level: str = "INFO", log_to_file: bool = True):
 
     return logger
 
+
 # Global logger instance
 app_logger = setup_logging()
+
 
 def get_logger(name: str):
     """Get a logger instance for a specific module."""
     return logger.bind(module=name)
 
+
 # Structured logging helpers
 def log_request(request_id: str, method: str, path: str, user_id: str = None):
     """Log API request with structured data."""
-    logger.bind(
-        request_id=request_id,
-        method=method,
-        path=path,
-        user_id=user_id
-    ).info("API Request")
+    logger.bind(request_id=request_id, method=method, path=path, user_id=user_id).info(
+        "API Request"
+    )
+
 
 def log_response(request_id: str, status_code: int, response_time: float):
     """Log API response with structured data."""
     logger.bind(
-        request_id=request_id,
-        status_code=status_code,
-        response_time=response_time
+        request_id=request_id, status_code=status_code, response_time=response_time
     ).info("API Response")
 
-def log_error(error_type: str, error_message: str, traceback: str = None, user_id: str = None):
+
+def log_error(
+    error_type: str, error_message: str, traceback: str = None, user_id: str = None
+):
     """Log error with structured data."""
     logger.bind(
         error_type=error_type,
         error_message=error_message,
         traceback=traceback,
-        user_id=user_id
+        user_id=user_id,
     ).error("Application Error")
+
 
 def log_business_event(event_type: str, event_data: dict, user_id: str = None):
     """Log business event with structured data."""
-    logger.bind(
-        event_type=event_type,
-        event_data=event_data,
-        user_id=user_id
-    ).log("BUSINESS", f"Business Event: {event_type}")
+    logger.bind(event_type=event_type, event_data=event_data, user_id=user_id).log(
+        "BUSINESS", f"Business Event: {event_type}"
+    )
+
 
 def log_metrics(metric_name: str, metric_value: float, tags: dict = None):
     """Log metrics with structured data."""
     logger.bind(
-        metric_name=metric_name,
-        metric_value=metric_value,
-        tags=tags or {}
+        metric_name=metric_name, metric_value=metric_value, tags=tags or {}
     ).log("METRICS", f"Metric: {metric_name} = {metric_value}")

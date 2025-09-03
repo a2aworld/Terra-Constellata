@@ -1,20 +1,20 @@
-# Core dependencies
+# Core dependencies # >=0.1.17 and # ==0.0.92 and # ==0.4.18
 langchain>=0.1.0
 langchain-community>=0.0.13
-langchain-core>=0.1.17
+langchain-core 
 langchain-openai>=0.0.8
 langgraph==0.0.40
-langsmith==0.0.92
-chromadb==0.4.18
+langsmith  
+chromadb  
 
-# Open-source LLMs
-transformers==4.35.0
-accelerate==0.24.0
+# Open-source LLMs  # ==4.35.0 and # ==0.24.0
+transformers  
+accelerate  
 bitsandbytes==0.41.0
 torch==2.6.0
 
-# Agent tools and utilities
-faiss-cpu==1.9.0.post1
+# Agent tools and utilities # ==1.9.0.post1
+faiss-cpu  
 sentence-transformers==2.2.2
 wikipedia==1.4.0
 duckduckgo-search==4.1.0
@@ -70,7 +70,11 @@ prometheus-client==0.19.0
 # Error tracking
 sentry-sdk==1.40.0
 
+<<<<<<< HEAD
 # Reinforcement Learning
+=======
+# Reinforcement Learning # ==2.0.0 # ==0.29.0
+>>>>>>> 4799dd36ffeb0a5203e9e41e54b284a39b16cc40
 ray[rllib]==2.6.0
 optuna==3.3.0
 

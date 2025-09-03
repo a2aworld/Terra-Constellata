@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="Lore Weaver Chatbot API",
     description="RAG-based chatbot for geomythological storytelling",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # Add CORS middleware
@@ -44,34 +44,45 @@ app.add_middleware(
 # Global RAG instance
 rag_instance: Optional[LoreWeaverRAG] = None
 
+
 # Pydantic models
 class QueryRequest(BaseModel):
     """Request model for chat queries."""
+
     question: str = Field(..., description="User's question or query")
     max_results: int = Field(5, description="Maximum number of results to retrieve")
 
+
 class QueryResponse(BaseModel):
     """Response model for chat queries."""
+
     answer: str = Field(..., description="Generated narrative response")
-    needs_clarification: bool = Field(..., description="Whether clarification is needed")
+    needs_clarification: bool = Field(
+        ..., description="Whether clarification is needed"
+    )
     source_documents: list = Field(..., description="Source documents used")
     metadata: Dict[str, Any] = Field(..., description="Response metadata")
     timestamp: datetime = Field(default_factory=datetime.now)
 
+
 class FeedbackRequest(BaseModel):
     """Request model for user feedback."""
+
     query: str = Field(..., description="Original query")
     response: str = Field(..., description="System response")
     rating: int = Field(..., ge=1, le=5, description="User rating (1-5)")
     feedback: Optional[str] = Field(None, description="Optional text feedback")
 
+
 class StatsResponse(BaseModel):
     """Response model for system statistics."""
+
     vector_store_stats: Dict[str, Any]
     model_info: str
     temperature: float
     langsmith_enabled: bool
     uptime: str
+
 
 # Startup and shutdown events
 @app.on_event("startup")
@@ -87,7 +98,7 @@ async def startup_event():
             openai_api_key=os.getenv("OPENAI_API_KEY"),
             model_name=os.getenv("OPENAI_MODEL", "gpt-3.5-turbo"),
             temperature=float(os.getenv("MODEL_TEMPERATURE", "0.7")),
-            use_langsmith=os.getenv("USE_LANGSMITH", "true").lower() == "true"
+            use_langsmith=os.getenv("USE_LANGSMITH", "true").lower() == "true",
         )
 
         # Load data into vector store
@@ -104,10 +115,12 @@ async def startup_event():
         logger.error(f"Failed to initialize RAG system: {e}")
         raise
 
+
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown."""
     logger.info("Shutting down Lore Weaver backend")
+
 
 # API endpoints
 @app.get("/")
@@ -116,8 +129,9 @@ async def root():
     return {
         "message": "Welcome to Lore Weaver Chatbot API",
         "version": "1.0.0",
-        "status": "running"
+        "status": "running",
     }
+
 
 @app.get("/health")
 async def health_check():
@@ -125,11 +139,8 @@ async def health_check():
     if rag_instance is None:
         raise HTTPException(status_code=503, detail="RAG system not initialized")
 
-    return {
-        "status": "healthy",
-        "rag_initialized": True,
-        "timestamp": datetime.now()
-    }
+    return {"status": "healthy", "rag_initialized": True, "timestamp": datetime.now()}
+
 
 @app.post("/chat", response_model=QueryResponse)
 async def chat_query(request: QueryRequest):
@@ -152,14 +163,17 @@ async def chat_query(request: QueryRequest):
         result = rag_instance.query(request.question, k=request.max_results)
 
         # Add timestamp
-        result['timestamp'] = datetime.now()
+        result["timestamp"] = datetime.now()
 
         logger.info("Query processed successfully")
         return QueryResponse(**result)
 
     except Exception as e:
         logger.error(f"Error processing query: {e}")
-        raise HTTPException(status_code=500, detail=f"Query processing failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Query processing failed: {str(e)}"
+        )
+
 
 @app.post("/feedback")
 async def submit_feedback(request: FeedbackRequest, background_tasks: BackgroundTasks):
@@ -180,17 +194,20 @@ async def submit_feedback(request: FeedbackRequest, background_tasks: Background
             request.query,
             request.response,
             request.rating,
-            request.feedback
+            request.feedback,
         )
 
         return {
             "message": "Feedback submitted successfully",
-            "timestamp": datetime.now()
+            "timestamp": datetime.now(),
         }
 
     except Exception as e:
         logger.error(f"Error submitting feedback: {e}")
-        raise HTTPException(status_code=500, detail=f"Feedback submission failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Feedback submission failed: {str(e)}"
+        )
+
 
 @app.get("/stats", response_model=StatsResponse)
 async def get_stats():
@@ -202,16 +219,17 @@ async def get_stats():
         stats = rag_instance.get_stats()
 
         return StatsResponse(
-            vector_store_stats=stats['vector_store'],
-            model_info=stats['model'],
-            temperature=stats['temperature'],
-            langsmith_enabled=stats['langsmith_enabled'],
-            uptime="System uptime tracking not implemented"  # Could be enhanced
+            vector_store_stats=stats["vector_store"],
+            model_info=stats["model"],
+            temperature=stats["temperature"],
+            langsmith_enabled=stats["langsmith_enabled"],
+            uptime="System uptime tracking not implemented",  # Could be enhanced
         )
 
     except Exception as e:
         logger.error(f"Error getting stats: {e}")
         raise HTTPException(status_code=500, detail=f"Stats retrieval failed: {str(e)}")
+
 
 @app.post("/reload-data")
 async def reload_data(background_tasks: BackgroundTasks):
@@ -223,44 +241,30 @@ async def reload_data(background_tasks: BackgroundTasks):
         # Reload data in background
         background_tasks.add_task(rag_instance.load_data)
 
-        return {
-            "message": "Data reload initiated",
-            "timestamp": datetime.now()
-        }
+        return {"message": "Data reload initiated", "timestamp": datetime.now()}
 
     except Exception as e:
         logger.error(f"Error initiating data reload: {e}")
         raise HTTPException(status_code=500, detail=f"Data reload failed: {str(e)}")
 
+
 # Error handlers
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc):
     """Handle HTTP exceptions."""
-    return {
-        "error": True,
-        "message": exc.detail,
-        "status_code": exc.status_code
-    }
+    return {"error": True, "message": exc.detail, "status_code": exc.status_code}
+
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request, exc):
     """Handle general exceptions."""
     logger.error(f"Unhandled exception: {exc}")
-    return {
-        "error": True,
-        "message": "Internal server error",
-        "status_code": 500
-    }
+    return {"error": True, "message": "Internal server error", "status_code": 500}
+
 
 if __name__ == "__main__":
     # Run the server
     port = int(os.getenv("PORT", 8000))
     host = os.getenv("HOST", "0.0.0.0")
 
-    uvicorn.run(
-        "backend:app",
-        host=host,
-        port=port,
-        reload=True,
-        log_level="info"
-    )
+    uvicorn.run("backend:app", host=host, port=port, reload=True, log_level="info")

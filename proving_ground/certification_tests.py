@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 class TestStatus(Enum):
     """Status of a certification test"""
+
     PENDING = "pending"
     RUNNING = "running"
     PASSED = "passed"
@@ -35,7 +36,7 @@ class CertificationTest:
         description: str,
         test_function: Callable,
         required_score: float = 0.8,
-        timeout: int = 30
+        timeout: int = 30,
     ):
         self.test_id = test_id
         self.name = name
@@ -66,16 +67,15 @@ class CertificationTest:
         try:
             # Run test with timeout
             result = await asyncio.wait_for(
-                self.test_function(agent_context),
-                timeout=self.timeout
+                self.test_function(agent_context), timeout=self.timeout
             )
 
             self.end_time = datetime.utcnow()
             self.result = result
 
             # Evaluate result
-            if isinstance(result, dict) and 'score' in result:
-                self.score = result['score']
+            if isinstance(result, dict) and "score" in result:
+                self.score = result["score"]
             elif isinstance(result, bool):
                 self.score = 1.0 if result else 0.0
             else:
@@ -110,7 +110,9 @@ class CertificationTest:
             "error_message": self.error_message,
             "start_time": self.start_time.isoformat() if self.start_time else None,
             "end_time": self.end_time.isoformat() if self.end_time else None,
-            "duration": (self.end_time - self.start_time).total_seconds() if self.start_time and self.end_time else None
+            "duration": (self.end_time - self.start_time).total_seconds()
+            if self.start_time and self.end_time
+            else None,
         }
 
 
@@ -171,9 +173,11 @@ class CertificationTestSuite:
             "passed_tests": self.passed_tests,
             "failed_tests": self.total_tests - self.passed_tests,
             "overall_score": self.overall_score,
-            "pass_rate": self.passed_tests / self.total_tests if self.total_tests > 0 else 0.0,
+            "pass_rate": self.passed_tests / self.total_tests
+            if self.total_tests > 0
+            else 0.0,
             "results": results,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.utcnow().isoformat(),
         }
 
         logger.info(f"Test suite completed. Pass rate: {summary['pass_rate']:.2%}")
@@ -185,7 +189,9 @@ class CertificationTestSuite:
 
     def get_failed_tests(self) -> List[CertificationTest]:
         """Get list of failed tests"""
-        return [test for test in self.tests.values() if test.status == TestStatus.FAILED]
+        return [
+            test for test in self.tests.values() if test.status == TestStatus.FAILED
+        ]
 
     def reset_tests(self):
         """Reset all tests to pending status"""
@@ -200,6 +206,7 @@ class CertificationTestSuite:
 
 # Predefined test functions
 
+
 async def test_a2a_communication(agent_context: Dict[str, Any]) -> Dict[str, Any]:
     """
     Test A2A protocol communication capabilities.
@@ -211,7 +218,7 @@ async def test_a2a_communication(agent_context: Dict[str, Any]) -> Dict[str, Any
         Test result with score
     """
     try:
-        a2a_client = agent_context.get('a2a_client')
+        a2a_client = agent_context.get("a2a_client")
         if not a2a_client:
             return {"score": 0.0, "error": "No A2A client available"}
 
@@ -246,7 +253,7 @@ async def test_task_processing(agent_context: Dict[str, Any]) -> Dict[str, Any]:
         Test result with score
     """
     try:
-        agent = agent_context.get('agent')
+        agent = agent_context.get("agent")
         if not agent:
             return {"score": 0.0, "error": "No agent available"}
 
@@ -275,9 +282,9 @@ async def test_security_compliance(agent_context: Dict[str, Any]) -> Dict[str, A
     """
     try:
         # Check for required security features
-        security_features = agent_context.get('security_features', [])
+        security_features = agent_context.get("security_features", [])
 
-        required_features = ['encryption', 'authentication', 'authorization']
+        required_features = ["encryption", "authentication", "authorization"]
         implemented_features = 0
 
         for feature in required_features:
@@ -289,7 +296,7 @@ async def test_security_compliance(agent_context: Dict[str, Any]) -> Dict[str, A
         return {
             "score": score,
             "implemented_features": implemented_features,
-            "total_features": len(required_features)
+            "total_features": len(required_features),
         }
 
     except Exception as e:
@@ -301,33 +308,39 @@ def create_default_test_suite() -> CertificationTestSuite:
     """Create a default certification test suite"""
     suite = CertificationTestSuite(
         "Terra Constellata Agent Certification",
-        "Comprehensive certification tests for Terra Constellata agents"
+        "Comprehensive certification tests for Terra Constellata agents",
     )
 
     # Add predefined tests
-    suite.add_test(CertificationTest(
-        "a2a_communication",
-        "A2A Protocol Communication",
-        "Test ability to communicate via A2A protocol",
-        test_a2a_communication,
-        required_score=0.8
-    ))
+    suite.add_test(
+        CertificationTest(
+            "a2a_communication",
+            "A2A Protocol Communication",
+            "Test ability to communicate via A2A protocol",
+            test_a2a_communication,
+            required_score=0.8,
+        )
+    )
 
-    suite.add_test(CertificationTest(
-        "task_processing",
-        "Task Processing",
-        "Test ability to process tasks autonomously",
-        test_task_processing,
-        required_score=0.9
-    ))
+    suite.add_test(
+        CertificationTest(
+            "task_processing",
+            "Task Processing",
+            "Test ability to process tasks autonomously",
+            test_task_processing,
+            required_score=0.9,
+        )
+    )
 
-    suite.add_test(CertificationTest(
-        "security_compliance",
-        "Security Compliance",
-        "Test security features and compliance",
-        test_security_compliance,
-        required_score=0.7
-    ))
+    suite.add_test(
+        CertificationTest(
+            "security_compliance",
+            "Security Compliance",
+            "Test security features and compliance",
+            test_security_compliance,
+            required_score=0.7,
+        )
+    )
 
     return suite
 

@@ -19,5 +19,5 @@ __all__ = [
     "KnowledgeBase",
     "ChapterGenerator",
     "AttributionTracker",
-    "CodexManager"
+    "CodexManager",
 ]

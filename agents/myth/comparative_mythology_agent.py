@@ -48,20 +48,20 @@ class MythComparisonTool(BaseTool):
                 "norse": ["Yggdrasil", "Odin", "Nine Worlds"],
                 "greek": ["Chaos", "Gaia", "Uranus", "Cronus"],
                 "hindu": ["Brahma", "Vishnu", "Shiva", "Maya"],
-                "egyptian": ["Ra", "Atum", "Nun", "Benben"]
+                "egyptian": ["Ra", "Atum", "Nun", "Benben"],
             },
             "hero_journeys": {
                 "greek": ["Odysseus", "Jason", "Heracles"],
                 "nordic": ["Thor", "Loki", "Baldur"],
                 "celtic": ["Cuchulainn", "Finn MacCool"],
-                "native_american": ["Coyote", "Raven", "Trickster"]
+                "native_american": ["Coyote", "Raven", "Trickster"],
             },
             "flood_myths": {
                 "mesopotamian": ["Gilgamesh", "Utnapishtim"],
                 "biblical": ["Noah", "Ark"],
                 "hindu": ["Matsya", "Vishnu"],
-                "mayan": ["Popol Vuh", "Hunahpu"]
-            }
+                "mayan": ["Popol Vuh", "Hunahpu"],
+            },
         }
 
     def _run(self, comparison_query: str) -> str:
@@ -78,7 +78,10 @@ class MythComparisonTool(BaseTool):
             # Parse the query to determine comparison type
             if "creation" in comparison_query.lower():
                 return self._compare_creation_myths()
-            elif "hero" in comparison_query.lower() or "journey" in comparison_query.lower():
+            elif (
+                "hero" in comparison_query.lower()
+                or "journey" in comparison_query.lower()
+            ):
                 return self._compare_hero_journeys()
             elif "flood" in comparison_query.lower():
                 return self._compare_flood_myths()
@@ -163,7 +166,7 @@ class MythComparisonTool(BaseTool):
             "The Destroyer": "Clears way for new beginnings",
             "The Mother Goddess": "Nurtures and protects life",
             "The Shadow": "Represents repressed aspects",
-            "The Anima/Animus": "Represents opposite gender qualities"
+            "The Anima/Animus": "Represents opposite gender qualities",
         }
 
         results = ["=== MYTHOLOGICAL ARCHETYPES ==="]
@@ -202,14 +205,14 @@ class CulturalContextTool(BaseTool):
                 "ancient": ["Mesopotamia", "Egypt", "Indus Valley"],
                 "classical": ["Greece", "Rome", "China"],
                 "medieval": ["Europe", "Islamic Golden Age"],
-                "modern": ["Contemporary adaptations"]
+                "modern": ["Contemporary adaptations"],
             },
             "cultural_themes": {
                 "agricultural": ["Fertility", "Seasons", "Harvest"],
                 "warrior": ["Combat", "Honor", "Sacrifice"],
                 "spiritual": ["Enlightenment", "Afterlife", "Divine"],
-                "social": ["Hierarchy", "Community", "Justice"]
-            }
+                "social": ["Hierarchy", "Community", "Justice"],
+            },
         }
 
     def _run(self, context_query: str) -> str:
@@ -253,7 +256,7 @@ class CulturalContextTool(BaseTool):
             "Fire": "Transformation, destruction, passion",
             "Tree": "Life, wisdom, connection",
             "Mountain": "Divine, challenge, stability",
-            "Animal": "Instinct, totem, transformation"
+            "Animal": "Instinct, totem, transformation",
         }
 
         results = ["=== SYMBOLIC MEANINGS ==="]
@@ -287,10 +290,7 @@ class ComparativeMythologyAgent(BaseSpecialistAgent):
         ]
 
         super().__init__(
-            name="ComparativeMythologyAgent",
-            llm=llm,
-            tools=tools,
-            **kwargs
+            name="ComparativeMythologyAgent", llm=llm, tools=tools, **kwargs
         )
 
         # Agent-specific attributes
@@ -328,21 +328,17 @@ class ComparativeMythologyAgent(BaseSpecialistAgent):
 
         prompt = PromptTemplate(
             input_variables=["input", "tools", "chat_history", "agent_scratchpad"],
-            template=template
+            template=template,
         )
 
-        agent = create_react_agent(
-            llm=self.llm,
-            tools=self.tools,
-            prompt=prompt
-        )
+        agent = create_react_agent(llm=self.llm, tools=self.tools, prompt=prompt)
 
         return AgentExecutor.from_agent_and_tools(
             agent=agent,
             tools=self.tools,
             memory=self.memory,
             verbose=True,
-            handle_parsing_errors=True
+            handle_parsing_errors=True,
         )
 
     async def process_task(self, task: str, **kwargs) -> Any:
@@ -361,18 +357,18 @@ class ComparativeMythologyAgent(BaseSpecialistAgent):
 
             # Execute the comparison
             result = await asyncio.get_event_loop().run_in_executor(
-                None,
-                self.agent_executor.run,
-                task
+                None, self.agent_executor.run, task
             )
 
             # Store in comparison history
-            self.comparison_history.append({
-                "task": task,
-                "result": result,
-                "timestamp": datetime.utcnow(),
-                "kwargs": kwargs
-            })
+            self.comparison_history.append(
+                {
+                    "task": task,
+                    "result": result,
+                    "timestamp": datetime.utcnow(),
+                    "kwargs": kwargs,
+                }
+            )
 
             # Extract and store patterns
             self._extract_patterns(task, result)
@@ -391,7 +387,9 @@ class ComparativeMythologyAgent(BaseSpecialistAgent):
         elif "cultural" in task.lower():
             self.cultural_mappings[task] = result
 
-    async def compare_myths(self, myth_type: str, cultures: List[str]) -> Dict[str, Any]:
+    async def compare_myths(
+        self, myth_type: str, cultures: List[str]
+    ) -> Dict[str, Any]:
         """
         Compare specific myths across cultures.
 
@@ -412,7 +410,7 @@ class ComparativeMythologyAgent(BaseSpecialistAgent):
             "myth_type": myth_type,
             "cultures": cultures,
             "comparison": result,
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.utcnow(),
         }
 
     async def analyze_archetypes(self, archetype: str) -> Dict[str, Any]:
@@ -434,7 +432,7 @@ class ComparativeMythologyAgent(BaseSpecialistAgent):
         return {
             "archetype": archetype,
             "analysis": result,
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.utcnow(),
         }
 
     async def _autonomous_loop(self):
@@ -464,7 +462,9 @@ class ComparativeMythologyAgent(BaseSpecialistAgent):
     async def _perform_periodic_comparisons(self):
         """Perform periodic mythological comparisons."""
         # Example: Compare creation myths
-        comparison_result = await self.compare_myths("creation", ["greek", "nordic", "hindu"])
+        comparison_result = await self.compare_myths(
+            "creation", ["greek", "nordic", "hindu"]
+        )
 
         # Share insights if significant patterns found
         if "pattern" in comparison_result.get("comparison", "").lower():

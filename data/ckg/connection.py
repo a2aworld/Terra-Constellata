@@ -1,6 +1,9 @@
 from arango import ArangoClient
 
-def get_db_connection(host='http://localhost:8529', username='root', password='', database='ckg_db'):
+
+def get_db_connection(
+    host="http://localhost:8529", username="root", password="", database="ckg_db"
+):
     """
     Establishes a connection to the ArangoDB database.
     Creates the database if it doesn't exist.
@@ -20,7 +23,10 @@ def get_db_connection(host='http://localhost:8529', username='root', password=''
     try:
         client.db(database, username=username, password=password)
     except:
-        client.create_database(database, users=[{'username': username, 'password': password, 'active': True}])
+        client.create_database(
+            database,
+            users=[{"username": username, "password": password, "active": True}],
+        )
 
     db = client.db(database, username=username, password=password)
     return db

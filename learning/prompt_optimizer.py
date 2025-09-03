@@ -24,8 +24,9 @@ logger = logging.getLogger(__name__)
 class PromptTemplate:
     """Represents an optimizable prompt template."""
 
-    def __init__(self, template_id: str, base_template: str,
-                 variables: List[str], domain: str):
+    def __init__(
+        self, template_id: str, base_template: str, variables: List[str], domain: str
+    ):
         """
         Initialize a prompt template.
 
@@ -51,17 +52,22 @@ class PromptTemplate:
             logger.warning(f"Missing variable in template {self.template_id}: {e}")
             return self.base_template
 
-    def add_performance_data(self, performance_score: float,
-                           feedback_score: Optional[float] = None,
-                           usage_context: Optional[Dict[str, Any]] = None):
+    def add_performance_data(
+        self,
+        performance_score: float,
+        feedback_score: Optional[float] = None,
+        usage_context: Optional[Dict[str, Any]] = None,
+    ):
         """Add performance data for this template."""
-        self.performance_history.append({
-            'timestamp': datetime.utcnow(),
-            'performance_score': performance_score,
-            'feedback_score': feedback_score,
-            'usage_context': usage_context or {},
-            'version': self.version
-        })
+        self.performance_history.append(
+            {
+                "timestamp": datetime.utcnow(),
+                "performance_score": performance_score,
+                "feedback_score": feedback_score,
+                "usage_context": usage_context or {},
+                "version": self.version,
+            }
+        )
 
     def get_average_performance(self, last_n: Optional[int] = None) -> float:
         """Get average performance score."""
@@ -72,7 +78,11 @@ class PromptTemplate:
         if not history:
             return 0.5  # Default neutral score
 
-        scores = [h['performance_score'] for h in history if h['performance_score'] is not None]
+        scores = [
+            h["performance_score"]
+            for h in history
+            if h["performance_score"] is not None
+        ]
         return sum(scores) / len(scores) if scores else 0.5
 
     def optimize_template(self, optimization_data: Dict[str, Any]):
@@ -85,7 +95,9 @@ class PromptTemplate:
 class PromptPerformanceData:
     """Tracks performance data for prompts."""
 
-    def __init__(self, prompt_id: str, prompt_text: str, template_id: Optional[str] = None):
+    def __init__(
+        self, prompt_id: str, prompt_text: str, template_id: Optional[str] = None
+    ):
         self.prompt_id = prompt_id
         self.prompt_text = prompt_text
         self.template_id = template_id
@@ -98,8 +110,12 @@ class PromptPerformanceData:
         self.last_used = None
         self.performance_trends: List[Dict[str, Any]] = []
 
-    def record_usage(self, success: bool, response_time: Optional[float] = None,
-                    feedback_score: Optional[float] = None):
+    def record_usage(
+        self,
+        success: bool,
+        response_time: Optional[float] = None,
+        feedback_score: Optional[float] = None,
+    ):
         """Record a usage instance."""
         self.usage_count += 1
         self.last_used = datetime.utcnow()
@@ -109,19 +125,23 @@ class PromptPerformanceData:
 
         if response_time is not None:
             # Update rolling average
-            self.avg_response_time = ((self.avg_response_time * (self.usage_count - 1)) + response_time) / self.usage_count
+            self.avg_response_time = (
+                (self.avg_response_time * (self.usage_count - 1)) + response_time
+            ) / self.usage_count
 
         if feedback_score is not None:
             self.feedback_count += 1
             self.total_feedback_score += feedback_score
 
         # Record trend data
-        self.performance_trends.append({
-            'timestamp': datetime.utcnow(),
-            'success': success,
-            'response_time': response_time,
-            'feedback_score': feedback_score
-        })
+        self.performance_trends.append(
+            {
+                "timestamp": datetime.utcnow(),
+                "success": success,
+                "response_time": response_time,
+                "feedback_score": feedback_score,
+            }
+        )
 
     def get_success_rate(self) -> float:
         """Get success rate."""
@@ -129,7 +149,11 @@ class PromptPerformanceData:
 
     def get_avg_feedback_score(self) -> Optional[float]:
         """Get average feedback score."""
-        return self.total_feedback_score / self.feedback_count if self.feedback_count > 0 else None
+        return (
+            self.total_feedback_score / self.feedback_count
+            if self.feedback_count > 0
+            else None
+        )
 
     def get_performance_score(self) -> float:
         """Calculate overall performance score."""
@@ -141,18 +165,25 @@ class PromptPerformanceData:
         feedback_score = self.get_avg_feedback_score() or 0.5
 
         # Time efficiency score (lower time is better, max expected time = 60 seconds)
-        time_score = max(0, 1.0 - (self.avg_response_time / 60.0)) if self.avg_response_time > 0 else 0.5
+        time_score = (
+            max(0, 1.0 - (self.avg_response_time / 60.0))
+            if self.avg_response_time > 0
+            else 0.5
+        )
 
-        return (success_score * success_weight +
-                feedback_score * feedback_weight +
-                time_score * time_weight)
+        return (
+            success_score * success_weight
+            + feedback_score * feedback_weight
+            + time_score * time_weight
+        )
 
 
 class PromptOptimizer:
     """Main system for optimizing prompts using learning data."""
 
-    def __init__(self, feedback_collector: FeedbackCollector,
-                 pattern_analyzer: PatternAnalyzer):
+    def __init__(
+        self, feedback_collector: FeedbackCollector, pattern_analyzer: PatternAnalyzer
+    ):
         """
         Initialize the prompt optimizer.
 
@@ -175,8 +206,8 @@ class PromptOptimizer:
     def _initialize_default_templates(self):
         """Initialize default prompt templates."""
         default_templates = {
-            'creative_inspiration': {
-                'template': """
+            "creative_inspiration": {
+                "template": """
 You are a creative inspiration specialist. Your task is to generate novel and insightful ideas for: {topic}
 
 Context: {context}
@@ -191,12 +222,18 @@ Please provide {num_ideas} creative ideas that are:
 
 Focus on {focus_area} aspects particularly.
 """,
-                'variables': ['topic', 'context', 'domain', 'style', 'num_ideas', 'focus_area'],
-                'domain': 'creativity'
+                "variables": [
+                    "topic",
+                    "context",
+                    "domain",
+                    "style",
+                    "num_ideas",
+                    "focus_area",
+                ],
+                "domain": "creativity",
             },
-
-            'agent_coordination': {
-                'template': """
+            "agent_coordination": {
+                "template": """
 You are coordinating multiple AI agents for the task: {task_description}
 
 Available agents and their capabilities:
@@ -213,12 +250,11 @@ Your goal is to:
 
 Provide a detailed coordination plan with specific agent assignments and success criteria.
 """,
-                'variables': ['task_description', 'agent_capabilities', 'system_state'],
-                'domain': 'coordination'
+                "variables": ["task_description", "agent_capabilities", "system_state"],
+                "domain": "coordination",
             },
-
-            'mythology_analysis': {
-                'template': """
+            "mythology_analysis": {
+                "template": """
 Analyze the mythological significance of: {entity}
 
 Cultural context: {cultural_context}
@@ -234,17 +270,23 @@ Please provide:
 
 Focus on {focus_areas} particularly.
 """,
-                'variables': ['entity', 'cultural_context', 'comparative_elements', 'analysis_depth', 'focus_areas'],
-                'domain': 'mythology'
-            }
+                "variables": [
+                    "entity",
+                    "cultural_context",
+                    "comparative_elements",
+                    "analysis_depth",
+                    "focus_areas",
+                ],
+                "domain": "mythology",
+            },
         }
 
         for template_id, config in default_templates.items():
             template = PromptTemplate(
                 template_id=template_id,
-                base_template=config['template'],
-                variables=config['variables'],
-                domain=config['domain']
+                base_template=config["template"],
+                variables=config["variables"],
+                domain=config["domain"],
             )
             self.templates[template_id] = template
 
@@ -270,22 +312,21 @@ Focus on {focus_areas} particularly.
         # Track this prompt usage
         prompt_id = f"{template_id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
         self.prompt_performance[prompt_id] = PromptPerformanceData(
-            prompt_id=prompt_id,
-            prompt_text=prompt,
-            template_id=template_id
+            prompt_id=prompt_id, prompt_text=prompt, template_id=template_id
         )
 
         return prompt
 
-    def _optimize_template_parameters(self, template: PromptTemplate,
-                                    context: Dict[str, Any]) -> PromptTemplate:
+    def _optimize_template_parameters(
+        self, template: PromptTemplate, context: Dict[str, Any]
+    ) -> PromptTemplate:
         """Optimize template parameters based on context and performance history."""
         # Create a copy of the template for optimization
         optimized = PromptTemplate(
             template_id=f"{template.template_id}_optimized",
             base_template=template.base_template,
             variables=template.variables,
-            domain=template.domain
+            domain=template.domain,
         )
 
         # Apply optimizations based on performance data
@@ -293,18 +334,23 @@ Focus on {focus_areas} particularly.
             # Analyze what parameters work best
             best_performing_contexts = sorted(
                 template.performance_history,
-                key=lambda x: x['performance_score'],
-                reverse=True
-            )[:5]  # Top 5 performances
+                key=lambda x: x["performance_score"],
+                reverse=True,
+            )[
+                :5
+            ]  # Top 5 performances
 
             # Extract common patterns from successful contexts
-            optimization_params = self._extract_optimization_parameters(best_performing_contexts, context)
+            optimization_params = self._extract_optimization_parameters(
+                best_performing_contexts, context
+            )
             optimized.current_parameters = optimization_params
 
         return optimized
 
-    def _extract_optimization_parameters(self, successful_contexts: List[Dict[str, Any]],
-                                       current_context: Dict[str, Any]) -> Dict[str, Any]:
+    def _extract_optimization_parameters(
+        self, successful_contexts: List[Dict[str, Any]], current_context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Extract optimization parameters from successful contexts."""
         # This is a simplified implementation
         # In a real system, this would use more sophisticated analysis
@@ -313,7 +359,7 @@ Focus on {focus_areas} particularly.
 
         # Analyze successful parameter values
         for context_data in successful_contexts:
-            usage_context = context_data.get('usage_context', {})
+            usage_context = context_data.get("usage_context", {})
             for key, value in usage_context.items():
                 if key not in params:
                     params[key] = []
@@ -329,14 +375,19 @@ Focus on {focus_areas} particularly.
                 else:
                     # For categorical, use most common
                     from collections import Counter
+
                     optimized_params[param] = Counter(values).most_common(1)[0][0]
 
         return optimized_params
 
-    def record_prompt_performance(self, prompt_id: str, success: bool,
-                                response_time: Optional[float] = None,
-                                feedback_score: Optional[float] = None,
-                                workflow_id: Optional[str] = None):
+    def record_prompt_performance(
+        self,
+        prompt_id: str,
+        success: bool,
+        response_time: Optional[float] = None,
+        feedback_score: Optional[float] = None,
+        workflow_id: Optional[str] = None,
+    ):
         """Record performance data for a prompt."""
         if prompt_id not in self.prompt_performance:
             logger.warning(f"Prompt not found: {prompt_id}")
@@ -351,12 +402,14 @@ Focus on {focus_areas} particularly.
             template.add_performance_data(
                 performance_score=prompt_data.get_performance_score(),
                 feedback_score=feedback_score,
-                usage_context={'workflow_id': workflow_id}
+                usage_context={"workflow_id": workflow_id},
             )
 
         logger.info(f"Recorded performance for prompt {prompt_id}: success={success}")
 
-    def get_best_template(self, domain: str, context: Optional[Dict[str, Any]] = None) -> Optional[str]:
+    def get_best_template(
+        self, domain: str, context: Optional[Dict[str, Any]] = None
+    ) -> Optional[str]:
         """Get the best performing template for a domain."""
         domain_templates = [t for t in self.templates.values() if t.domain == domain]
 
@@ -376,30 +429,41 @@ Focus on {focus_areas} particularly.
     def analyze_prompt_effectiveness(self) -> Dict[str, Any]:
         """Analyze overall prompt effectiveness."""
         if not self.prompt_performance:
-            return {'error': 'No prompt performance data available'}
+            return {"error": "No prompt performance data available"}
 
         total_prompts = len(self.prompt_performance)
-        successful_prompts = sum(1 for p in self.prompt_performance.values() if p.get_success_rate() > 0.7)
+        successful_prompts = sum(
+            1 for p in self.prompt_performance.values() if p.get_success_rate() > 0.7
+        )
 
-        avg_success_rate = np.mean([p.get_success_rate() for p in self.prompt_performance.values()])
-        avg_feedback_score = np.mean([p.get_avg_feedback_score() or 0.5 for p in self.prompt_performance.values()])
+        avg_success_rate = np.mean(
+            [p.get_success_rate() for p in self.prompt_performance.values()]
+        )
+        avg_feedback_score = np.mean(
+            [
+                p.get_avg_feedback_score() or 0.5
+                for p in self.prompt_performance.values()
+            ]
+        )
 
         # Template performance
         template_performance = {}
         for template_id, template in self.templates.items():
             template_performance[template_id] = {
-                'avg_performance': template.get_average_performance(),
-                'usage_count': len(template.performance_history),
-                'domain': template.domain
+                "avg_performance": template.get_average_performance(),
+                "usage_count": len(template.performance_history),
+                "domain": template.domain,
             }
 
         return {
-            'total_prompts': total_prompts,
-            'successful_prompts': successful_prompts,
-            'success_rate': successful_prompts / total_prompts if total_prompts > 0 else 0,
-            'avg_success_rate': avg_success_rate,
-            'avg_feedback_score': avg_feedback_score,
-            'template_performance': template_performance
+            "total_prompts": total_prompts,
+            "successful_prompts": successful_prompts,
+            "success_rate": successful_prompts / total_prompts
+            if total_prompts > 0
+            else 0,
+            "avg_success_rate": avg_success_rate,
+            "avg_feedback_score": avg_feedback_score,
+            "template_performance": template_performance,
         }
 
     def optimize_prompt_from_feedback(self, workflow_id: str) -> Optional[str]:
@@ -410,8 +474,12 @@ Focus on {focus_areas} particularly.
 
         # Find prompts used in this workflow
         workflow_prompts = [
-            p for p in self.prompt_performance.values()
-            if any(trend.get('workflow_id') == workflow_id for trend in p.performance_trends)
+            p
+            for p in self.prompt_performance.values()
+            if any(
+                trend.get("workflow_id") == workflow_id
+                for trend in p.performance_trends
+            )
         ]
 
         if not workflow_prompts:
@@ -419,19 +487,27 @@ Focus on {focus_areas} particularly.
 
         # Analyze what worked well and what didn't
         successful_prompts = [p for p in workflow_prompts if p.get_success_rate() > 0.7]
-        unsuccessful_prompts = [p for p in workflow_prompts if p.get_success_rate() <= 0.7]
+        unsuccessful_prompts = [
+            p for p in workflow_prompts if p.get_success_rate() <= 0.7
+        ]
 
         if successful_prompts:
             # Extract patterns from successful prompts
-            best_prompt = max(successful_prompts, key=lambda p: p.get_performance_score())
+            best_prompt = max(
+                successful_prompts, key=lambda p: p.get_performance_score()
+            )
 
             # Generate optimization suggestions
-            optimization = self._generate_prompt_optimization(best_prompt.prompt_text, feedback)
+            optimization = self._generate_prompt_optimization(
+                best_prompt.prompt_text, feedback
+            )
             return optimization
 
         return None
 
-    def _generate_prompt_optimization(self, prompt_text: str, feedback: UserFeedback) -> str:
+    def _generate_prompt_optimization(
+        self, prompt_text: str, feedback: UserFeedback
+    ) -> str:
         """Generate prompt optimization suggestions based on feedback."""
         suggestions = []
 
@@ -451,65 +527,74 @@ Focus on {focus_areas} particularly.
         if feedback.feedback_text:
             # Simple keyword analysis for suggestions
             feedback_lower = feedback.feedback_text.lower()
-            if 'unclear' in feedback_lower or 'confusing' in feedback_lower:
+            if "unclear" in feedback_lower or "confusing" in feedback_lower:
                 suggestions.append("Clarify ambiguous terms and requirements")
-            if 'too long' in feedback_lower or 'verbose' in feedback_lower:
+            if "too long" in feedback_lower or "verbose" in feedback_lower:
                 suggestions.append("Shorten and focus the prompt")
-            if 'missing' in feedback_lower:
+            if "missing" in feedback_lower:
                 suggestions.append("Add missing context or requirements")
 
-        return " | ".join(suggestions) if suggestions else "No specific optimizations identified"
+        return (
+            " | ".join(suggestions)
+            if suggestions
+            else "No specific optimizations identified"
+        )
 
     def export_optimization_data(self, filename: str):
         """Export prompt optimization data for analysis."""
         data = {
-            'templates': {
+            "templates": {
                 tid: {
-                    'base_template': t.base_template,
-                    'variables': t.variables,
-                    'domain': t.domain,
-                    'performance_history': t.performance_history,
-                    'avg_performance': t.get_average_performance()
+                    "base_template": t.base_template,
+                    "variables": t.variables,
+                    "domain": t.domain,
+                    "performance_history": t.performance_history,
+                    "avg_performance": t.get_average_performance(),
                 }
                 for tid, t in self.templates.items()
             },
-            'prompt_performance': {
+            "prompt_performance": {
                 pid: {
-                    'prompt_text': p.prompt_text[:200] + '...' if len(p.prompt_text) > 200 else p.prompt_text,
-                    'template_id': p.template_id,
-                    'usage_count': p.usage_count,
-                    'success_rate': p.get_success_rate(),
-                    'avg_feedback_score': p.get_avg_feedback_score(),
-                    'performance_score': p.get_performance_score()
+                    "prompt_text": p.prompt_text[:200] + "..."
+                    if len(p.prompt_text) > 200
+                    else p.prompt_text,
+                    "template_id": p.template_id,
+                    "usage_count": p.usage_count,
+                    "success_rate": p.get_success_rate(),
+                    "avg_feedback_score": p.get_avg_feedback_score(),
+                    "performance_score": p.get_performance_score(),
                 }
                 for pid, p in self.prompt_performance.items()
             },
-            'optimization_history': self.optimization_history,
-            'export_timestamp': datetime.utcnow().isoformat()
+            "optimization_history": self.optimization_history,
+            "export_timestamp": datetime.utcnow().isoformat(),
         }
 
         import os
-        os.makedirs('./optimization_data', exist_ok=True)
+
+        os.makedirs("./optimization_data", exist_ok=True)
         filepath = f"./optimization_data/{filename}.json"
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(data, f, indent=2, default=str)
 
         logger.info(f"Optimization data exported to {filepath}")
 
     def get_optimization_recommendations(self, domain: str) -> Dict[str, Any]:
         """Get optimization recommendations for a domain."""
-        domain_templates = {tid: t for tid, t in self.templates.items() if t.domain == domain}
+        domain_templates = {
+            tid: t for tid, t in self.templates.items() if t.domain == domain
+        }
 
         if not domain_templates:
-            return {'error': f'No templates found for domain: {domain}'}
+            return {"error": f"No templates found for domain: {domain}"}
 
         # Analyze template performance
         recommendations = {
-            'best_template': None,
-            'worst_template': None,
-            'optimization_suggestions': [],
-            'performance_summary': {}
+            "best_template": None,
+            "worst_template": None,
+            "optimization_suggestions": [],
+            "performance_summary": {},
         }
 
         template_performance = {}
@@ -521,24 +606,26 @@ Focus on {focus_areas} particularly.
             best_tid = max(template_performance, key=template_performance.get)
             worst_tid = min(template_performance, key=template_performance.get)
 
-            recommendations['best_template'] = {
-                'id': best_tid,
-                'performance': template_performance[best_tid]
+            recommendations["best_template"] = {
+                "id": best_tid,
+                "performance": template_performance[best_tid],
             }
-            recommendations['worst_template'] = {
-                'id': worst_tid,
-                'performance': template_performance[worst_tid]
+            recommendations["worst_template"] = {
+                "id": worst_tid,
+                "performance": template_performance[worst_tid],
             }
 
-        recommendations['performance_summary'] = template_performance
+        recommendations["performance_summary"] = template_performance
 
         # Generate suggestions
-        if recommendations['best_template'] and recommendations['worst_template']:
-            perf_diff = (recommendations['best_template']['performance'] -
-                        recommendations['worst_template']['performance'])
+        if recommendations["best_template"] and recommendations["worst_template"]:
+            perf_diff = (
+                recommendations["best_template"]["performance"]
+                - recommendations["worst_template"]["performance"]
+            )
 
             if perf_diff > 0.2:
-                recommendations['optimization_suggestions'].append(
+                recommendations["optimization_suggestions"].append(
                     f"Consider using {recommendations['best_template']['id']} instead of {recommendations['worst_template']['id']}"
                 )
 

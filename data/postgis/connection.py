@@ -14,18 +14,21 @@ from typing import Optional, Dict, Any
 
 logger = logging.getLogger(__name__)
 
+
 class PostGISConnection:
     """
     Manages PostgreSQL/PostGIS database connections and operations.
     """
 
-    def __init__(self,
-                 host: str = 'localhost',
-                 port: int = 5432,
-                 database: str = 'terra_constellata',
-                 user: str = 'postgres',
-                 password: str = '',
-                 sslmode: str = 'prefer'):
+    def __init__(
+        self,
+        host: str = "localhost",
+        port: int = 5432,
+        database: str = "terra_constellata",
+        user: str = "postgres",
+        password: str = "",
+        sslmode: str = "prefer",
+    ):
         """
         Initialize database connection parameters.
 
@@ -60,10 +63,12 @@ class PostGISConnection:
                 database=self.database,
                 user=self.user,
                 password=self.password,
-                sslmode=self.sslmode
+                sslmode=self.sslmode,
             )
             self.connection.autocommit = False
-            self.cursor = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            self.cursor = self.connection.cursor(
+                cursor_factory=psycopg2.extras.RealDictCursor
+            )
             logger.info(f"Connected to PostgreSQL database: {self.database}")
             return True
         except psycopg2.Error as e:
@@ -80,7 +85,9 @@ class PostGISConnection:
             self.connection.close()
             logger.info("Database connection closed")
 
-    def execute_query(self, query: str, params: Optional[tuple] = None) -> Optional[list]:
+    def execute_query(
+        self, query: str, params: Optional[tuple] = None
+    ) -> Optional[list]:
         """
         Execute a SELECT query and return results.
 
@@ -133,18 +140,17 @@ class PostGISConnection:
             temp_conn = psycopg2.connect(
                 host=self.host,
                 port=self.port,
-                database='postgres',
+                database="postgres",
                 user=self.user,
                 password=self.password,
-                sslmode=self.sslmode
+                sslmode=self.sslmode,
             )
             temp_conn.autocommit = True
             temp_cursor = temp_conn.cursor()
 
             # Check if database exists
             temp_cursor.execute(
-                "SELECT 1 FROM pg_database WHERE datname = %s",
-                (self.database,)
+                "SELECT 1 FROM pg_database WHERE datname = %s", (self.database,)
             )
 
             if not temp_cursor.fetchone():
@@ -188,7 +194,7 @@ class PostGISConnection:
             self.cursor.execute("SELECT PostGIS_Version();")
             result = self.cursor.fetchone()
             if result:
-                return result['postgis_version']
+                return result["postgis_version"]
             return None
         except psycopg2.Error as e:
             logger.error(f"Failed to check PostGIS version: {e}")
@@ -204,11 +210,13 @@ class PostGISConnection:
         self.disconnect()
 
 
-def get_db_connection(host: str = 'localhost',
-                     port: int = 5432,
-                     database: str = 'terra_constellata',
-                     user: str = 'postgres',
-                     password: str = '') -> PostGISConnection:
+def get_db_connection(
+    host: str = "localhost",
+    port: int = 5432,
+    database: str = "terra_constellata",
+    user: str = "postgres",
+    password: str = "",
+) -> PostGISConnection:
     """
     Get a database connection instance.
 

@@ -14,6 +14,7 @@ import uuid
 
 class A2AMessage(BaseModel):
     """Base class for all A2A messages"""
+
     message_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     sender_agent: str
@@ -22,6 +23,7 @@ class A2AMessage(BaseModel):
 
 class GeospatialAnomalyIdentified(A2AMessage):
     """Message for identifying geospatial anomalies"""
+
     anomaly_type: str
     location: Dict[str, float]  # {"lat": float, "lon": float}
     confidence: float = Field(ge=0.0, le=1.0)
@@ -32,6 +34,7 @@ class GeospatialAnomalyIdentified(A2AMessage):
 
 class InspirationRequest(A2AMessage):
     """Request for creative inspiration"""
+
     context: str
     domain: str  # e.g., "mythology", "geography", "cultural"
     constraints: Optional[List[str]] = None
@@ -40,6 +43,7 @@ class InspirationRequest(A2AMessage):
 
 class CreationFeedback(A2AMessage):
     """Feedback on creative outputs"""
+
     original_request_id: str
     feedback_type: str  # "positive", "negative", "suggestion"
     content: str
@@ -49,6 +53,7 @@ class CreationFeedback(A2AMessage):
 
 class ToolProposal(A2AMessage):
     """Proposal for new tools or capabilities"""
+
     tool_name: str
     description: str
     capabilities: List[str]
@@ -59,6 +64,7 @@ class ToolProposal(A2AMessage):
 
 class NarrativePrompt(A2AMessage):
     """Prompt for narrative generation"""
+
     theme: str
     elements: List[str]
     style: str
@@ -68,6 +74,7 @@ class NarrativePrompt(A2AMessage):
 
 class CertificationRequest(A2AMessage):
     """Request for certification/validation"""
+
     subject: str
     certification_type: str
     evidence: Dict[str, Any]
@@ -78,6 +85,7 @@ class CertificationRequest(A2AMessage):
 # JSON-RPC 2.0 structures
 class JSONRPCRequest(BaseModel):
     """JSON-RPC 2.0 Request"""
+
     jsonrpc: str = "2.0"
     method: str
     params: Union[A2AMessage, Dict[str, Any]]
@@ -86,6 +94,7 @@ class JSONRPCRequest(BaseModel):
 
 class JSONRPCResponse(BaseModel):
     """JSON-RPC 2.0 Response"""
+
     jsonrpc: str = "2.0"
     result: Any
     id: Union[str, int]
@@ -93,6 +102,7 @@ class JSONRPCResponse(BaseModel):
 
 class JSONRPCError(BaseModel):
     """JSON-RPC 2.0 Error"""
+
     code: int
     message: str
     data: Optional[Any] = None
@@ -100,6 +110,7 @@ class JSONRPCError(BaseModel):
 
 class JSONRPCErrorResponse(BaseModel):
     """JSON-RPC 2.0 Error Response"""
+
     jsonrpc: str = "2.0"
     error: JSONRPCError
     id: Union[str, int, None]
@@ -107,6 +118,7 @@ class JSONRPCErrorResponse(BaseModel):
 
 class JSONRPCNotification(BaseModel):
     """JSON-RPC 2.0 Notification (no response expected)"""
+
     jsonrpc: str = "2.0"
     method: str
     params: Union[A2AMessage, Dict[str, Any]]

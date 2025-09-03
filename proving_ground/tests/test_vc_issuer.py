@@ -6,7 +6,12 @@ import unittest
 import json
 from datetime import datetime, timedelta
 
-from ..vc_issuer import VCIssuer, VerifiableCredential, VerifiablePresentation, vc_issuer
+from ..vc_issuer import (
+    VCIssuer,
+    VerifiableCredential,
+    VerifiablePresentation,
+    vc_issuer,
+)
 from ..did_manager import DIDManager
 
 
@@ -26,7 +31,7 @@ class TestVerifiableCredential(unittest.TestCase):
             issuer_did=self.issuer_did,
             subject_did=self.subject_did,
             credential_type=["TestCredential"],
-            claims=claims
+            claims=claims,
         )
 
         self.assertEqual(vc.issuer, self.issuer_did)
@@ -41,7 +46,7 @@ class TestVerifiableCredential(unittest.TestCase):
             issuer_did=self.issuer_did,
             subject_did=self.subject_did,
             credential_type=["TestCredential"],
-            claims=claims
+            claims=claims,
         )
 
         vc_dict = vc.to_dict()
@@ -60,7 +65,7 @@ class TestVerifiableCredential(unittest.TestCase):
             issuer_did=self.issuer_did,
             subject_did=self.subject_did,
             credential_type=["TestCredential"],
-            claims=claims
+            claims=claims,
         )
 
         vc_json = vc.to_json()
@@ -90,14 +95,14 @@ class TestVCIssuer(unittest.TestCase):
             issuer_did=self.issuer_did,
             subject_did=self.subject_did,
             credential_type=["CertificationCredential"],
-            claims=claims
+            claims=claims,
         )
 
         self.assertIsNotNone(vc_jwt)
         self.assertIsInstance(vc_jwt, str)
 
         # Should have 3 parts (header.payload.signature)
-        parts = vc_jwt.split('.')
+        parts = vc_jwt.split(".")
         self.assertEqual(len(parts), 3)
 
     def test_verify_valid_credential(self):
@@ -109,7 +114,7 @@ class TestVCIssuer(unittest.TestCase):
             issuer_did=self.issuer_did,
             subject_did=self.subject_did,
             credential_type=["TestCredential"],
-            claims=claims
+            claims=claims,
         )
 
         # Verify credential
@@ -131,14 +136,15 @@ class TestVCIssuer(unittest.TestCase):
             issuer_did=self.issuer_did,
             subject_did=self.subject_did,
             credential_type=["TestCredential"],
-            claims=claims
+            claims=claims,
         )
 
         # Extract credential ID from JWT
         import base64
-        payload_b64 = vc_jwt.split('.')[1]
-        payload = json.loads(base64.b64decode(payload_b64 + '==').decode())
-        credential_id = payload.get('jti')
+
+        payload_b64 = vc_jwt.split(".")[1]
+        payload = json.loads(base64.b64decode(payload_b64 + "==").decode())
+        credential_id = payload.get("jti")
 
         # Verify before revocation
         is_valid_before = self.vc_issuer.verify_credential(vc_jwt)
@@ -160,13 +166,12 @@ class TestVCIssuer(unittest.TestCase):
             issuer_did=self.issuer_did,
             subject_did=self.subject_did,
             credential_type=["TestCredential"],
-            claims=claims
+            claims=claims,
         )
 
         # Create presentation
         presentation = self.vc_issuer.create_presentation(
-            holder_did=self.subject_did,
-            credentials=[vc_jwt]
+            holder_did=self.subject_did, credentials=[vc_jwt]
         )
 
         self.assertIsNotNone(presentation)
@@ -183,13 +188,12 @@ class TestVCIssuer(unittest.TestCase):
             issuer_did=self.issuer_did,
             subject_did=self.subject_did,
             credential_type=["TestCredential"],
-            claims=claims
+            claims=claims,
         )
 
         # Create presentation
         presentation = self.vc_issuer.create_presentation(
-            holder_did=self.subject_did,
-            credentials=[vc_jwt]
+            holder_did=self.subject_did, credentials=[vc_jwt]
         )
 
         pres_dict = presentation.to_dict()
@@ -209,7 +213,7 @@ class TestVCIssuer(unittest.TestCase):
             issuer_did=self.issuer_did,
             subject_did=self.subject_did,
             credential_type=["TestCredential"],
-            claims=claims
+            claims=claims,
         )
 
         # Get all issued credentials
@@ -225,5 +229,5 @@ class TestVCIssuer(unittest.TestCase):
         self.assertEqual(len(no_credentials), 0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

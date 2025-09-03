@@ -95,6 +95,7 @@ CREATE TABLE IF NOT EXISTS processing_log (
 );
 """
 
+
 def create_puzzle_pieces_table(db: PostGISConnection) -> bool:
     """
     Create the puzzle_pieces table with PostGIS geometry column.
@@ -118,6 +119,7 @@ def create_puzzle_pieces_table(db: PostGISConnection) -> bool:
         logger.error(f"Failed to create puzzle_pieces table: {e}")
         return False
 
+
 def create_data_quality_tables(db: PostGISConnection) -> bool:
     """
     Create data quality and processing log tables.
@@ -140,6 +142,7 @@ def create_data_quality_tables(db: PostGISConnection) -> bool:
     except Exception as e:
         logger.error(f"Failed to create data quality tables: {e}")
         return False
+
 
 def initialize_database(db: PostGISConnection) -> bool:
     """
@@ -176,6 +179,7 @@ def initialize_database(db: PostGISConnection) -> bool:
         logger.error(f"Database initialization failed: {e}")
         return False
 
+
 def drop_tables(db: PostGISConnection) -> bool:
     """
     Drop all tables (useful for testing or resetting).
@@ -193,7 +197,7 @@ def drop_tables(db: PostGISConnection) -> bool:
             "DROP TABLE IF EXISTS data_quality_log CASCADE;",
             "DROP TABLE IF EXISTS processing_log CASCADE;",
             "DROP TABLE IF EXISTS puzzle_pieces CASCADE;",
-            "DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE;"
+            "DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE;",
         ]
 
         for query in drop_queries:
@@ -205,6 +209,7 @@ def drop_tables(db: PostGISConnection) -> bool:
     except Exception as e:
         logger.error(f"Failed to drop tables: {e}")
         return False
+
 
 if __name__ == "__main__":
     # Test schema creation

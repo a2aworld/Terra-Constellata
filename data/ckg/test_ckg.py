@@ -8,14 +8,16 @@ import sys
 import os
 
 # Add the parent directory to the path to import the ckg module
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 try:
     from data.ckg import CulturalKnowledgeGraph
+
     print("✓ Successfully imported CulturalKnowledgeGraph")
 except ImportError as e:
     print(f"✗ Failed to import CulturalKnowledgeGraph: {e}")
     sys.exit(1)
+
 
 def test_import():
     """Test that all modules can be imported."""
@@ -23,11 +25,13 @@ def test_import():
         from data.ckg.connection import get_db_connection
         from data.ckg.schema import create_collections
         from data.ckg.operations import insert_mythological_entity, get_all_entities
+
         print("✓ All modules imported successfully")
         return True
     except ImportError as e:
         print(f"✗ Import error: {e}")
         return False
+
 
 def test_ckg_class():
     """Test the CKG class instantiation."""
@@ -41,6 +45,7 @@ def test_ckg_class():
         print(f"✗ Failed to instantiate CKG class: {e}")
         return False
 
+
 def test_connection_attempt():
     """Test database connection attempt (may fail if ArangoDB not running)."""
     try:
@@ -52,6 +57,7 @@ def test_connection_attempt():
     except Exception as e:
         print(f"⚠ Database connection failed (expected if ArangoDB not running): {e}")
         return False
+
 
 def main():
     """Run all tests."""
@@ -81,6 +87,7 @@ def main():
         print("⚠ Some tests failed. Check the output above.")
 
     return passed == total
+
 
 if __name__ == "__main__":
     success = main()

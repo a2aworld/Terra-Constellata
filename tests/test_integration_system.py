@@ -28,7 +28,7 @@ async def test_full_system_integration(
     agent_registry,
     mock_llm,
     sample_data,
-    temp_directories
+    temp_directories,
 ):
     """
     Test complete system integration from data ingestion to agent coordination.
@@ -40,7 +40,9 @@ async def test_full_system_integration(
     4. Backend API responses
     5. Workflow execution
     """
-    if not all([postgis_connection, ckg_connection, a2a_server, backend_app, agent_registry]):
+    if not all(
+        [postgis_connection, ckg_connection, a2a_server, backend_app, agent_registry]
+    ):
         pytest.skip("Required services not available for integration testing")
 
     try:
@@ -91,17 +93,26 @@ async def test_postgis_data_ingestion(connection, sample_data):
     try:
         # Insert geospatial data
         for item in sample_data["geospatial"]:
-            await connection.execute("""
+            await connection.execute(
+                """
                 INSERT INTO locations (name, entity, latitude, longitude, description, geom)
                 VALUES ($1, $2, $3, $4, $5, ST_SetSRID(ST_MakePoint($4, $3), 4326))
                 ON CONFLICT (name) DO NOTHING
-            """, item["name"], item["entity"], item["latitude"], item["longitude"], item["description"])
+            """,
+                item["name"],
+                item["entity"],
+                item["latitude"],
+                item["longitude"],
+                item["description"],
+            )
 
         # Verify data insertion
         result = await connection.fetch("SELECT COUNT(*) FROM locations")
         assert result[0]["count"] >= len(sample_data["geospatial"])
 
-        logger.info(f"Successfully ingested {len(sample_data['geospatial'])} records into PostGIS")
+        logger.info(
+            f"Successfully ingested {len(sample_data['geospatial'])} records into PostGIS"
+        )
 
     except Exception as e:
         logger.error(f"PostGIS data ingestion failed: {e}")
@@ -116,7 +127,8 @@ async def test_ckg_data_ingestion(connection, sample_data):
     try:
         # Insert knowledge graph data
         for item in sample_data["mythological"]:
-            await connection.execute_aql("""
+            await connection.execute_aql(
+                """
                 INSERT {
                     culture: @culture,
                     myth: @myth,
@@ -124,17 +136,25 @@ async def test_ckg_data_ingestion(connection, sample_data):
                     type: 'mythological_narrative'
                 } INTO mythological_narratives
                 OPTIONS { ignoreErrors: true }
-            """, culture=item["culture"], myth=item["myth"], narrative=item["narrative"])
+            """,
+                culture=item["culture"],
+                myth=item["myth"],
+                narrative=item["narrative"],
+            )
 
         # Verify data insertion
-        result = await connection.execute_aql("""
+        result = await connection.execute_aql(
+            """
             FOR doc IN mythological_narratives
             COLLECT WITH COUNT INTO length
             RETURN length
-        """)
+        """
+        )
         assert result[0] >= len(sample_data["mythological"])
 
-        logger.info(f"Successfully ingested {len(sample_data['mythological'])} records into CKG")
+        logger.info(
+            f"Successfully ingested {len(sample_data['mythological'])} records into CKG"
+        )
 
     except Exception as e:
         logger.error(f"CKG data ingestion failed: {e}")
@@ -148,15 +168,18 @@ async def test_database_synchronization(postgis_conn, ckg_conn):
 
     try:
         # Query PostGIS for location data
-        postgis_data = await postgis_conn.fetch("""
+        postgis_data = await postgis_conn.fetch(
+            """
             SELECT name, entity, latitude, longitude
             FROM locations
             LIMIT 5
-        """)
+        """
+        )
 
         # Create corresponding entries in CKG
         for row in postgis_data:
-            await ckg_conn.execute_aql("""
+            await ckg_conn.execute_aql(
+                """
                 INSERT {
                     name: @name,
                     entity: @entity,
@@ -165,15 +188,21 @@ async def test_database_synchronization(postgis_conn, ckg_conn):
                     type: 'geospatial_entity'
                 } INTO geospatial_entities
                 OPTIONS { ignoreErrors: true }
-            """, name=row["name"], entity=row["entity"],
-                  latitude=row["latitude"], longitude=row["longitude"])
+            """,
+                name=row["name"],
+                entity=row["entity"],
+                latitude=row["latitude"],
+                longitude=row["longitude"],
+            )
 
         # Verify synchronization
-        ckg_count = await ckg_conn.execute_aql("""
+        ckg_count = await ckg_conn.execute_aql(
+            """
             FOR doc IN geospatial_entities
             COLLECT WITH COUNT INTO length
             RETURN length
-        """)
+        """
+        )
 
         assert ckg_count[0] >= len(postgis_data)
         logger.info("Database synchronization test passed")
@@ -221,7 +250,10 @@ async def test_agent_coordination(registry, mock_llm):
         )
 
         assert coordination_result is not None
-        assert "coordinate" in coordination_result.lower() or "analysis" in coordination_result.lower()
+        assert (
+            "coordinate" in coordination_result.lower()
+            or "analysis" in coordination_result.lower()
+        )
 
         logger.info("Agent coordination test passed")
 
@@ -247,8 +279,8 @@ async def test_a2a_protocol_communication(server, registry):
             "payload": {
                 "task": "test_coordination",
                 "agents": ["Atlas", "Myth"],
-                "data": {"test": "data"}
-            }
+                "data": {"test": "data"},
+            },
         }
 
         response = await client.send_message(test_message)
@@ -280,7 +312,10 @@ async def test_backend_api_integration(app, sample_data):
         # Test pipeline endpoint (if available)
         try:
             response = app.get("/api/pipeline/status")
-            assert response.status_code in [200, 404]  # 404 is acceptable if not implemented
+            assert response.status_code in [
+                200,
+                404,
+            ]  # 404 is acceptable if not implemented
         except:
             pass  # Endpoint might not be implemented
 
@@ -302,7 +337,7 @@ async def test_workflow_execution(registry, app, sample_data):
             "type": "comprehensive_analysis",
             "description": "Analyze geographical and mythological data together",
             "data": sample_data,
-            "expected_output": "integrated_analysis"
+            "expected_output": "integrated_analysis",
         }
 
         # Execute through Sentinel orchestrator
@@ -331,10 +366,7 @@ async def test_workflow_execution(registry, app, sample_data):
 @pytest.mark.integration
 @pytest.mark.performance
 async def test_system_performance_baseline(
-    postgis_connection,
-    ckg_connection,
-    agent_registry,
-    benchmark
+    postgis_connection, ckg_connection, agent_registry, benchmark
 ):
     """
     Performance baseline test for key system operations.
@@ -349,11 +381,13 @@ async def test_system_performance_baseline(
 
     # Benchmark database query performance
     async def benchmark_postgis_query():
-        return await postgis_connection.fetch("""
+        return await postgis_connection.fetch(
+            """
             SELECT name, entity, ST_AsText(geom) as geometry
             FROM locations
             WHERE entity = 'city'
-        """)
+        """
+        )
 
     postgis_result = benchmark(benchmark_postgis_query)
     assert len(postgis_result) >= 0

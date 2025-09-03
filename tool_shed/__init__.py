@@ -13,9 +13,16 @@ Components:
 """
 
 from .models import (
-    Tool, ToolProposal, ToolVersion, ToolEvolutionRequest,
-    ToolMetadata, ToolCapabilities, ToolValidation,
-    ToolRegistryEntry, SearchQuery, SearchResult
+    Tool,
+    ToolProposal,
+    ToolVersion,
+    ToolEvolutionRequest,
+    ToolMetadata,
+    ToolCapabilities,
+    ToolValidation,
+    ToolRegistryEntry,
+    SearchQuery,
+    SearchResult,
 )
 from .registry import ToolRegistry
 from .vector_store import ToolVectorStore
@@ -28,10 +35,16 @@ __author__ = "Terra Constellata"
 
 __all__ = [
     # Models
-    "Tool", "ToolProposal", "ToolVersion", "ToolEvolutionRequest",
-    "ToolMetadata", "ToolCapabilities", "ToolValidation",
-    "ToolRegistryEntry", "SearchQuery", "SearchResult",
-
+    "Tool",
+    "ToolProposal",
+    "ToolVersion",
+    "ToolEvolutionRequest",
+    "ToolMetadata",
+    "ToolCapabilities",
+    "ToolValidation",
+    "ToolRegistryEntry",
+    "SearchQuery",
+    "SearchResult",
     # Core Components
     "ToolRegistry",
     "ToolVectorStore",

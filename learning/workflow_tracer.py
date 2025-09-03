@@ -37,39 +37,57 @@ class WorkflowTrace:
         self.error_info: Optional[Dict[str, Any]] = None
         self.metadata: Dict[str, Any] = {}
 
-    def add_node_execution(self, node_name: str, input_state: Dict[str, Any],
-                          output_state: Dict[str, Any], execution_time: float):
+    def add_node_execution(
+        self,
+        node_name: str,
+        input_state: Dict[str, Any],
+        output_state: Dict[str, Any],
+        execution_time: float,
+    ):
         """Add a node execution to the trace."""
-        self.nodes_executed.append({
-            'node_name': node_name,
-            'input_state': input_state,
-            'output_state': output_state,
-            'execution_time': execution_time,
-            'timestamp': datetime.utcnow()
-        })
+        self.nodes_executed.append(
+            {
+                "node_name": node_name,
+                "input_state": input_state,
+                "output_state": output_state,
+                "execution_time": execution_time,
+                "timestamp": datetime.utcnow(),
+            }
+        )
 
-    def add_edge_traversal(self, from_node: str, to_node: str, condition: Optional[str] = None):
+    def add_edge_traversal(
+        self, from_node: str, to_node: str, condition: Optional[str] = None
+    ):
         """Add an edge traversal to the trace."""
-        self.edges_traversed.append({
-            'from_node': from_node,
-            'to_node': to_node,
-            'condition': condition,
-            'timestamp': datetime.utcnow()
-        })
+        self.edges_traversed.append(
+            {
+                "from_node": from_node,
+                "to_node": to_node,
+                "condition": condition,
+                "timestamp": datetime.utcnow(),
+            }
+        )
 
-    def add_agent_interaction(self, agent_name: str, task: str, response: Any,
-                             response_time: float):
+    def add_agent_interaction(
+        self, agent_name: str, task: str, response: Any, response_time: float
+    ):
         """Add an agent interaction to the trace."""
-        self.agent_interactions.append({
-            'agent_name': agent_name,
-            'task': task,
-            'response': str(response)[:500],  # Truncate for storage
-            'response_time': response_time,
-            'timestamp': datetime.utcnow()
-        })
+        self.agent_interactions.append(
+            {
+                "agent_name": agent_name,
+                "task": task,
+                "response": str(response)[:500],  # Truncate for storage
+                "response_time": response_time,
+                "timestamp": datetime.utcnow(),
+            }
+        )
 
-    def complete_trace(self, final_state: Dict[str, Any], success: bool = True,
-                      error_info: Optional[Dict[str, Any]] = None):
+    def complete_trace(
+        self,
+        final_state: Dict[str, Any],
+        success: bool = True,
+        error_info: Optional[Dict[str, Any]] = None,
+    ):
         """Complete the workflow trace."""
         self.end_time = datetime.utcnow()
         self.duration = (self.end_time - self.start_time).total_seconds()
@@ -87,13 +105,19 @@ class WorkflowTrace:
 
         # Calculate various success metrics
         self.success_metrics = {
-            'total_nodes': len(self.nodes_executed),
-            'total_edges': len(self.edges_traversed),
-            'total_agent_interactions': len(self.agent_interactions),
-            'avg_node_execution_time': sum(n['execution_time'] for n in self.nodes_executed) / max(len(self.nodes_executed), 1),
-            'avg_agent_response_time': sum(a['response_time'] for a in self.agent_interactions) / max(len(self.agent_interactions), 1),
-            'workflow_efficiency': self._calculate_efficiency_score(),
-            'agent_coordination_score': self._calculate_coordination_score()
+            "total_nodes": len(self.nodes_executed),
+            "total_edges": len(self.edges_traversed),
+            "total_agent_interactions": len(self.agent_interactions),
+            "avg_node_execution_time": sum(
+                n["execution_time"] for n in self.nodes_executed
+            )
+            / max(len(self.nodes_executed), 1),
+            "avg_agent_response_time": sum(
+                a["response_time"] for a in self.agent_interactions
+            )
+            / max(len(self.agent_interactions), 1),
+            "workflow_efficiency": self._calculate_efficiency_score(),
+            "agent_coordination_score": self._calculate_coordination_score(),
         }
 
     def _calculate_efficiency_score(self) -> float:
@@ -105,7 +129,9 @@ class WorkflowTrace:
         base_efficiency = len(self.nodes_executed) / self.duration
 
         # Penalize for excessive agent interactions
-        interaction_penalty = max(0, len(self.agent_interactions) - len(self.nodes_executed)) * 0.1
+        interaction_penalty = (
+            max(0, len(self.agent_interactions) - len(self.nodes_executed)) * 0.1
+        )
 
         return max(0, base_efficiency - interaction_penalty)
 
@@ -115,13 +141,15 @@ class WorkflowTrace:
             return 1.0  # Perfect if no external agents needed
 
         # Score based on response times and interaction patterns
-        avg_response_time = sum(a['response_time'] for a in self.agent_interactions) / len(self.agent_interactions)
+        avg_response_time = sum(
+            a["response_time"] for a in self.agent_interactions
+        ) / len(self.agent_interactions)
 
         # Lower response times are better
         time_score = max(0, 1.0 - (avg_response_time / 60.0))  # Penalize > 60 seconds
 
         # Diversity in agent usage (using multiple agents is good)
-        unique_agents = len(set(a['agent_name'] for a in self.agent_interactions))
+        unique_agents = len(set(a["agent_name"] for a in self.agent_interactions))
         diversity_score = min(1.0, unique_agents / 3.0)  # Max score at 3+ agents
 
         return (time_score + diversity_score) / 2.0
@@ -129,44 +157,44 @@ class WorkflowTrace:
     def to_dict(self) -> Dict[str, Any]:
         """Convert trace to dictionary for storage."""
         return {
-            'workflow_id': self.workflow_id,
-            'workflow_type': self.workflow_type,
-            'start_time': self.start_time.isoformat(),
-            'end_time': self.end_time.isoformat() if self.end_time else None,
-            'duration': self.duration,
-            'nodes_executed': self.nodes_executed,
-            'edges_traversed': self.edges_traversed,
-            'state_transitions': self.state_transitions,
-            'agent_interactions': self.agent_interactions,
-            'final_state': self.final_state,
-            'success_metrics': self.success_metrics,
-            'error_info': self.error_info,
-            'metadata': self.metadata
+            "workflow_id": self.workflow_id,
+            "workflow_type": self.workflow_type,
+            "start_time": self.start_time.isoformat(),
+            "end_time": self.end_time.isoformat() if self.end_time else None,
+            "duration": self.duration,
+            "nodes_executed": self.nodes_executed,
+            "edges_traversed": self.edges_traversed,
+            "state_transitions": self.state_transitions,
+            "agent_interactions": self.agent_interactions,
+            "final_state": self.final_state,
+            "success_metrics": self.success_metrics,
+            "error_info": self.error_info,
+            "metadata": self.metadata,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'WorkflowTrace':
+    def from_dict(cls, data: Dict[str, Any]) -> "WorkflowTrace":
         """Create trace from dictionary."""
-        trace = cls(data['workflow_id'], data['workflow_type'])
-        trace.start_time = datetime.fromisoformat(data['start_time'])
-        if data.get('end_time'):
-            trace.end_time = datetime.fromisoformat(data['end_time'])
-        trace.duration = data.get('duration')
-        trace.nodes_executed = data.get('nodes_executed', [])
-        trace.edges_traversed = data.get('edges_traversed', [])
-        trace.state_transitions = data.get('state_transitions', [])
-        trace.agent_interactions = data.get('agent_interactions', [])
-        trace.final_state = data.get('final_state')
-        trace.success_metrics = data.get('success_metrics', {})
-        trace.error_info = data.get('error_info')
-        trace.metadata = data.get('metadata', {})
+        trace = cls(data["workflow_id"], data["workflow_type"])
+        trace.start_time = datetime.fromisoformat(data["start_time"])
+        if data.get("end_time"):
+            trace.end_time = datetime.fromisoformat(data["end_time"])
+        trace.duration = data.get("duration")
+        trace.nodes_executed = data.get("nodes_executed", [])
+        trace.edges_traversed = data.get("edges_traversed", [])
+        trace.state_transitions = data.get("state_transitions", [])
+        trace.agent_interactions = data.get("agent_interactions", [])
+        trace.final_state = data.get("final_state")
+        trace.success_metrics = data.get("success_metrics", {})
+        trace.error_info = data.get("error_info")
+        trace.metadata = data.get("metadata", {})
         return trace
 
 
 class LangGraphCallbackHandler(BaseCallbackHandler):
     """Callback handler for capturing LangGraph workflow executions."""
 
-    def __init__(self, tracer: 'WorkflowTracer'):
+    def __init__(self, tracer: "WorkflowTracer"):
         self.tracer = tracer
         self.current_trace: Optional[WorkflowTrace] = None
         self.node_start_times: Dict[str, datetime] = {}
@@ -188,7 +216,7 @@ class LangGraphCallbackHandler(BaseCallbackHandler):
             execution_time = (datetime.utcnow() - start_time).total_seconds()
 
             # Get input state from previous state or kwargs
-            input_state = kwargs.get('input_state', {})
+            input_state = kwargs.get("input_state", {})
 
             self.current_trace.add_node_execution(
                 node_name, input_state, output_state, execution_time
@@ -196,18 +224,29 @@ class LangGraphCallbackHandler(BaseCallbackHandler):
 
             del self.node_start_times[node_name]
 
-    def on_edge_traversal(self, from_node: str, to_node: str, condition: Optional[str] = None, **kwargs):
+    def on_edge_traversal(
+        self, from_node: str, to_node: str, condition: Optional[str] = None, **kwargs
+    ):
         """Called when an edge is traversed."""
         if self.current_trace:
             self.current_trace.add_edge_traversal(from_node, to_node, condition)
 
-    def on_agent_interaction(self, agent_name: str, task: str, response: Any, response_time: float, **kwargs):
+    def on_agent_interaction(
+        self, agent_name: str, task: str, response: Any, response_time: float, **kwargs
+    ):
         """Called when an agent interaction occurs."""
         if self.current_trace:
-            self.current_trace.add_agent_interaction(agent_name, task, response, response_time)
+            self.current_trace.add_agent_interaction(
+                agent_name, task, response, response_time
+            )
 
-    def on_workflow_end(self, final_state: Dict[str, Any], success: bool = True,
-                       error_info: Optional[Dict[str, Any]] = None, **kwargs):
+    def on_workflow_end(
+        self,
+        final_state: Dict[str, Any],
+        success: bool = True,
+        error_info: Optional[Dict[str, Any]] = None,
+        **kwargs,
+    ):
         """Called when a workflow ends."""
         if self.current_trace:
             self.current_trace.complete_trace(final_state, success, error_info)
@@ -223,13 +262,16 @@ class WorkflowTracer:
         self.storage_path = storage_path
         self.traces: Dict[str, WorkflowTrace] = {}
         self.callback_handlers: Dict[str, LangGraphCallbackHandler] = {}
-        self.trace_index: Dict[str, List[str]] = defaultdict(list)  # workflow_type -> trace_ids
+        self.trace_index: Dict[str, List[str]] = defaultdict(
+            list
+        )  # workflow_type -> trace_ids
 
         # Codex integration
         self.codex_manager = None
 
         # Create storage directory if it doesn't exist
         import os
+
         os.makedirs(storage_path, exist_ok=True)
 
     def create_callback_handler(self, workflow_type: str) -> LangGraphCallbackHandler:
@@ -246,7 +288,9 @@ class WorkflowTracer:
 
         # Notify callback handler if it exists
         if workflow_type in self.callback_handlers:
-            self.callback_handlers[workflow_type].on_workflow_start(workflow_id, workflow_type)
+            self.callback_handlers[workflow_type].on_workflow_start(
+                workflow_id, workflow_type
+            )
 
         logger.info(f"Started trace for workflow: {workflow_id}")
         return trace
@@ -286,8 +330,9 @@ class WorkflowTracer:
         trace_ids = self.trace_index.get(workflow_type, [])
         return [self.traces[tid] for tid in trace_ids if tid in self.traces]
 
-    def get_successful_traces(self, workflow_type: Optional[str] = None,
-                             min_efficiency: float = 0.0) -> List[WorkflowTrace]:
+    def get_successful_traces(
+        self, workflow_type: Optional[str] = None, min_efficiency: float = 0.0
+    ) -> List[WorkflowTrace]:
         """Get traces that completed successfully with minimum efficiency."""
         traces = []
         candidates = self.traces.values()
@@ -296,8 +341,11 @@ class WorkflowTracer:
             candidates = self.get_traces_by_type(workflow_type)
 
         for trace in candidates:
-            if (trace.error_info is None and
-                trace.success_metrics.get('workflow_efficiency', 0) >= min_efficiency):
+            if (
+                trace.error_info is None
+                and trace.success_metrics.get("workflow_efficiency", 0)
+                >= min_efficiency
+            ):
                 traces.append(trace)
 
         return traces
@@ -309,11 +357,13 @@ class WorkflowTracer:
             return {}
 
         patterns = {
-            'avg_duration': sum(t.duration or 0 for t in traces) / len(traces),
-            'avg_nodes': sum(len(t.nodes_executed) for t in traces) / len(traces),
-            'avg_agent_interactions': sum(len(t.agent_interactions) for t in traces) / len(traces),
-            'common_node_sequences': self._extract_common_sequences(traces),
-            'success_rate': len([t for t in traces if t.error_info is None]) / len(traces)
+            "avg_duration": sum(t.duration or 0 for t in traces) / len(traces),
+            "avg_nodes": sum(len(t.nodes_executed) for t in traces) / len(traces),
+            "avg_agent_interactions": sum(len(t.agent_interactions) for t in traces)
+            / len(traces),
+            "common_node_sequences": self._extract_common_sequences(traces),
+            "success_rate": len([t for t in traces if t.error_info is None])
+            / len(traces),
         }
 
         return patterns
@@ -323,7 +373,7 @@ class WorkflowTracer:
         sequences = []
         for trace in traces:
             if trace.nodes_executed:
-                seq = [node['node_name'] for node in trace.nodes_executed]
+                seq = [node["node_name"] for node in trace.nodes_executed]
                 sequences.append(seq)
 
         # Find most common sequences (simplified implementation)
@@ -332,6 +382,7 @@ class WorkflowTracer:
 
         # For now, return the most common sequence
         from collections import Counter
+
         seq_counter = Counter(tuple(seq) for seq in sequences)
         most_common = seq_counter.most_common(1)
 
@@ -340,10 +391,11 @@ class WorkflowTracer:
     def _save_trace_to_file(self, trace: WorkflowTrace):
         """Save trace to JSON file."""
         import os
+
         filename = f"{trace.workflow_id}.json"
         filepath = os.path.join(self.storage_path, filename)
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(trace.to_dict(), f, indent=2, default=str)
 
     def load_traces_from_files(self):
@@ -354,7 +406,7 @@ class WorkflowTracer:
         pattern = os.path.join(self.storage_path, "*.json")
         for filepath in glob.glob(pattern):
             try:
-                with open(filepath, 'r') as f:
+                with open(filepath, "r") as f:
                     data = json.load(f)
                     trace = WorkflowTrace.from_dict(data)
                     self.traces[trace.workflow_id] = trace
@@ -365,12 +417,15 @@ class WorkflowTracer:
     def get_statistics(self) -> Dict[str, Any]:
         """Get overall tracing statistics."""
         total_traces = len(self.traces)
-        successful_traces = len([t for t in self.traces.values() if t.error_info is None])
+        successful_traces = len(
+            [t for t in self.traces.values() if t.error_info is None]
+        )
 
         return {
-            'total_traces': total_traces,
-            'successful_traces': successful_traces,
-            'success_rate': successful_traces / max(total_traces, 1),
-            'workflow_types': list(self.trace_index.keys()),
-            'avg_duration': sum((t.duration or 0) for t in self.traces.values()) / max(total_traces, 1)
+            "total_traces": total_traces,
+            "successful_traces": successful_traces,
+            "success_rate": successful_traces / max(total_traces, 1),
+            "workflow_types": list(self.trace_index.keys()),
+            "avg_duration": sum((t.duration or 0) for t in self.traces.values())
+            / max(total_traces, 1),
         }

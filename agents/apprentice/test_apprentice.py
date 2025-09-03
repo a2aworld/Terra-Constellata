@@ -15,6 +15,7 @@ import numpy as np
 
 # Add the project root to Python path for testing
 import sys
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from .apprentice_agent import ApprenticeAgent
@@ -57,7 +58,9 @@ class TestCycleGAN(unittest.TestCase):
         discriminator = Discriminator()
 
         # Test forward pass
-        input_tensor = torch.randn(self.batch_size, 3, 256, 256)  # Standard discriminator input
+        input_tensor = torch.randn(
+            self.batch_size, 3, 256, 256
+        )  # Standard discriminator input
         output_tensor = discriminator(input_tensor)
 
         self.assertEqual(output_tensor.shape, (self.batch_size, 1, 30, 30))
@@ -78,7 +81,7 @@ class TestCycleGAN(unittest.TestCase):
         self.assertIsNotNone(model.optimizer_D_A)
         self.assertIsNotNone(model.optimizer_D_B)
 
-    @patch('torch.save')
+    @patch("torch.save")
     def test_model_save(self, mock_save):
         """Test model saving."""
         model = CycleGAN(device=self.device)
@@ -88,20 +91,20 @@ class TestCycleGAN(unittest.TestCase):
 
         mock_save.assert_called_once()
 
-    @patch('torch.load')
+    @patch("torch.load")
     def test_model_load(self, mock_load):
         """Test model loading."""
         mock_load.return_value = {
-            'G_AB_state_dict': {},
-            'G_BA_state_dict': {},
-            'D_A_state_dict': {},
-            'D_B_state_dict': {},
-            'optimizer_G_state_dict': {},
-            'optimizer_D_A_state_dict': {},
-            'optimizer_D_B_state_dict': {},
-            'scheduler_G_state_dict': {},
-            'scheduler_D_A_state_dict': {},
-            'scheduler_D_B_state_dict': {},
+            "G_AB_state_dict": {},
+            "G_BA_state_dict": {},
+            "D_A_state_dict": {},
+            "D_B_state_dict": {},
+            "optimizer_G_state_dict": {},
+            "optimizer_D_A_state_dict": {},
+            "optimizer_D_B_state_dict": {},
+            "scheduler_G_state_dict": {},
+            "scheduler_D_A_state_dict": {},
+            "scheduler_D_B_state_dict": {},
         }
 
         model = CycleGAN(device=self.device)
@@ -151,7 +154,7 @@ class TestDataLoader(unittest.TestCase):
         dummy_image.convert.return_value = dummy_image
 
         # Mock the transform to return a tensor
-        with patch('torchvision.transforms.functional.to_tensor') as mock_to_tensor:
+        with patch("torchvision.transforms.functional.to_tensor") as mock_to_tensor:
             mock_to_tensor.return_value = torch.randn(3, 64, 64)
 
             result = transform(dummy_image, is_train=True)
@@ -165,7 +168,7 @@ class TestDataLoader(unittest.TestCase):
             domain_a_dir="domain_a",
             domain_b_dir="domain_b",
             image_size=64,
-            is_train=True
+            is_train=True,
         )
 
         self.assertEqual(len(dataset), 2)  # Should have 2 samples (min of both domains)
@@ -178,12 +181,12 @@ class TestDataLoader(unittest.TestCase):
         dummy_path = str(self.domain_a_dir / "img1.jpg")
 
         # Mock the image loading and processing
-        with patch('PIL.Image.open') as mock_open:
+        with patch("PIL.Image.open") as mock_open:
             mock_image = Mock()
             mock_image.convert.return_value = mock_image
             mock_open.return_value = mock_image
 
-            with patch('torchvision.transforms.functional.to_tensor') as mock_to_tensor:
+            with patch("torchvision.transforms.functional.to_tensor") as mock_to_tensor:
                 mock_to_tensor.return_value = torch.randn(3, 64, 64)
 
                 tensor, metadata = processor.process_satellite_image(dummy_path)
@@ -214,8 +217,8 @@ class TestStyleTransfer(unittest.TestCase):
         self.assertIsNotNone(style_transfer.model)
         self.assertEqual(style_transfer.model_dir, self.model_dir)
 
-    @patch('PIL.Image.open')
-    @patch('torchvision.transforms.functional.to_tensor')
+    @patch("PIL.Image.open")
+    @patch("torchvision.transforms.functional.to_tensor")
     def test_apply_style(self, mock_to_tensor, mock_open):
         """Test style application."""
         # Setup mocks
@@ -231,13 +234,12 @@ class TestStyleTransfer(unittest.TestCase):
         style_transfer.load_model = Mock(return_value=True)
 
         # Test style application
-        with patch('torchvision.transforms.functional.to_pil_image') as mock_to_pil:
+        with patch("torchvision.transforms.functional.to_pil_image") as mock_to_pil:
             mock_to_pil.return_value = mock_image
 
-            with patch.object(mock_image, 'save') as mock_save:
+            with patch.object(mock_image, "save") as mock_save:
                 result_path = style_transfer.apply_style(
-                    input_path="/fake/path/image.jpg",
-                    style_name="test_style"
+                    input_path="/fake/path/image.jpg", style_name="test_style"
                 )
 
                 self.assertIsInstance(result_path, str)
@@ -273,8 +275,8 @@ class TestConfiguration(unittest.TestCase):
         config_dict = config.to_dict()
 
         self.assertIsInstance(config_dict, dict)
-        self.assertIn('cyclegan', config_dict)
-        self.assertIn('data', config_dict)
+        self.assertIn("cyclegan", config_dict)
+        self.assertIn("data", config_dict)
 
         # Test deserialization
         new_config = ApprenticeConfig.from_dict(config_dict)
@@ -309,7 +311,7 @@ class TestApprenticeAgent(unittest.TestCase):
         """Clean up test fixtures."""
         shutil.rmtree(self.temp_dir)
 
-    @patch('terra_constellata.agents.apprentice.apprentice_agent.A2AClient')
+    @patch("terra_constellata.agents.apprentice.apprentice_agent.A2AClient")
     def test_agent_initialization(self, mock_a2a_client):
         """Test agent initialization."""
         mock_a2a_client.return_value = Mock()
@@ -317,7 +319,7 @@ class TestApprenticeAgent(unittest.TestCase):
         agent = ApprenticeAgent(
             llm=None,  # No LLM for testing
             model_dir=str(self.model_dir),
-            data_dir=str(self.data_dir)
+            data_dir=str(self.data_dir),
         )
 
         self.assertEqual(agent.name, "Apprentice_Agent")
@@ -328,9 +330,7 @@ class TestApprenticeAgent(unittest.TestCase):
     def test_agent_tools(self):
         """Test agent tools."""
         agent = ApprenticeAgent(
-            llm=None,
-            model_dir=str(self.model_dir),
-            data_dir=str(self.data_dir)
+            llm=None, model_dir=str(self.model_dir), data_dir=str(self.data_dir)
         )
 
         # Check that tools are created

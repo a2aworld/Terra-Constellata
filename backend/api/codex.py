@@ -13,18 +13,23 @@ from datetime import datetime
 # Import Codex components (will be initialized by main app)
 codex_manager = None
 
+
 def set_codex_manager(manager):
     """Set the Codex manager instance."""
     global codex_manager
     codex_manager = manager
 
+
 router = APIRouter()
+
 
 @router.get("/contributions/", response_model=List[Dict[str, Any]])
 async def get_contributions(
     agent_name: Optional[str] = Query(None, description="Filter by agent name"),
-    contribution_type: Optional[str] = Query(None, description="Filter by contribution type"),
-    limit: int = Query(50, description="Maximum number of results")
+    contribution_type: Optional[str] = Query(
+        None, description="Filter by contribution type"
+    ),
+    limit: int = Query(50, description="Maximum number of results"),
 ):
     """
     Get agent contributions.
@@ -39,17 +44,26 @@ async def get_contributions(
 
     try:
         if agent_name:
-            contributions = codex_manager.archival_system.get_contributions_by_agent(agent_name)
+            contributions = codex_manager.archival_system.get_contributions_by_agent(
+                agent_name
+            )
         elif contribution_type:
-            contributions = codex_manager.archival_system.get_contributions_by_type(contribution_type)
+            contributions = codex_manager.archival_system.get_contributions_by_type(
+                contribution_type
+            )
         else:
             # Return all contributions (limited)
-            contributions = list(codex_manager.archival_system.contributions.values())[:limit]
+            contributions = list(codex_manager.archival_system.contributions.values())[
+                :limit
+            ]
 
         return [c.to_dict() for c in contributions]
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving contributions: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving contributions: {str(e)}"
+        )
+
 
 @router.get("/contributions/{contribution_id}", response_model=Dict[str, Any])
 async def get_contribution(contribution_id: str):
@@ -63,11 +77,12 @@ async def get_contribution(contribution_id: str):
 
     return contribution.to_dict()
 
+
 @router.get("/strategies/", response_model=List[Dict[str, Any]])
 async def get_strategies(
     strategy_type: Optional[str] = Query(None, description="Filter by strategy type"),
     created_by: Optional[str] = Query(None, description="Filter by creator"),
-    limit: int = Query(50, description="Maximum number of results")
+    limit: int = Query(50, description="Maximum number of results"),
 ):
     """
     Get documented strategies.
@@ -82,7 +97,9 @@ async def get_strategies(
 
     try:
         if strategy_type:
-            strategies = codex_manager.archival_system.get_strategies_by_type(strategy_type)
+            strategies = codex_manager.archival_system.get_strategies_by_type(
+                strategy_type
+            )
         elif created_by:
             # Get all strategies and filter by creator
             all_strategies = list(codex_manager.archival_system.strategies.values())
@@ -93,7 +110,10 @@ async def get_strategies(
         return [s.to_dict() for s in strategies]
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving strategies: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving strategies: {str(e)}"
+        )
+
 
 @router.get("/strategies/{strategy_id}", response_model=Dict[str, Any])
 async def get_strategy(strategy_id: str):
@@ -107,12 +127,13 @@ async def get_strategy(strategy_id: str):
 
     return strategy.to_dict()
 
+
 @router.get("/chapters/", response_model=List[Dict[str, Any]])
 async def get_chapters(
     theme: Optional[str] = Query(None, description="Filter by theme"),
     agent_name: Optional[str] = Query(None, description="Filter by agent"),
     published_only: bool = Query(True, description="Return only published chapters"),
-    limit: int = Query(20, description="Maximum number of results")
+    limit: int = Query(20, description="Maximum number of results"),
 ):
     """
     Get legacy chapters.
@@ -141,7 +162,10 @@ async def get_chapters(
         return [c.to_dict() for c in chapters[:limit]]
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving chapters: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving chapters: {str(e)}"
+        )
+
 
 @router.get("/chapters/{chapter_id}", response_model=Dict[str, Any])
 async def get_chapter(chapter_id: str):
@@ -155,6 +179,7 @@ async def get_chapter(chapter_id: str):
 
     return chapter.to_dict()
 
+
 @router.post("/chapters/{chapter_id}/publish")
 async def publish_chapter(chapter_id: str):
     """Publish a chapter to the Galactic Storybook."""
@@ -163,9 +188,12 @@ async def publish_chapter(chapter_id: str):
 
     success = codex_manager.chapter_generator.publish_chapter(chapter_id)
     if not success:
-        raise HTTPException(status_code=404, detail="Chapter not found or already published")
+        raise HTTPException(
+            status_code=404, detail="Chapter not found or already published"
+        )
 
     return {"message": f"Chapter {chapter_id} published successfully"}
+
 
 @router.get("/knowledge/", response_model=List[Dict[str, Any]])
 async def search_knowledge(
@@ -173,7 +201,7 @@ async def search_knowledge(
     category: Optional[str] = Query(None, description="Filter by category"),
     tags: Optional[List[str]] = Query(None, description="Filter by tags"),
     min_confidence: float = Query(0.0, description="Minimum confidence score"),
-    limit: int = Query(20, description="Maximum number of results")
+    limit: int = Query(20, description="Maximum number of results"),
 ):
     """
     Search the knowledge base.
@@ -194,18 +222,21 @@ async def search_knowledge(
             category=category,
             tags=tags,
             min_confidence=min_confidence,
-            limit=limit
+            limit=limit,
         )
 
         return [entry.to_dict() for entry in results]
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error searching knowledge: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error searching knowledge: {str(e)}"
+        )
+
 
 @router.get("/attribution/", response_model=Dict[str, Any])
 async def get_attribution_summary(
     agent_name: Optional[str] = Query(None, description="Filter by agent"),
-    days: Optional[int] = Query(None, description="Look back period in days")
+    days: Optional[int] = Query(None, description="Look back period in days"),
 ):
     """
     Get attribution summary.
@@ -219,13 +250,15 @@ async def get_attribution_summary(
 
     try:
         summary = codex_manager.attribution_tracker.get_contribution_summary(
-            agent_name=agent_name,
-            days=days
+            agent_name=agent_name, days=days
         )
         return summary
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving attribution: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving attribution: {str(e)}"
+        )
+
 
 @router.get("/statistics/", response_model=Dict[str, Any])
 async def get_codex_statistics():
@@ -238,12 +271,17 @@ async def get_codex_statistics():
         return stats.to_dict()
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving statistics: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving statistics: {str(e)}"
+        )
 
-@router.get("/learning-recommendations/{agent_name}", response_model=List[Dict[str, Any]])
+
+@router.get(
+    "/learning-recommendations/{agent_name}", response_model=List[Dict[str, Any]]
+)
 async def get_learning_recommendations(
     agent_name: str,
-    context: str = Query(..., description="Current context or task type")
+    context: str = Query(..., description="Current context or task type"),
 ):
     """
     Get learning recommendations for an agent.
@@ -258,17 +296,22 @@ async def get_learning_recommendations(
         raise HTTPException(status_code=503, detail="Codex system not available")
 
     try:
-        recommendations = codex_manager.get_learning_recommendations(agent_name, context)
+        recommendations = codex_manager.get_learning_recommendations(
+            agent_name, context
+        )
         return recommendations
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error getting recommendations: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error getting recommendations: {str(e)}"
+        )
+
 
 @router.post("/search/")
 async def search_codex(
     query: str = Query(..., description="Search query"),
     search_type: str = Query("all", description="Type of search"),
-    **filters
+    **filters,
 ):
     """
     Search across all Codex components.

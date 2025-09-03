@@ -10,6 +10,7 @@ from sentry_sdk.integrations.sqlalchemy import SqlAlchemyIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 from .logging_config import app_logger
 
+
 def init_sentry():
     """Initialize Sentry error tracking."""
     sentry_dsn = os.getenv("SENTRY_DSN")
@@ -24,7 +25,7 @@ def init_sentry():
                 SqlAlchemyIntegration(),
                 LoggingIntegration(
                     level=None,  # Capture all log levels
-                    event_level=None  # Send all events to Sentry
+                    event_level=None,  # Send all events to Sentry
                 ),
             ],
             # Performance monitoring
@@ -37,12 +38,16 @@ def init_sentry():
             send_default_pii=True,
         )
 
-        app_logger.info("Sentry error tracking initialized", extra={
-            "environment": environment,
-            "release": os.getenv("RELEASE_VERSION", "1.0.0")
-        })
+        app_logger.info(
+            "Sentry error tracking initialized",
+            extra={
+                "environment": environment,
+                "release": os.getenv("RELEASE_VERSION", "1.0.0"),
+            },
+        )
     else:
         app_logger.warning("SENTRY_DSN not configured, error tracking disabled")
+
 
 def before_send(event, hint):
     """Filter and modify events before sending to Sentry."""
@@ -60,6 +65,7 @@ def before_send(event, hint):
 
     return event
 
+
 def capture_exception(exc, **kwargs):
     """Capture an exception with additional context."""
     with sentry_sdk.configure_scope() as scope:
@@ -67,6 +73,7 @@ def capture_exception(exc, **kwargs):
             scope.set_tag(key, value)
 
         sentry_sdk.capture_exception(exc)
+
 
 def capture_message(message, level="info", **kwargs):
     """Capture a message with additional context."""
@@ -76,15 +83,13 @@ def capture_message(message, level="info", **kwargs):
 
         sentry_sdk.capture_message(message, level=level)
 
+
 def set_user_context(user_id=None, email=None, username=None):
     """Set user context for error tracking."""
     with sentry_sdk.configure_scope() as scope:
         if user_id:
-            scope.user = {
-                "id": user_id,
-                "email": email,
-                "username": username
-            }
+            scope.user = {"id": user_id, "email": email, "username": username}
+
 
 def set_request_context(request_id=None, method=None, path=None):
     """Set request context for error tracking."""
@@ -96,14 +101,19 @@ def set_request_context(request_id=None, method=None, path=None):
         if path:
             scope.set_tag("path", path)
 
+
 def track_performance(operation_name, **kwargs):
     """Track performance of operations."""
+
     def decorator(func):
         def wrapper(*args, **kwargs_inner):
             with sentry_sdk.start_transaction(op=operation_name, name=operation_name):
                 return func(*args, **kwargs_inner)
+
         return wrapper
+
     return decorator
+
 
 # Initialize Sentry on module import
 init_sentry()

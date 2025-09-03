@@ -20,5 +20,5 @@ __all__ = [
     "NoveltyDetector",
     "DataIngestor",
     "PromptRanker",
-    "A2AInspirationClient"
+    "A2AInspirationClient",
 ]

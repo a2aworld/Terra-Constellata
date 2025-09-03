@@ -26,53 +26,100 @@ logger = logging.getLogger(__name__)
 
 def parse_args():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description="Train CycleGAN for artistic style transfer")
+    parser = argparse.ArgumentParser(
+        description="Train CycleGAN for artistic style transfer"
+    )
 
     # Data arguments
-    parser.add_argument("--data-dir", type=str, required=True,
-                       help="Root directory containing training data")
-    parser.add_argument("--domain-a", type=str, default="domain_a",
-                       help="Subdirectory name for domain A images")
-    parser.add_argument("--domain-b", type=str, default="domain_b",
-                       help="Subdirectory name for domain B images")
+    parser.add_argument(
+        "--data-dir",
+        type=str,
+        required=True,
+        help="Root directory containing training data",
+    )
+    parser.add_argument(
+        "--domain-a",
+        type=str,
+        default="domain_a",
+        help="Subdirectory name for domain A images",
+    )
+    parser.add_argument(
+        "--domain-b",
+        type=str,
+        default="domain_b",
+        help="Subdirectory name for domain B images",
+    )
 
     # Model arguments
-    parser.add_argument("--model-dir", type=str, default="./models/apprentice",
-                       help="Directory to save trained models")
-    parser.add_argument("--config", type=str, default="default",
-                       help="Configuration name to use")
+    parser.add_argument(
+        "--model-dir",
+        type=str,
+        default="./models/apprentice",
+        help="Directory to save trained models",
+    )
+    parser.add_argument(
+        "--config", type=str, default="default", help="Configuration name to use"
+    )
 
     # Training arguments
-    parser.add_argument("--epochs", type=int, default=200,
-                       help="Number of training epochs")
-    parser.add_argument("--batch-size", type=int, default=1,
-                       help="Batch size for training")
-    parser.add_argument("--image-size", type=int, default=256,
-                       help="Image size for training")
-    parser.add_argument("--learning-rate", type=float, default=0.0002,
-                       help="Learning rate for optimizers")
+    parser.add_argument(
+        "--epochs", type=int, default=200, help="Number of training epochs"
+    )
+    parser.add_argument(
+        "--batch-size", type=int, default=1, help="Batch size for training"
+    )
+    parser.add_argument(
+        "--image-size", type=int, default=256, help="Image size for training"
+    )
+    parser.add_argument(
+        "--learning-rate",
+        type=float,
+        default=0.0002,
+        help="Learning rate for optimizers",
+    )
 
     # Data processing arguments
-    parser.add_argument("--max-samples", type=int, default=None,
-                       help="Maximum number of samples to use")
-    parser.add_argument("--satellite-preprocessing", action="store_true",
-                       help="Use satellite-specific preprocessing")
+    parser.add_argument(
+        "--max-samples", type=int, default=None, help="Maximum number of samples to use"
+    )
+    parser.add_argument(
+        "--satellite-preprocessing",
+        action="store_true",
+        help="Use satellite-specific preprocessing",
+    )
 
     # Training control arguments
-    parser.add_argument("--resume", type=str, default=None,
-                       help="Path to checkpoint to resume training from")
-    parser.add_argument("--checkpoint-interval", type=int, default=10,
-                       help="Save checkpoint every N epochs")
-    parser.add_argument("--log-interval", type=int, default=10,
-                       help="Log progress every N batches")
+    parser.add_argument(
+        "--resume",
+        type=str,
+        default=None,
+        help="Path to checkpoint to resume training from",
+    )
+    parser.add_argument(
+        "--checkpoint-interval",
+        type=int,
+        default=10,
+        help="Save checkpoint every N epochs",
+    )
+    parser.add_argument(
+        "--log-interval", type=int, default=10, help="Log progress every N batches"
+    )
 
     # Device arguments
-    parser.add_argument("--device", type=str, default="auto",
-                       help="Device to use for training (auto, cpu, cuda)")
+    parser.add_argument(
+        "--device",
+        type=str,
+        default="auto",
+        help="Device to use for training (auto, cpu, cuda)",
+    )
 
     # Experiment arguments
-    parser.add_argument("--experiment-name", type=str, default=None,
-                       help="Name for this training experiment")
+    parser.add_argument(
+        "--experiment-name",
+        type=str,
+        default=None,
+        help="Name for this training experiment",
+    )
 
     return parser.parse_args()
 
@@ -119,7 +166,7 @@ def setup_training(args):
     model = CycleGAN(
         device=torch.device(device),
         lambda_cycle=config.cyclegan.lambda_cycle,
-        lambda_identity=config.cyclegan.lambda_identity
+        lambda_identity=config.cyclegan.lambda_identity,
     )
 
     # Create data loaders
@@ -129,7 +176,7 @@ def setup_training(args):
             artwork_dir=str(Path(args.data_dir) / args.domain_b),
             image_size=config.data.image_size,
             batch_size=config.cyclegan.batch_size,
-            satellite_preprocessing=True
+            satellite_preprocessing=True,
         )
     else:
         train_loader, _ = create_unpaired_data_loaders(
@@ -138,7 +185,7 @@ def setup_training(args):
             domain_b_dir=args.domain_b,
             image_size=config.data.image_size,
             batch_size=config.cyclegan.batch_size,
-            max_samples=config.data.max_samples
+            max_samples=config.data.max_samples,
         )
 
     return model, train_loader, config
@@ -164,7 +211,7 @@ def main():
             learning_rate=config.cyclegan.learning_rate,
             sample_interval=100,
             checkpoint_interval=config.training.checkpoint_interval,
-            log_interval=config.training.log_interval
+            log_interval=config.training.log_interval,
         )
 
         # Initialize training pipeline
@@ -174,20 +221,23 @@ def main():
         logger.info("Training pipeline initialized, starting training...")
 
         results = pipeline.train(
-            train_loader=train_loader,
-            config=training_config,
-            resume_from=args.resume
+            train_loader=train_loader, config=training_config, resume_from=args.resume
         )
 
         # Log final results
         logger.info("Training completed successfully!")
         logger.info(f"Final loss: {results.get('best_loss', 'N/A')}")
-        logger.info(f"Total training time: {results.get('total_training_time', 0):.2f} seconds")
+        logger.info(
+            f"Total training time: {results.get('total_training_time', 0):.2f} seconds"
+        )
         logger.info(f"Model saved to: {results.get('model_dir', 'N/A')}")
 
         # Save final configuration
         from .config import save_config
-        save_config(config, f"{args.experiment_name}_final" if args.experiment_name else "final")
+
+        save_config(
+            config, f"{args.experiment_name}_final" if args.experiment_name else "final"
+        )
 
     except Exception as e:
         logger.error(f"Training failed: {e}")

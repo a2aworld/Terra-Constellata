@@ -211,7 +211,7 @@ class AtlasRelationalAnalyst(BaseSpecialistAgent):
         llm: BaseLLM,
         ckg_connection_string: str = "http://localhost:8529",
         postgis_connection_string: str = "postgresql://user:pass@localhost:5432/terra_constellata",
-        **kwargs
+        **kwargs,
     ):
         # Initialize database connections
         self.ckg_conn = CKGConnection(ckg_connection_string)
@@ -224,10 +224,7 @@ class AtlasRelationalAnalyst(BaseSpecialistAgent):
         ]
 
         super().__init__(
-            name="Atlas_Relational_Analyst",
-            llm=llm,
-            tools=tools,
-            **kwargs
+            name="Atlas_Relational_Analyst", llm=llm, tools=tools, **kwargs
         )
 
         # Agent-specific attributes
@@ -264,21 +261,17 @@ class AtlasRelationalAnalyst(BaseSpecialistAgent):
 
         prompt = PromptTemplate(
             input_variables=["input", "tools", "chat_history", "agent_scratchpad"],
-            template=template
+            template=template,
         )
 
-        agent = create_react_agent(
-            llm=self.llm,
-            tools=self.tools,
-            prompt=prompt
-        )
+        agent = create_react_agent(llm=self.llm, tools=self.tools, prompt=prompt)
 
         return AgentExecutor.from_agent_and_tools(
             agent=agent,
             tools=self.tools,
             memory=self.memory,
             verbose=True,
-            handle_parsing_errors=True
+            handle_parsing_errors=True,
         )
 
     async def process_task(self, task: str, **kwargs) -> Any:
@@ -297,18 +290,18 @@ class AtlasRelationalAnalyst(BaseSpecialistAgent):
 
             # Execute the analysis
             result = await asyncio.get_event_loop().run_in_executor(
-                None,
-                self.agent_executor.run,
-                task
+                None, self.agent_executor.run, task
             )
 
             # Store in analysis history
-            self.analysis_history.append({
-                "task": task,
-                "result": result,
-                "timestamp": datetime.utcnow(),
-                "kwargs": kwargs
-            })
+            self.analysis_history.append(
+                {
+                    "task": task,
+                    "result": result,
+                    "timestamp": datetime.utcnow(),
+                    "kwargs": kwargs,
+                }
+            )
 
             # Cache insights
             self._cache_insights(task, result)
@@ -323,12 +316,11 @@ class AtlasRelationalAnalyst(BaseSpecialistAgent):
         """Cache insights from analysis for future reference."""
         # Simple caching mechanism
         key = task.lower().replace(" ", "_")[:50]
-        self.insights_cache[key] = {
-            "result": result,
-            "timestamp": datetime.utcnow()
-        }
+        self.insights_cache[key] = {"result": result, "timestamp": datetime.utcnow()}
 
-    async def analyze_relationships(self, entity_type: str, depth: int = 2) -> Dict[str, Any]:
+    async def analyze_relationships(
+        self, entity_type: str, depth: int = 2
+    ) -> Dict[str, Any]:
         """
         Analyze relationships for a specific entity type.
 
@@ -343,13 +335,15 @@ class AtlasRelationalAnalyst(BaseSpecialistAgent):
 
         # Use relational analysis tool
         analysis_tool = self.tools[0]  # RelationalAnalysisTool
-        result = analysis_tool._run(f"Analyze {entity_type} relationships depth {depth}")
+        result = analysis_tool._run(
+            f"Analyze {entity_type} relationships depth {depth}"
+        )
 
         return {
             "entity_type": entity_type,
             "depth": depth,
             "analysis": result,
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.utcnow(),
         }
 
     async def detect_anomalies(self, data_source: str) -> Dict[str, Any]:
@@ -371,7 +365,7 @@ class AtlasRelationalAnalyst(BaseSpecialistAgent):
         return {
             "data_source": data_source,
             "anomalies": result,
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.utcnow(),
         }
 
     async def _autonomous_loop(self):
@@ -417,7 +411,8 @@ class AtlasRelationalAnalyst(BaseSpecialistAgent):
         # Remove entries older than 24 hours
         cutoff = datetime.utcnow().timestamp() - 86400
         self.insights_cache = {
-            k: v for k, v in self.insights_cache.items()
+            k: v
+            for k, v in self.insights_cache.items()
             if v["timestamp"].timestamp() > cutoff
         }
 

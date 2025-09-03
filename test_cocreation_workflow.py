@@ -23,6 +23,7 @@ from codex.codex_manager import CodexManager
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 async def test_cocreation_workflow():
     """Test the complete co-creation workflow."""
     logger.info("🧪 Starting Co-Creation Workflow Integration Test")
@@ -42,38 +43,38 @@ async def test_cocreation_workflow():
 
         # Initialize Co-Creation Workflow
         workflow = CoCreationWorkflow(
-            sentinel=sentinel,
-            apprentice=apprentice,
-            codex=codex,
-            chatbot=None
+            sentinel=sentinel, apprentice=apprentice, codex=codex, chatbot=None
         )
 
         logger.info("✅ Components initialized successfully")
 
         # Test 1: Human-triggered workflow
         logger.info("🧪 Test 1: Human-triggered workflow")
-        human_input = "Explore the creative potential of ancient mythological landscapes"
+        human_input = (
+            "Explore the creative potential of ancient mythological landscapes"
+        )
 
         workflow_result = await workflow.start_cocreation_workflow(
             trigger_source="human",
             human_input=human_input,
-            workflow_id="test_workflow_001"
+            workflow_id="test_workflow_001",
         )
 
         logger.info(f"Workflow started: {workflow_result['workflow_id']}")
-        assert workflow_result['success'] == False  # Should be False initially as it's async
+        assert (
+            workflow_result["success"] == False
+        )  # Should be False initially as it's async
 
         # Check workflow status
         status = workflow.get_workflow_status("test_workflow_001")
         logger.info(f"Workflow status: {status}")
         assert status is not None
-        assert status['workflow_id'] == "test_workflow_001"
+        assert status["workflow_id"] == "test_workflow_001"
 
         # Test 2: Autonomous workflow
         logger.info("🧪 Test 2: Autonomous workflow")
         autonomous_result = await workflow.start_cocreation_workflow(
-            trigger_source="autonomous",
-            workflow_id="test_autonomous_001"
+            trigger_source="autonomous", workflow_id="test_autonomous_001"
         )
 
         logger.info(f"Autonomous workflow started: {autonomous_result['workflow_id']}")
@@ -95,8 +96,10 @@ async def test_cocreation_workflow():
     except Exception as e:
         logger.error(f"❌ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 def test_component_imports():
     """Test that all components can be imported."""
@@ -116,6 +119,7 @@ def test_component_imports():
         logger.error(f"❌ Import failed: {e}")
         return False
 
+
 def test_api_endpoints():
     """Test API endpoint definitions."""
     logger.info("🧪 Testing API endpoint definitions...")
@@ -125,7 +129,15 @@ def test_api_endpoints():
 
         # Check that expected routes exist
         routes = [route.path for route in workflow_router.routes]
-        expected_routes = ["/start", "/status/{workflow_id}", "/feedback", "/history", "/trigger-autonomous", "/philosophy", "/stats"]
+        expected_routes = [
+            "/start",
+            "/status/{workflow_id}",
+            "/feedback",
+            "/history",
+            "/trigger-autonomous",
+            "/philosophy",
+            "/stats",
+        ]
 
         for route in expected_routes:
             assert route in routes, f"Missing route: {route}"
@@ -136,6 +148,7 @@ def test_api_endpoints():
     except Exception as e:
         logger.error(f"❌ API test failed: {e}")
         return False
+
 
 async def main():
     """Run all tests."""
@@ -174,6 +187,7 @@ async def main():
     else:
         logger.error("⚠️  Some tests failed. Please check the implementation.")
         return 1
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

@@ -53,13 +53,15 @@ from ..a2a_protocol.schemas import (
     A2AMessage,
     InspirationRequest,
     CreationFeedback,
-    WorkflowTrigger
+    WorkflowTrigger,
 )
 
 logger = logging.getLogger(__name__)
 
+
 class WorkflowStage(Enum):
     """Stages in the co-creation workflow."""
+
     DOUBT = "doubt"
     DISCOVERY = "discovery"
     ART = "art"
@@ -67,9 +69,11 @@ class WorkflowStage(Enum):
     KNOWLEDGE = "knowledge"
     PUBLICATION = "publication"
 
+
 @dataclass
 class CoCreationState:
     """State for the co-creation workflow."""
+
     current_stage: WorkflowStage
     trigger_source: str  # "human" or "autonomous"
     human_input: Optional[str] = None
@@ -80,6 +84,7 @@ class CoCreationState:
     publication_ready: bool = False
     human_feedback: Optional[Dict[str, Any]] = None
     workflow_metadata: Dict[str, Any] = None
+
 
 class CoCreationWorkflow:
     """
@@ -95,7 +100,7 @@ class CoCreationWorkflow:
         apprentice: ApprenticeAgent,
         codex: CodexManager,
         chatbot: Optional[LoreWeaverRAG] = None,
-        llm: Optional[BaseLLM] = None
+        llm: Optional[BaseLLM] = None,
     ):
         self.sentinel = sentinel
         self.apprentice = apprentice
@@ -141,15 +146,23 @@ class CoCreationWorkflow:
 
         def should_continue_to_discovery(state: CoCreationState) -> bool:
             """Determine if we should proceed to discovery."""
-            return state.trigger_source in ["human", "autonomous"] and state.human_input is not None
+            return (
+                state.trigger_source in ["human", "autonomous"]
+                and state.human_input is not None
+            )
 
         def should_continue_to_art(state: CoCreationState) -> bool:
             """Determine if we should proceed to art generation."""
-            return state.discovery_results is not None and len(state.discovery_results.get("insights", [])) > 0
+            return (
+                state.discovery_results is not None
+                and len(state.discovery_results.get("insights", [])) > 0
+            )
 
         def should_continue_to_wisdom(state: CoCreationState) -> bool:
             """Determine if we should proceed to wisdom synthesis."""
-            return state.artistic_outputs is not None and len(state.artistic_outputs) > 0
+            return (
+                state.artistic_outputs is not None and len(state.artistic_outputs) > 0
+            )
 
         def should_continue_to_knowledge(state: CoCreationState) -> bool:
             """Determine if we should proceed to knowledge preservation."""
@@ -172,33 +185,23 @@ class CoCreationWorkflow:
 
         # Add edges with conditions
         workflow.add_conditional_edges(
-            "doubt",
-            should_continue_to_discovery,
-            {"discovery": "discovery", END: END}
+            "doubt", should_continue_to_discovery, {"discovery": "discovery", END: END}
         )
 
         workflow.add_conditional_edges(
-            "discovery",
-            should_continue_to_art,
-            {"art": "art", END: END}
+            "discovery", should_continue_to_art, {"art": "art", END: END}
         )
 
         workflow.add_conditional_edges(
-            "art",
-            should_continue_to_wisdom,
-            {"wisdom": "wisdom", END: END}
+            "art", should_continue_to_wisdom, {"wisdom": "wisdom", END: END}
         )
 
         workflow.add_conditional_edges(
-            "wisdom",
-            should_continue_to_knowledge,
-            {"knowledge": "knowledge", END: END}
+            "wisdom", should_continue_to_knowledge, {"knowledge": "knowledge", END: END}
         )
 
         workflow.add_conditional_edges(
-            "knowledge",
-            should_publish,
-            {"publication": "publication", END: END}
+            "knowledge", should_publish, {"publication": "publication", END: END}
         )
 
         # Set entry point
@@ -216,14 +219,15 @@ class CoCreationWorkflow:
                 "workflow_id": self.current_workflow_id,
                 "start_time": datetime.utcnow(),
                 "stages_completed": [],
-                "human_interactions": []
+                "human_interactions": [],
             }
 
         # If human input, analyze and prepare for discovery
         if state.trigger_source == "human" and state.human_input:
             # Use LLM to analyze human doubt/question
             if self.llm:
-                analysis = self.llm(f"""
+                analysis = self.llm(
+                    f"""
                 Analyze this human input for creative potential and research directions:
                 {state.human_input}
 
@@ -232,7 +236,8 @@ class CoCreationWorkflow:
                 2. Potential research directions
                 3. Artistic interpretation opportunities
                 4. Cultural/historical connections
-                """)
+                """
+                )
                 state.workflow_metadata["human_analysis"] = analysis
 
         state.current_stage = WorkflowStage.DOUBT
@@ -242,11 +247,15 @@ class CoCreationWorkflow:
 
     def _process_discovery_stage(self, state: CoCreationState) -> CoCreationState:
         """Process the discovery stage using Sentinel Orchestrator."""
-        logger.info(f"Processing discovery stage for workflow {self.current_workflow_id}")
+        logger.info(
+            f"Processing discovery stage for workflow {self.current_workflow_id}"
+        )
 
         try:
             # Use Sentinel for autonomous discovery
-            discovery_task = state.human_input or "Explore creative territories in geomythology"
+            discovery_task = (
+                state.human_input or "Explore creative territories in geomythology"
+            )
 
             # Run discovery process
             discovery_results = asyncio.run(
@@ -257,7 +266,9 @@ class CoCreationWorkflow:
             state.current_stage = WorkflowStage.DISCOVERY
             state.workflow_metadata["stages_completed"].append("discovery")
 
-            logger.info(f"Discovery completed with {len(discovery_results.get('insights', []))} insights")
+            logger.info(
+                f"Discovery completed with {len(discovery_results.get('insights', []))} insights"
+            )
 
         except Exception as e:
             logger.error(f"Error in discovery stage: {e}")
@@ -280,22 +291,24 @@ class CoCreationWorkflow:
                 art_description = f"Create artistic representation of: {insight.get('description', '')}"
 
                 # Use Apprentice Agent for style transfer/art generation
-                art_result = asyncio.run(
-                    self.apprentice.process_task(art_description)
-                )
+                art_result = asyncio.run(self.apprentice.process_task(art_description))
 
-                artistic_outputs.append({
-                    "insight_id": insight.get("id"),
-                    "description": art_description,
-                    "artwork": art_result,
-                    "timestamp": datetime.utcnow()
-                })
+                artistic_outputs.append(
+                    {
+                        "insight_id": insight.get("id"),
+                        "description": art_description,
+                        "artwork": art_result,
+                        "timestamp": datetime.utcnow(),
+                    }
+                )
 
             state.artistic_outputs = artistic_outputs
             state.current_stage = WorkflowStage.ART
             state.workflow_metadata["stages_completed"].append("art")
 
-            logger.info(f"Art generation completed with {len(artistic_outputs)} artworks")
+            logger.info(
+                f"Art generation completed with {len(artistic_outputs)} artworks"
+            )
 
         except Exception as e:
             logger.error(f"Error in art stage: {e}")
@@ -317,18 +330,24 @@ class CoCreationWorkflow:
                 input_data={
                     "trigger": state.human_input,
                     "discovery_results": state.discovery_results,
-                    "artistic_outputs": state.artistic_outputs
+                    "artistic_outputs": state.artistic_outputs,
                 },
                 output_data={
                     "workflow_metadata": state.workflow_metadata,
-                    "stage": "wisdom_synthesis"
+                    "stage": "wisdom_synthesis",
                 },
                 success_metrics={
-                    "stages_completed": len(state.workflow_metadata.get("stages_completed", [])),
+                    "stages_completed": len(
+                        state.workflow_metadata.get("stages_completed", [])
+                    ),
                     "artworks_generated": len(state.artistic_outputs or []),
-                    "insights_discovered": len(state.discovery_results.get("insights", [])) if state.discovery_results else 0
+                    "insights_discovered": len(
+                        state.discovery_results.get("insights", [])
+                    )
+                    if state.discovery_results
+                    else 0,
                 },
-                workflow_context=self.current_workflow_id
+                workflow_context=self.current_workflow_id,
             )
 
             # Extract wisdom insights
@@ -336,14 +355,16 @@ class CoCreationWorkflow:
                 "contribution_id": workflow_contribution,
                 "patterns_identified": self._extract_patterns_from_workflow(state),
                 "learning_opportunities": self._identify_learning_opportunities(state),
-                "collaboration_insights": self._analyze_collaboration_patterns(state)
+                "collaboration_insights": self._analyze_collaboration_patterns(state),
             }
 
             state.wisdom_insights = wisdom_insights
             state.current_stage = WorkflowStage.WISDOM
             state.workflow_metadata["stages_completed"].append("wisdom")
 
-            logger.info(f"Wisdom synthesis completed, archived as {workflow_contribution}")
+            logger.info(
+                f"Wisdom synthesis completed, archived as {workflow_contribution}"
+            )
 
         except Exception as e:
             logger.error(f"Error in wisdom stage: {e}")
@@ -353,16 +374,22 @@ class CoCreationWorkflow:
 
     def _process_knowledge_stage(self, state: CoCreationState) -> CoCreationState:
         """Process the knowledge preservation stage using Codex."""
-        logger.info(f"Processing knowledge stage for workflow {self.current_workflow_id}")
+        logger.info(
+            f"Processing knowledge stage for workflow {self.current_workflow_id}"
+        )
 
         try:
             # Generate legacy chapter for the Galactic Storybook
             chapter_id = self.codex.generate_legacy_chapter(
                 chapter_type="collaboration",
                 collaboration_name=f"CoCreation_{self.current_workflow_id}",
-                agents=["SentinelOrchestrator", "ApprenticeAgent", "CoCreationWorkflow"],
+                agents=[
+                    "SentinelOrchestrator",
+                    "ApprenticeAgent",
+                    "CoCreationWorkflow",
+                ],
                 contributions=[state.wisdom_insights.get("contribution_id")],
-                theme="human_ai_partnership"
+                theme="human_ai_partnership",
             )
 
             # Document strategy from this workflow
@@ -372,36 +399,61 @@ class CoCreationWorkflow:
                 description=f"Successful human-AI co-creation workflow pattern",
                 context="Posthuman creativity and geomythological exploration",
                 steps=[
-                    {"step": "doubt", "description": "Human input or autonomous trigger"},
-                    {"step": "discovery", "description": "Autonomous exploration and insight generation"},
-                    {"step": "art", "description": "Artistic representation of discoveries"},
-                    {"step": "wisdom", "description": "Knowledge synthesis and archiving"},
-                    {"step": "knowledge", "description": "Legacy preservation and learning"}
+                    {
+                        "step": "doubt",
+                        "description": "Human input or autonomous trigger",
+                    },
+                    {
+                        "step": "discovery",
+                        "description": "Autonomous exploration and insight generation",
+                    },
+                    {
+                        "step": "art",
+                        "description": "Artistic representation of discoveries",
+                    },
+                    {
+                        "step": "wisdom",
+                        "description": "Knowledge synthesis and archiving",
+                    },
+                    {
+                        "step": "knowledge",
+                        "description": "Legacy preservation and learning",
+                    },
                 ],
                 success_criteria=[
                     "Human satisfaction with creative output",
                     "Successful knowledge preservation",
-                    "Positive collaboration metrics"
+                    "Positive collaboration metrics",
                 ],
                 lessons_learned=[
                     "Importance of human-AI feedback loops",
                     "Value of multi-stage creative processes",
-                    "Benefits of autonomous discovery integration"
+                    "Benefits of autonomous discovery integration",
                 ],
                 created_by="CoCreationWorkflow",
                 related_contributions=[state.wisdom_insights.get("contribution_id")],
-                tags=["co-creation", "human-ai", "posthuman-creativity"]
+                tags=["co-creation", "human-ai", "posthuman-creativity"],
             )
 
             state.knowledge_entries = [
-                {"type": "chapter", "id": chapter_id, "title": f"CoCreation_{self.current_workflow_id}"},
-                {"type": "strategy", "id": strategy_id, "title": f"Co-Creation Pattern"}
+                {
+                    "type": "chapter",
+                    "id": chapter_id,
+                    "title": f"CoCreation_{self.current_workflow_id}",
+                },
+                {
+                    "type": "strategy",
+                    "id": strategy_id,
+                    "title": f"Co-Creation Pattern",
+                },
             ]
 
             state.current_stage = WorkflowStage.KNOWLEDGE
             state.workflow_metadata["stages_completed"].append("knowledge")
 
-            logger.info(f"Knowledge preservation completed: chapter {chapter_id}, strategy {strategy_id}")
+            logger.info(
+                f"Knowledge preservation completed: chapter {chapter_id}, strategy {strategy_id}"
+            )
 
         except Exception as e:
             logger.error(f"Error in knowledge stage: {e}")
@@ -411,7 +463,9 @@ class CoCreationWorkflow:
 
     def _process_publication_stage(self, state: CoCreationState) -> CoCreationState:
         """Process the publication stage."""
-        logger.info(f"Processing publication stage for workflow {self.current_workflow_id}")
+        logger.info(
+            f"Processing publication stage for workflow {self.current_workflow_id}"
+        )
 
         try:
             # Publish the chapter to Galactic Storybook
@@ -419,7 +473,9 @@ class CoCreationWorkflow:
                 if entry["type"] == "chapter":
                     success = self.codex.chapter_generator.publish_chapter(entry["id"])
                     if success:
-                        logger.info(f"Chapter {entry['id']} published to Galactic Storybook")
+                        logger.info(
+                            f"Chapter {entry['id']} published to Galactic Storybook"
+                        )
 
             # Update workflow metadata
             state.workflow_metadata["publication_time"] = datetime.utcnow()
@@ -428,7 +484,9 @@ class CoCreationWorkflow:
             state.current_stage = WorkflowStage.PUBLICATION
             state.publication_ready = True
 
-            logger.info(f"Publication stage completed for workflow {self.current_workflow_id}")
+            logger.info(
+                f"Publication stage completed for workflow {self.current_workflow_id}"
+            )
 
         except Exception as e:
             logger.error(f"Error in publication stage: {e}")
@@ -457,29 +515,37 @@ class CoCreationWorkflow:
         # Analyze success metrics
         success_metrics = state.workflow_metadata.get("stages_completed", [])
         if len(success_metrics) >= 5:
-            opportunities.append("Full workflow completion indicates robust integration")
+            opportunities.append(
+                "Full workflow completion indicates robust integration"
+            )
 
         # Analyze human feedback
         if state.human_feedback and state.human_feedback.get("rating", 0) >= 4:
-            opportunities.append("High human satisfaction suggests effective co-creation")
+            opportunities.append(
+                "High human satisfaction suggests effective co-creation"
+            )
 
         return opportunities
 
     def _analyze_collaboration_patterns(self, state: CoCreationState) -> Dict[str, Any]:
         """Analyze collaboration patterns in the workflow."""
         return {
-            "agents_involved": ["SentinelOrchestrator", "ApprenticeAgent", "CodexManager"],
+            "agents_involved": [
+                "SentinelOrchestrator",
+                "ApprenticeAgent",
+                "CodexManager",
+            ],
             "communication_channels": ["A2A_Protocol", "Direct_API"],
             "feedback_loops": bool(state.human_feedback),
             "autonomous_elements": ["discovery", "art_generation"],
-            "human_elements": ["input", "feedback", "curation"]
+            "human_elements": ["input", "feedback", "curation"],
         }
 
     async def start_cocreation_workflow(
         self,
         trigger_source: str,
         human_input: Optional[str] = None,
-        workflow_id: Optional[str] = None
+        workflow_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Start a new co-creation workflow.
@@ -492,14 +558,16 @@ class CoCreationWorkflow:
         Returns:
             Workflow results
         """
-        self.current_workflow_id = workflow_id or f"cocreation_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+        self.current_workflow_id = (
+            workflow_id or f"cocreation_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+        )
 
         # Initialize state
         initial_state = CoCreationState(
             current_stage=WorkflowStage.DOUBT,
             trigger_source=trigger_source,
             human_input=human_input,
-            workflow_metadata={"workflow_id": self.current_workflow_id}
+            workflow_metadata={"workflow_id": self.current_workflow_id},
         )
 
         try:
@@ -507,9 +575,7 @@ class CoCreationWorkflow:
 
             # Execute the workflow
             final_state = await asyncio.get_event_loop().run_in_executor(
-                None,
-                self.workflow_graph.invoke,
-                initial_state
+                None, self.workflow_graph.invoke, initial_state
             )
 
             # Store in history
@@ -517,12 +583,14 @@ class CoCreationWorkflow:
                 "workflow_id": self.current_workflow_id,
                 "final_state": final_state,
                 "completion_time": datetime.utcnow(),
-                "success": final_state.current_stage == WorkflowStage.PUBLICATION
+                "success": final_state.current_stage == WorkflowStage.PUBLICATION,
             }
 
             self.workflow_history.append(workflow_result)
 
-            logger.info(f"Co-creation workflow {self.current_workflow_id} completed at stage {final_state.current_stage}")
+            logger.info(
+                f"Co-creation workflow {self.current_workflow_id} completed at stage {final_state.current_stage}"
+            )
 
             return workflow_result
 
@@ -531,13 +599,11 @@ class CoCreationWorkflow:
             return {
                 "workflow_id": self.current_workflow_id,
                 "error": str(e),
-                "success": False
+                "success": False,
             }
 
     async def submit_human_feedback(
-        self,
-        workflow_id: str,
-        feedback: Dict[str, Any]
+        self, workflow_id: str, feedback: Dict[str, Any]
     ) -> bool:
         """
         Submit human feedback for a workflow.
@@ -578,7 +644,9 @@ class CoCreationWorkflow:
             # Process publication
             final_state = self._process_publication_stage(state)
 
-            logger.info(f"Workflow {state.workflow_metadata['workflow_id']} advanced to publication")
+            logger.info(
+                f"Workflow {state.workflow_metadata['workflow_id']} advanced to publication"
+            )
 
         except Exception as e:
             logger.error(f"Error continuing to publication: {e}")
@@ -590,9 +658,11 @@ class CoCreationWorkflow:
                 return {
                     "workflow_id": workflow_id,
                     "current_stage": workflow["final_state"].current_stage.value,
-                    "stages_completed": workflow["final_state"].workflow_metadata.get("stages_completed", []),
+                    "stages_completed": workflow["final_state"].workflow_metadata.get(
+                        "stages_completed", []
+                    ),
                     "success": workflow.get("success", False),
-                    "completion_time": workflow.get("completion_time")
+                    "completion_time": workflow.get("completion_time"),
                 }
         return None
 
@@ -604,7 +674,9 @@ class CoCreationWorkflow:
                 "current_stage": w["final_state"].current_stage.value,
                 "success": w.get("success", False),
                 "completion_time": w.get("completion_time"),
-                "stages_completed": len(w["final_state"].workflow_metadata.get("stages_completed", []))
+                "stages_completed": len(
+                    w["final_state"].workflow_metadata.get("stages_completed", [])
+                ),
             }
             for w in self.workflow_history
         ]

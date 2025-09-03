@@ -42,7 +42,9 @@ class CodexManager:
         self.archival_system = ArchivalSystem(str(self.base_path / "archive"))
         self.knowledge_base = KnowledgeBase(str(self.base_path / "knowledge"))
         self.chapter_generator = ChapterGenerator(str(self.base_path / "chapters"))
-        self.attribution_tracker = AttributionTracker(str(self.base_path / "attribution"))
+        self.attribution_tracker = AttributionTracker(
+            str(self.base_path / "attribution")
+        )
 
         # Integration hooks
         self.workflow_tracer = None
@@ -84,7 +86,7 @@ class CodexManager:
         collaboration_partners: Optional[List[str]] = None,
         ai_model: Optional[str] = None,
         ai_provider: Optional[str] = None,
-        human_contributor: Optional[str] = None
+        human_contributor: Optional[str] = None,
     ) -> str:
         """
         Archive a completed agent task.
@@ -121,7 +123,7 @@ class CodexManager:
             collaboration_partners=collaboration_partners,
             ai_model=ai_model,
             ai_provider=ai_provider,
-            human_contributor=human_contributor
+            human_contributor=human_contributor,
         )
 
         # Record attribution
@@ -131,20 +133,22 @@ class CodexManager:
             contribution_type=contribution_type,
             ai_model=ai_model,
             ai_provider=ai_provider,
-            human_contributor=human_contributor
+            human_contributor=human_contributor,
         )
 
         # Extract knowledge from the contribution
-        self._extract_knowledge_from_contribution({
-            'contribution_id': contribution_id,
-            'agent_name': agent_name,
-            'task_description': task_description,
-            'contribution_type': contribution_type,
-            'input_data': input_data,
-            'output_data': output_data,
-            'success_metrics': success_metrics,
-            'collaboration_partners': collaboration_partners or []
-        })
+        self._extract_knowledge_from_contribution(
+            {
+                "contribution_id": contribution_id,
+                "agent_name": agent_name,
+                "task_description": task_description,
+                "contribution_type": contribution_type,
+                "input_data": input_data,
+                "output_data": output_data,
+                "success_metrics": success_metrics,
+                "collaboration_partners": collaboration_partners or [],
+            }
+        )
 
         logger.info(f"Archived task for {agent_name}: {contribution_id}")
         return contribution_id
@@ -178,7 +182,7 @@ class CodexManager:
         lessons_learned: List[str],
         created_by: str,
         related_contributions: Optional[List[str]] = None,
-        tags: Optional[List[str]] = None
+        tags: Optional[List[str]] = None,
     ) -> str:
         """
         Document a new strategy or pattern.
@@ -210,28 +214,28 @@ class CodexManager:
             lessons_learned=lessons_learned,
             created_by=created_by,
             related_contributions=related_contributions,
-            tags=tags
+            tags=tags,
         )
 
         # Extract insights from strategy
-        self.knowledge_base.extract_insights_from_strategies([{
-            'strategy_id': strategy_id,
-            'strategy_type': strategy_type,
-            'title': title,
-            'description': description,
-            'steps': steps,
-            'success_criteria': success_criteria,
-            'lessons_learned': lessons_learned
-        }])
+        self.knowledge_base.extract_insights_from_strategies(
+            [
+                {
+                    "strategy_id": strategy_id,
+                    "strategy_type": strategy_type,
+                    "title": title,
+                    "description": description,
+                    "steps": steps,
+                    "success_criteria": success_criteria,
+                    "lessons_learned": lessons_learned,
+                }
+            ]
+        )
 
         logger.info(f"Documented strategy: {strategy_id} - {title}")
         return strategy_id
 
-    def generate_legacy_chapter(
-        self,
-        chapter_type: str,
-        **kwargs
-    ) -> str:
+    def generate_legacy_chapter(self, chapter_type: str, **kwargs) -> str:
         """
         Generate a legacy chapter for the Galactic Storybook.
 
@@ -244,38 +248,35 @@ class CodexManager:
         """
         if chapter_type == "agent_hero":
             return self.chapter_generator.generate_agent_hero_chapter(
-                agent_name=kwargs['agent_name'],
-                contributions=kwargs['contributions'],
-                strategies=kwargs['strategies'],
-                theme=kwargs.get('theme', 'hero_journey')
+                agent_name=kwargs["agent_name"],
+                contributions=kwargs["contributions"],
+                strategies=kwargs["strategies"],
+                theme=kwargs.get("theme", "hero_journey"),
             )
 
         elif chapter_type == "era":
             return self.chapter_generator.generate_era_chapter(
-                era_name=kwargs['era_name'],
-                start_date=kwargs['start_date'],
-                end_date=kwargs['end_date'],
-                contributions=kwargs['contributions'],
-                strategies=kwargs['strategies'],
-                theme=kwargs.get('theme', 'technological_evolution')
+                era_name=kwargs["era_name"],
+                start_date=kwargs["start_date"],
+                end_date=kwargs["end_date"],
+                contributions=kwargs["contributions"],
+                strategies=kwargs["strategies"],
+                theme=kwargs.get("theme", "technological_evolution"),
             )
 
         elif chapter_type == "collaboration":
             return self.chapter_generator.generate_collaboration_chapter(
-                collaboration_name=kwargs['collaboration_name'],
-                agents=kwargs['agents'],
-                contributions=kwargs['contributions'],
-                theme=kwargs.get('theme', 'harmony')
+                collaboration_name=kwargs["collaboration_name"],
+                agents=kwargs["agents"],
+                contributions=kwargs["contributions"],
+                theme=kwargs.get("theme", "harmony"),
             )
 
         else:
             raise ValueError(f"Unknown chapter type: {chapter_type}")
 
     def search_codex(
-        self,
-        query: str,
-        search_type: str = "all",
-        **filters
+        self, query: str, search_type: str = "all", **filters
     ) -> Dict[str, List[Any]]:
         """
         Search across all Codex components.
@@ -291,28 +292,30 @@ class CodexManager:
         results = {}
 
         if search_type in ["all", "contributions"]:
-            results['contributions'] = self.archival_system.search_contributions(query)
+            results["contributions"] = self.archival_system.search_contributions(query)
 
         if search_type in ["all", "strategies"]:
-            results['strategies'] = self.archival_system.search_strategies(query)
+            results["strategies"] = self.archival_system.search_strategies(query)
 
         if search_type in ["all", "knowledge"]:
-            results['knowledge'] = self.knowledge_base.search_knowledge(
+            results["knowledge"] = self.knowledge_base.search_knowledge(
                 query,
-                category=filters.get('category'),
-                tags=filters.get('tags'),
-                min_confidence=filters.get('min_confidence', 0.0),
-                limit=filters.get('limit', 10)
+                category=filters.get("category"),
+                tags=filters.get("tags"),
+                min_confidence=filters.get("min_confidence", 0.0),
+                limit=filters.get("limit", 10),
             )
 
         if search_type in ["all", "chapters"]:
             # Search chapters by title and narrative
             chapters = []
             for chapter in self.chapter_generator.chapters.values():
-                if (query.lower() in chapter.title.lower() or
-                    query.lower() in chapter.narrative.lower()):
+                if (
+                    query.lower() in chapter.title.lower()
+                    or query.lower() in chapter.narrative.lower()
+                ):
                     chapters.append(chapter)
-            results['chapters'] = chapters
+            results["chapters"] = chapters
 
         return results
 
@@ -327,39 +330,42 @@ class CodexManager:
         attribution_report = self.attribution_tracker.generate_attribution_report()
 
         # Calculate top contributors
-        top_contributors = self.attribution_tracker.get_top_contributors(by="weight", limit=5)
+        top_contributors = self.attribution_tracker.get_top_contributors(
+            by="weight", limit=5
+        )
 
         # Calculate most successful strategies
         strategies = list(self.archival_system.strategies.values())
         most_successful = sorted(
-            strategies,
-            key=lambda s: s.success_rate,
-            reverse=True
+            strategies, key=lambda s: s.success_rate, reverse=True
         )[:5]
 
         return CodexStatistics(
-            total_contributions=archival_stats['total_contributions'],
-            total_strategies=archival_stats['total_strategies'],
+            total_contributions=archival_stats["total_contributions"],
+            total_strategies=archival_stats["total_strategies"],
             total_chapters=len(self.chapter_generator.chapters),
             total_knowledge_entries=len(self.knowledge_base.knowledge_entries),
             active_agents=len(self.attribution_tracker.agent_attributions),
             avg_contribution_quality=sum(
-                c.success_metrics.get('quality_score', 0)
+                c.success_metrics.get("quality_score", 0)
                 for c in self.archival_system.contributions.values()
-            ) / max(len(self.archival_system.contributions), 1),
+            )
+            / max(len(self.archival_system.contributions), 1),
             top_contributing_agents=[
-                {'name': tc['agent_name'], 'contributions': tc['score']}
+                {"name": tc["agent_name"], "contributions": tc["score"]}
                 for tc in top_contributors
             ],
             most_successful_strategies=[
-                {'id': s.strategy_id, 'title': s.title, 'success_rate': s.success_rate}
+                {"id": s.strategy_id, "title": s.title, "success_rate": s.success_rate}
                 for s in most_successful
             ],
-            knowledge_coverage=knowledge_stats.get('category_counts', {}),
-            generated_at=datetime.utcnow()
+            knowledge_coverage=knowledge_stats.get("category_counts", {}),
+            generated_at=datetime.utcnow(),
         )
 
-    def export_codex_data(self, export_path: str, include_chapters: bool = True) -> bool:
+    def export_codex_data(
+        self, export_path: str, include_chapters: bool = True
+    ) -> bool:
         """
         Export all Codex data for backup or migration.
 
@@ -376,28 +382,35 @@ class CodexManager:
 
             # Export contributions
             contributions_file = export_dir / "contributions.json"
-            with open(contributions_file, 'w') as f:
+            with open(contributions_file, "w") as f:
                 contributions_data = {
-                    'exported_at': datetime.utcnow().isoformat(),
-                    'contributions': [c.to_dict() for c in self.archival_system.contributions.values()]
+                    "exported_at": datetime.utcnow().isoformat(),
+                    "contributions": [
+                        c.to_dict() for c in self.archival_system.contributions.values()
+                    ],
                 }
                 json.dump(contributions_data, f, indent=2, default=str)
 
             # Export strategies
             strategies_file = export_dir / "strategies.json"
-            with open(strategies_file, 'w') as f:
+            with open(strategies_file, "w") as f:
                 strategies_data = {
-                    'exported_at': datetime.utcnow().isoformat(),
-                    'strategies': [s.to_dict() for s in self.archival_system.strategies.values()]
+                    "exported_at": datetime.utcnow().isoformat(),
+                    "strategies": [
+                        s.to_dict() for s in self.archival_system.strategies.values()
+                    ],
                 }
                 json.dump(strategies_data, f, indent=2, default=str)
 
             # Export knowledge
             knowledge_file = export_dir / "knowledge.json"
-            with open(knowledge_file, 'w') as f:
+            with open(knowledge_file, "w") as f:
                 knowledge_data = {
-                    'exported_at': datetime.utcnow().isoformat(),
-                    'knowledge_entries': [k.to_dict() for k in self.knowledge_base.knowledge_entries.values()]
+                    "exported_at": datetime.utcnow().isoformat(),
+                    "knowledge_entries": [
+                        k.to_dict()
+                        for k in self.knowledge_base.knowledge_entries.values()
+                    ],
                 }
                 json.dump(knowledge_data, f, indent=2, default=str)
 
@@ -408,19 +421,22 @@ class CodexManager:
             if include_chapters:
                 # Export chapters
                 chapters_file = export_dir / "chapters.json"
-                with open(chapters_file, 'w') as f:
+                with open(chapters_file, "w") as f:
                     chapters_data = {
-                        'exported_at': datetime.utcnow().isoformat(),
-                        'chapters': [c.to_dict() for c in self.chapter_generator.chapters.values()]
+                        "exported_at": datetime.utcnow().isoformat(),
+                        "chapters": [
+                            c.to_dict()
+                            for c in self.chapter_generator.chapters.values()
+                        ],
                     }
                     json.dump(chapters_data, f, indent=2, default=str)
 
             # Export statistics
             stats_file = export_dir / "statistics.json"
-            with open(stats_file, 'w') as f:
+            with open(stats_file, "w") as f:
                 stats_data = {
-                    'exported_at': datetime.utcnow().isoformat(),
-                    'statistics': self.get_codex_statistics().to_dict()
+                    "exported_at": datetime.utcnow().isoformat(),
+                    "statistics": self.get_codex_statistics().to_dict(),
                 }
                 json.dump(stats_data, f, indent=2, default=str)
 
@@ -439,8 +455,8 @@ class CodexManager:
     def _extract_patterns_from_workflow(self, workflow_trace: Dict[str, Any]):
         """Extract patterns from workflow traces."""
         # Extract workflow patterns as knowledge
-        workflow_id = workflow_trace.get('workflow_id', 'unknown')
-        workflow_type = workflow_trace.get('workflow_type', 'general')
+        workflow_id = workflow_trace.get("workflow_id", "unknown")
+        workflow_type = workflow_trace.get("workflow_type", "general")
 
         # Create knowledge entry for workflow pattern
         self.knowledge_base.add_knowledge_entry(
@@ -449,15 +465,23 @@ class CodexManager:
             content=f"Successful workflow pattern for {workflow_type} involving {len(workflow_trace.get('agent_interactions', []))} agent interactions.",
             source_type="workflow_trace",
             source_id=workflow_id,
-            confidence_score=workflow_trace.get('success_metrics', {}).get('workflow_efficiency', 0.5),
+            confidence_score=workflow_trace.get("success_metrics", {}).get(
+                "workflow_efficiency", 0.5
+            ),
             tags=["workflow", "pattern", workflow_type],
             metadata={
-                'total_nodes': workflow_trace.get('success_metrics', {}).get('total_nodes', 0),
-                'efficiency_score': workflow_trace.get('success_metrics', {}).get('workflow_efficiency', 0)
-            }
+                "total_nodes": workflow_trace.get("success_metrics", {}).get(
+                    "total_nodes", 0
+                ),
+                "efficiency_score": workflow_trace.get("success_metrics", {}).get(
+                    "workflow_efficiency", 0
+                ),
+            },
         )
 
-    def get_learning_recommendations(self, agent_name: str, context: str) -> List[Dict[str, Any]]:
+    def get_learning_recommendations(
+        self, agent_name: str, context: str
+    ) -> List[Dict[str, Any]]:
         """
         Get learning recommendations for an agent based on Codex data.
 
@@ -471,36 +495,44 @@ class CodexManager:
         recommendations = []
 
         # Search for relevant knowledge
-        relevant_knowledge = self.knowledge_base.search_knowledge(
-            context,
-            limit=5
-        )
+        relevant_knowledge = self.knowledge_base.search_knowledge(context, limit=5)
 
         for knowledge in relevant_knowledge:
-            recommendations.append({
-                'type': 'knowledge',
-                'title': knowledge.title,
-                'content': knowledge.content,
-                'confidence': knowledge.confidence_score,
-                'source': knowledge.source_type
-            })
+            recommendations.append(
+                {
+                    "type": "knowledge",
+                    "title": knowledge.title,
+                    "content": knowledge.content,
+                    "confidence": knowledge.confidence_score,
+                    "source": knowledge.source_type,
+                }
+            )
 
         # Find similar successful agents
-        similar_contributions = self.archival_system.get_contributions_by_agent(agent_name)
+        similar_contributions = self.archival_system.get_contributions_by_agent(
+            agent_name
+        )
         if similar_contributions:
             # Get strategies from similar contexts
             context_strategies = [
-                s for s in self.archival_system.strategies.values()
-                if any(c_id in s.related_contributions for c in similar_contributions for c_id in [c.contribution_id])
+                s
+                for s in self.archival_system.strategies.values()
+                if any(
+                    c_id in s.related_contributions
+                    for c in similar_contributions
+                    for c_id in [c.contribution_id]
+                )
             ]
 
             for strategy in context_strategies[:3]:
-                recommendations.append({
-                    'type': 'strategy',
-                    'title': strategy.title,
-                    'description': strategy.description,
-                    'success_rate': strategy.success_rate,
-                    'source': 'codex_strategy'
-                })
+                recommendations.append(
+                    {
+                        "type": "strategy",
+                        "title": strategy.title,
+                        "description": strategy.description,
+                        "success_rate": strategy.success_rate,
+                        "source": "codex_strategy",
+                    }
+                )
 
         return recommendations

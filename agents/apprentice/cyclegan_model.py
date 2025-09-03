@@ -27,7 +27,7 @@ class ResidualBlock(nn.Module):
             nn.ReLU(inplace=True),
             nn.ReflectionPad2d(1),
             nn.Conv2d(channels, channels, 3),
-            nn.InstanceNorm2d(channels)
+            nn.InstanceNorm2d(channels),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -37,7 +37,12 @@ class ResidualBlock(nn.Module):
 class Generator(nn.Module):
     """Generator network for CycleGAN."""
 
-    def __init__(self, input_channels: int = 3, output_channels: int = 3, n_residual_blocks: int = 9):
+    def __init__(
+        self,
+        input_channels: int = 3,
+        output_channels: int = 3,
+        n_residual_blocks: int = 9,
+    ):
         super(Generator, self).__init__()
 
         # Initial convolution block
@@ -45,7 +50,7 @@ class Generator(nn.Module):
             nn.ReflectionPad2d(3),
             nn.Conv2d(input_channels, 64, 7),
             nn.InstanceNorm2d(64),
-            nn.ReLU(inplace=True)
+            nn.ReLU(inplace=True),
         ]
 
         # Downsampling
@@ -55,7 +60,7 @@ class Generator(nn.Module):
             model += [
                 nn.Conv2d(in_features, out_features, 3, stride=2, padding=1),
                 nn.InstanceNorm2d(out_features),
-                nn.ReLU(inplace=True)
+                nn.ReLU(inplace=True),
             ]
             in_features = out_features
             out_features = in_features * 2
@@ -68,19 +73,17 @@ class Generator(nn.Module):
         out_features = in_features // 2
         for _ in range(2):
             model += [
-                nn.ConvTranspose2d(in_features, out_features, 3, stride=2, padding=1, output_padding=1),
+                nn.ConvTranspose2d(
+                    in_features, out_features, 3, stride=2, padding=1, output_padding=1
+                ),
                 nn.InstanceNorm2d(out_features),
-                nn.ReLU(inplace=True)
+                nn.ReLU(inplace=True),
             ]
             in_features = out_features
             out_features = in_features // 2
 
         # Output layer
-        model += [
-            nn.ReflectionPad2d(3),
-            nn.Conv2d(64, output_channels, 7),
-            nn.Tanh()
-        ]
+        model += [nn.ReflectionPad2d(3), nn.Conv2d(64, output_channels, 7), nn.Tanh()]
 
         self.model = nn.Sequential(*model)
 
@@ -94,7 +97,9 @@ class Discriminator(nn.Module):
     def __init__(self, input_channels: int = 3):
         super(Discriminator, self).__init__()
 
-        def discriminator_block(in_filters: int, out_filters: int, normalize: bool = True):
+        def discriminator_block(
+            in_filters: int, out_filters: int, normalize: bool = True
+        ):
             """Returns downsampling layers of each discriminator block."""
             layers = [nn.Conv2d(in_filters, out_filters, 4, stride=2, padding=1)]
             if normalize:
@@ -108,7 +113,7 @@ class Discriminator(nn.Module):
             *discriminator_block(128, 256),
             *discriminator_block(256, 512),
             nn.ZeroPad2d((1, 0, 1, 0)),
-            nn.Conv2d(512, 1, 4, padding=1)
+            nn.Conv2d(512, 1, 4, padding=1),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -127,7 +132,12 @@ class CycleGAN(nn.Module):
     - Adversarial loss
     """
 
-    def __init__(self, device: torch.device, lambda_cycle: float = 10.0, lambda_identity: float = 5.0):
+    def __init__(
+        self,
+        device: torch.device,
+        lambda_cycle: float = 10.0,
+        lambda_identity: float = 5.0,
+    ):
         super(CycleGAN, self).__init__()
 
         self.device = device
@@ -148,7 +158,8 @@ class CycleGAN(nn.Module):
         # Initialize optimizers
         self.optimizer_G = Adam(
             list(self.G_AB.parameters()) + list(self.G_BA.parameters()),
-            lr=0.0002, betas=(0.5, 0.999)
+            lr=0.0002,
+            betas=(0.5, 0.999),
         )
         self.optimizer_D_A = Adam(self.D_A.parameters(), lr=0.0002, betas=(0.5, 0.999))
         self.optimizer_D_B = Adam(self.D_B.parameters(), lr=0.0002, betas=(0.5, 0.999))
@@ -166,7 +177,9 @@ class CycleGAN(nn.Module):
 
         logger.info("CycleGAN model initialized")
 
-    def forward(self, real_A: torch.Tensor, real_B: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(
+        self, real_A: torch.Tensor, real_B: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Forward pass through the CycleGAN.
 
@@ -181,7 +194,9 @@ class CycleGAN(nn.Module):
         fake_A = self.G_BA(real_B)
         return fake_B, fake_A
 
-    def backward_D_basic(self, netD: nn.Module, real: torch.Tensor, fake: torch.Tensor) -> torch.Tensor:
+    def backward_D_basic(
+        self, netD: nn.Module, real: torch.Tensor, fake: torch.Tensor
+    ) -> torch.Tensor:
         """Calculate GAN loss for the discriminator."""
         # Real
         pred_real = netD(real)
@@ -204,7 +219,9 @@ class CycleGAN(nn.Module):
         """Calculate discriminator B loss."""
         return self.backward_D_basic(self.D_B, real_B, fake_B)
 
-    def backward_G(self, real_A: torch.Tensor, real_B: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def backward_G(
+        self, real_A: torch.Tensor, real_B: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Calculate generator losses including GAN, cycle, and identity losses.
 
@@ -239,12 +256,18 @@ class CycleGAN(nn.Module):
         loss_identity = loss_identity_A + loss_identity_B
 
         # Total loss
-        loss_G = loss_G_GAN + self.lambda_cycle * loss_cycle + self.lambda_identity * loss_identity
+        loss_G = (
+            loss_G_GAN
+            + self.lambda_cycle * loss_cycle
+            + self.lambda_identity * loss_identity
+        )
         loss_G.backward()
 
         return loss_G, loss_G_GAN, loss_cycle
 
-    def optimize_parameters(self, real_A: torch.Tensor, real_B: torch.Tensor) -> Dict[str, float]:
+    def optimize_parameters(
+        self, real_A: torch.Tensor, real_B: torch.Tensor
+    ) -> Dict[str, float]:
         """
         Optimize model parameters for one training step.
 
@@ -283,11 +306,11 @@ class CycleGAN(nn.Module):
         self.scheduler_D_B.step()
 
         return {
-            'loss_G': loss_G.item(),
-            'loss_G_GAN': loss_G_GAN.item(),
-            'loss_cycle': loss_cycle.item(),
-            'loss_D_A': loss_D_A.item(),
-            'loss_D_B': loss_D_B.item()
+            "loss_G": loss_G.item(),
+            "loss_G_GAN": loss_G_GAN.item(),
+            "loss_cycle": loss_cycle.item(),
+            "loss_D_A": loss_D_A.item(),
+            "loss_D_B": loss_D_B.item(),
         }
 
     def set_requires_grad(self, nets: list, requires_grad: bool = False):
@@ -301,33 +324,36 @@ class CycleGAN(nn.Module):
 
     def save_model(self, path: str):
         """Save model checkpoints."""
-        torch.save({
-            'G_AB_state_dict': self.G_AB.state_dict(),
-            'G_BA_state_dict': self.G_BA.state_dict(),
-            'D_A_state_dict': self.D_A.state_dict(),
-            'D_B_state_dict': self.D_B.state_dict(),
-            'optimizer_G_state_dict': self.optimizer_G.state_dict(),
-            'optimizer_D_A_state_dict': self.optimizer_D_A.state_dict(),
-            'optimizer_D_B_state_dict': self.optimizer_D_B.state_dict(),
-            'scheduler_G_state_dict': self.scheduler_G.state_dict(),
-            'scheduler_D_A_state_dict': self.scheduler_D_A.state_dict(),
-            'scheduler_D_B_state_dict': self.scheduler_D_B.state_dict(),
-        }, path)
+        torch.save(
+            {
+                "G_AB_state_dict": self.G_AB.state_dict(),
+                "G_BA_state_dict": self.G_BA.state_dict(),
+                "D_A_state_dict": self.D_A.state_dict(),
+                "D_B_state_dict": self.D_B.state_dict(),
+                "optimizer_G_state_dict": self.optimizer_G.state_dict(),
+                "optimizer_D_A_state_dict": self.optimizer_D_A.state_dict(),
+                "optimizer_D_B_state_dict": self.optimizer_D_B.state_dict(),
+                "scheduler_G_state_dict": self.scheduler_G.state_dict(),
+                "scheduler_D_A_state_dict": self.scheduler_D_A.state_dict(),
+                "scheduler_D_B_state_dict": self.scheduler_D_B.state_dict(),
+            },
+            path,
+        )
         logger.info(f"Model saved to {path}")
 
     def load_model(self, path: str):
         """Load model checkpoints."""
         checkpoint = torch.load(path, map_location=self.device)
-        self.G_AB.load_state_dict(checkpoint['G_AB_state_dict'])
-        self.G_BA.load_state_dict(checkpoint['G_BA_state_dict'])
-        self.D_A.load_state_dict(checkpoint['D_A_state_dict'])
-        self.D_B.load_state_dict(checkpoint['D_B_state_dict'])
-        self.optimizer_G.load_state_dict(checkpoint['optimizer_G_state_dict'])
-        self.optimizer_D_A.load_state_dict(checkpoint['optimizer_D_A_state_dict'])
-        self.optimizer_D_B.load_state_dict(checkpoint['optimizer_D_B_state_dict'])
-        self.scheduler_G.load_state_dict(checkpoint['scheduler_G_state_dict'])
-        self.scheduler_D_A.load_state_dict(checkpoint['scheduler_D_A_state_dict'])
-        self.scheduler_D_B.load_state_dict(checkpoint['scheduler_D_B_state_dict'])
+        self.G_AB.load_state_dict(checkpoint["G_AB_state_dict"])
+        self.G_BA.load_state_dict(checkpoint["G_BA_state_dict"])
+        self.D_A.load_state_dict(checkpoint["D_A_state_dict"])
+        self.D_B.load_state_dict(checkpoint["D_B_state_dict"])
+        self.optimizer_G.load_state_dict(checkpoint["optimizer_G_state_dict"])
+        self.optimizer_D_A.load_state_dict(checkpoint["optimizer_D_A_state_dict"])
+        self.optimizer_D_B.load_state_dict(checkpoint["optimizer_D_B_state_dict"])
+        self.scheduler_G.load_state_dict(checkpoint["scheduler_G_state_dict"])
+        self.scheduler_D_A.load_state_dict(checkpoint["scheduler_D_A_state_dict"])
+        self.scheduler_D_B.load_state_dict(checkpoint["scheduler_D_B_state_dict"])
         logger.info(f"Model loaded from {path}")
 
     def eval(self):

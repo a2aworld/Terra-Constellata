@@ -107,6 +107,7 @@ class CKGOperations:
 
 # Insertion functions for vertex collections (nodes)
 
+
 def insert_mythological_entity(name, description, attributes=None):
     """
     Inserts a new MythologicalEntity node.
@@ -120,11 +121,12 @@ def insert_mythological_entity(name, description, attributes=None):
         dict: Insertion result
     """
     db = get_db_connection()
-    collection = db.collection('MythologicalEntity')
-    doc = {'name': name, 'description': description}
+    collection = db.collection("MythologicalEntity")
+    doc = {"name": name, "description": description}
     if attributes:
         doc.update(attributes)
     return collection.insert(doc)
+
 
 def insert_geographic_feature(name, type, coordinates, attributes=None):
     """
@@ -140,11 +142,12 @@ def insert_geographic_feature(name, type, coordinates, attributes=None):
         dict: Insertion result
     """
     db = get_db_connection()
-    collection = db.collection('GeographicFeature')
-    doc = {'name': name, 'type': type, 'coordinates': coordinates}
+    collection = db.collection("GeographicFeature")
+    doc = {"name": name, "type": type, "coordinates": coordinates}
     if attributes:
         doc.update(attributes)
     return collection.insert(doc)
+
 
 def insert_cultural_concept(name, description, attributes=None):
     """
@@ -159,11 +162,12 @@ def insert_cultural_concept(name, description, attributes=None):
         dict: Insertion result
     """
     db = get_db_connection()
-    collection = db.collection('CulturalConcept')
-    doc = {'name': name, 'description': description}
+    collection = db.collection("CulturalConcept")
+    doc = {"name": name, "description": description}
     if attributes:
         doc.update(attributes)
     return collection.insert(doc)
+
 
 def insert_text_source(title, content, source_type, attributes=None):
     """
@@ -179,11 +183,12 @@ def insert_text_source(title, content, source_type, attributes=None):
         dict: Insertion result
     """
     db = get_db_connection()
-    collection = db.collection('TextSource')
-    doc = {'title': title, 'content': content, 'source_type': source_type}
+    collection = db.collection("TextSource")
+    doc = {"title": title, "content": content, "source_type": source_type}
     if attributes:
         doc.update(attributes)
     return collection.insert(doc)
+
 
 def insert_geospatial_point(name, coordinates, attributes=None):
     """
@@ -198,13 +203,15 @@ def insert_geospatial_point(name, coordinates, attributes=None):
         dict: Insertion result
     """
     db = get_db_connection()
-    collection = db.collection('GeospatialPoint')
-    doc = {'name': name, 'coordinates': coordinates}
+    collection = db.collection("GeospatialPoint")
+    doc = {"name": name, "coordinates": coordinates}
     if attributes:
         doc.update(attributes)
     return collection.insert(doc)
 
+
 # Insertion function for edges
+
 
 def insert_edge(edge_collection, from_id, to_id, attributes=None):
     """
@@ -221,12 +228,14 @@ def insert_edge(edge_collection, from_id, to_id, attributes=None):
     """
     db = get_db_connection()
     collection = db.collection(edge_collection)
-    doc = {'_from': from_id, '_to': to_id}
+    doc = {"_from": from_id, "_to": to_id}
     if attributes:
         doc.update(attributes)
     return collection.insert(doc)
 
+
 # Query functions
+
 
 def get_all_entities(collection_name):
     """
@@ -241,6 +250,7 @@ def get_all_entities(collection_name):
     db = get_db_connection()
     collection = db.collection(collection_name)
     return list(collection.all())
+
 
 def get_entity_by_id(collection_name, doc_id):
     """
@@ -257,7 +267,8 @@ def get_entity_by_id(collection_name, doc_id):
     collection = db.collection(collection_name)
     return collection.get(doc_id)
 
-def get_related_entities(entity_id, edge_collection, direction='OUTBOUND'):
+
+def get_related_entities(entity_id, edge_collection, direction="OUTBOUND"):
     """
     Retrieves entities related via a specific edge collection.
 
@@ -270,13 +281,14 @@ def get_related_entities(entity_id, edge_collection, direction='OUTBOUND'):
         list: List of related documents
     """
     db = get_db_connection()
-    if direction.upper() == 'OUTBOUND':
+    if direction.upper() == "OUTBOUND":
         aql = f"FOR v IN 1..1 OUTBOUND '{entity_id}' {edge_collection} RETURN v"
-    elif direction.upper() == 'INBOUND':
+    elif direction.upper() == "INBOUND":
         aql = f"FOR v IN 1..1 INBOUND '{entity_id}' {edge_collection} RETURN v"
     else:
         raise ValueError("Direction must be 'OUTBOUND' or 'INBOUND'")
     return list(db.aql.execute(aql))
+
 
 def search_entities_by_name(collection_name, name):
     """
@@ -292,6 +304,7 @@ def search_entities_by_name(collection_name, name):
     db = get_db_connection()
     aql = f"FOR doc IN {collection_name} FILTER LOWER(doc.name) LIKE LOWER('%{name}%') RETURN doc"
     return list(db.aql.execute(aql))
+
 
 def get_edges_between(from_id, to_id, edge_collection=None):
     """
@@ -310,7 +323,7 @@ def get_edges_between(from_id, to_id, edge_collection=None):
         aql = f"FOR edge IN {edge_collection} FILTER edge._from == '{from_id}' AND edge._to == '{to_id}' RETURN edge"
     else:
         # Search all edge collections
-        edge_cols = ['DEPICTS', 'LOCATED_AT', 'MENTIONED_IN', 'RELATED_TO', 'PART_OF']
+        edge_cols = ["DEPICTS", "LOCATED_AT", "MENTIONED_IN", "RELATED_TO", "PART_OF"]
         results = []
         for col in edge_cols:
             aql = f"FOR edge IN {col} FILTER edge._from == '{from_id}' AND edge._to == '{to_id}' RETURN edge"

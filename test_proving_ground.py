@@ -11,7 +11,11 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from proving_ground.did_manager import DIDManager, did_manager
 from proving_ground.vc_issuer import VCIssuer, vc_issuer
-from proving_ground.certification_tests import CertificationTestSuite, create_default_test_suite
+from proving_ground.certification_tests import (
+    CertificationTestSuite,
+    create_default_test_suite,
+)
+
 
 def test_did_functionality():
     """Test DID creation and management"""
@@ -35,6 +39,7 @@ def test_did_functionality():
 
     print("DID functionality test completed.\n")
 
+
 def test_vc_functionality():
     """Test VC issuance and verification"""
     print("Testing VC functionality...")
@@ -49,7 +54,7 @@ def test_vc_functionality():
         issuer_did=issuer_did,
         subject_did=subject_did,
         credential_type=["TestCredential"],
-        claims=claims
+        claims=claims,
     )
     print(f"VC issued: {vc_jwt is not None}")
 
@@ -58,6 +63,7 @@ def test_vc_functionality():
     print(f"VC verified: {is_valid}")
 
     print("VC functionality test completed.\n")
+
 
 def test_certification_tests():
     """Test certification test suite"""
@@ -69,14 +75,15 @@ def test_certification_tests():
 
     # Mock agent context
     agent_context = {
-        'agent_id': 'test_agent',
-        'agent_name': 'Test Agent',
-        'a2a_client': None,
-        'agent': None,
-        'security_features': ['encryption', 'authentication']
+        "agent_id": "test_agent",
+        "agent_name": "Test Agent",
+        "a2a_client": None,
+        "agent": None,
+        "security_features": ["encryption", "authentication"],
     }
 
     print("Certification test suite created successfully.\n")
+
 
 def main():
     """Run all tests"""
@@ -93,8 +100,10 @@ def main():
     except Exception as e:
         print(f"Test failed with error: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 if __name__ == "__main__":
     success = main()

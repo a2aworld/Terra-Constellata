@@ -26,43 +26,75 @@ logger = logging.getLogger(__name__)
 
 def parse_args():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description="Apply artistic style transfer using trained CycleGAN models")
+    parser = argparse.ArgumentParser(
+        description="Apply artistic style transfer using trained CycleGAN models"
+    )
 
     # Input arguments
-    parser.add_argument("--input", type=str, required=True,
-                       help="Path to input image or directory")
-    parser.add_argument("--output-dir", type=str, default="./outputs",
-                       help="Directory to save output images")
+    parser.add_argument(
+        "--input", type=str, required=True, help="Path to input image or directory"
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default="./outputs",
+        help="Directory to save output images",
+    )
 
     # Model arguments
-    parser.add_argument("--model-dir", type=str, default="./models/apprentice",
-                       help="Directory containing trained models")
-    parser.add_argument("--model-name", type=str, default="best_model",
-                       help="Name of the model checkpoint to use")
-    parser.add_argument("--config", type=str, default="default",
-                       help="Configuration name to use")
+    parser.add_argument(
+        "--model-dir",
+        type=str,
+        default="./models/apprentice",
+        help="Directory containing trained models",
+    )
+    parser.add_argument(
+        "--model-name",
+        type=str,
+        default="best_model",
+        help="Name of the model checkpoint to use",
+    )
+    parser.add_argument(
+        "--config", type=str, default="default", help="Configuration name to use"
+    )
 
     # Style transfer arguments
-    parser.add_argument("--direction", type=str, default="A_to_B",
-                       choices=["A_to_B", "B_to_A"],
-                       help="Translation direction")
-    parser.add_argument("--batch-size", type=int, default=1,
-                       help="Batch size for processing multiple images")
+    parser.add_argument(
+        "--direction",
+        type=str,
+        default="A_to_B",
+        choices=["A_to_B", "B_to_A"],
+        help="Translation direction",
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=1,
+        help="Batch size for processing multiple images",
+    )
 
     # Processing arguments
-    parser.add_argument("--recursive", action="store_true",
-                       help="Process directories recursively")
-    parser.add_argument("--file-pattern", type=str, default="*.jpg,*.jpeg,*.png",
-                       help="File patterns to match (comma-separated)")
+    parser.add_argument(
+        "--recursive", action="store_true", help="Process directories recursively"
+    )
+    parser.add_argument(
+        "--file-pattern",
+        type=str,
+        default="*.jpg,*.jpeg,*.png",
+        help="File patterns to match (comma-separated)",
+    )
 
     # Device arguments
-    parser.add_argument("--device", type=str, default="auto",
-                       help="Device to use (auto, cpu, cuda)")
+    parser.add_argument(
+        "--device", type=str, default="auto", help="Device to use (auto, cpu, cuda)"
+    )
 
     return parser.parse_args()
 
 
-def collect_input_files(input_path: str, recursive: bool = False, patterns: List[str] = None) -> List[str]:
+def collect_input_files(
+    input_path: str, recursive: bool = False, patterns: List[str] = None
+) -> List[str]:
     """
     Collect input files from path.
 
@@ -149,7 +181,7 @@ def main():
         style_transfer, config = setup_inference(args)
 
         # Collect input files
-        patterns = [p.strip() for p in args.file_pattern.split(',')]
+        patterns = [p.strip() for p in args.file_pattern.split(",")]
         input_files = collect_input_files(args.input, args.recursive, patterns)
 
         if not input_files:
@@ -168,7 +200,7 @@ def main():
                 input_path=input_files[0],
                 style_name=args.model_name,
                 output_dir=args.output_dir,
-                direction=args.direction
+                direction=args.direction,
             )
             logger.info(f"Style transfer completed: {output_path}")
 
@@ -179,9 +211,11 @@ def main():
                 style_name=args.model_name,
                 output_dir=args.output_dir,
                 direction=args.direction,
-                batch_size=args.batch_size
+                batch_size=args.batch_size,
             )
-            logger.info(f"Batch processing completed: {len(output_paths)} files processed")
+            logger.info(
+                f"Batch processing completed: {len(output_paths)} files processed"
+            )
 
         logger.info("Inference completed successfully!")
 

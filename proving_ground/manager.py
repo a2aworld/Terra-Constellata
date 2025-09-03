@@ -41,14 +41,10 @@ class ProvingGroundManager(BaseSpecialistAgent):
         llm: BaseLLM,
         tools: List[BaseTool],
         a2a_server_url: str = "http://localhost:8080",
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
-            name=name,
-            llm=llm,
-            tools=tools,
-            a2a_server_url=a2a_server_url,
-            **kwargs
+            name=name, llm=llm, tools=tools, a2a_server_url=a2a_server_url, **kwargs
         )
 
         # Initialize components
@@ -66,7 +62,7 @@ class ProvingGroundManager(BaseSpecialistAgent):
             "did_management",
             "vc_issuance",
             "vc_verification",
-            "security_audit"
+            "security_audit",
         ]
 
         logger.info("ProvingGround Manager initialized")
@@ -88,7 +84,7 @@ class ProvingGroundManager(BaseSpecialistAgent):
 
             Task: {input}
             """,
-            input_variables=["input", "agent_scratchpad"]
+            input_variables=["input", "agent_scratchpad"],
         )
 
         # Create a simple agent executor (simplified for this implementation)
@@ -99,7 +95,7 @@ class ProvingGroundManager(BaseSpecialistAgent):
             llm=self.llm,
             agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
             verbose=True,
-            max_iterations=10
+            max_iterations=10,
         )
 
     async def process_task(self, task: str, **kwargs) -> Any:
@@ -126,7 +122,9 @@ class ProvingGroundManager(BaseSpecialistAgent):
             # Use LangChain agent for general tasks
             return await self.agent_executor.arun(task)
 
-    async def _handle_certification_request(self, task: str, **kwargs) -> Dict[str, Any]:
+    async def _handle_certification_request(
+        self, task: str, **kwargs
+    ) -> Dict[str, Any]:
         """
         Handle certification requests.
 
@@ -137,8 +135,8 @@ class ProvingGroundManager(BaseSpecialistAgent):
         Returns:
             Certification result
         """
-        agent_id = kwargs.get('agent_id')
-        agent_name = kwargs.get('agent_name', 'unknown_agent')
+        agent_id = kwargs.get("agent_id")
+        agent_name = kwargs.get("agent_name", "unknown_agent")
 
         if not agent_id:
             return {"error": "Agent ID required for certification"}
@@ -147,18 +145,18 @@ class ProvingGroundManager(BaseSpecialistAgent):
 
         # Create certification context
         agent_context = {
-            'agent_id': agent_id,
-            'agent_name': agent_name,
-            'a2a_client': self.a2a_client,
-            'agent': self,  # Self-reference for testing
-            'security_features': kwargs.get('security_features', [])
+            "agent_id": agent_id,
+            "agent_name": agent_name,
+            "a2a_client": self.a2a_client,
+            "agent": self,  # Self-reference for testing
+            "security_features": kwargs.get("security_features", []),
         }
 
         # Store pending certification
         self.pending_certifications[agent_id] = {
-            'agent_name': agent_name,
-            'start_time': datetime.utcnow(),
-            'status': 'running'
+            "agent_name": agent_name,
+            "start_time": datetime.utcnow(),
+            "status": "running",
         }
 
         try:
@@ -166,29 +164,27 @@ class ProvingGroundManager(BaseSpecialistAgent):
             test_results = await self.test_suite.run_all_tests(agent_context)
 
             # Determine certification outcome
-            if test_results['pass_rate'] >= 0.8:  # 80% pass rate required
+            if test_results["pass_rate"] >= 0.8:  # 80% pass rate required
                 # Issue certificate
                 certificate_vc = await self._issue_certification_vc(
-                    agent_id,
-                    agent_name,
-                    test_results
+                    agent_id, agent_name, test_results
                 )
 
                 result = {
-                    'status': 'certified',
-                    'agent_id': agent_id,
-                    'agent_name': agent_name,
-                    'certificate_vc': certificate_vc,
-                    'test_results': test_results,
-                    'certification_date': datetime.utcnow().isoformat()
+                    "status": "certified",
+                    "agent_id": agent_id,
+                    "agent_name": agent_name,
+                    "certificate_vc": certificate_vc,
+                    "test_results": test_results,
+                    "certification_date": datetime.utcnow().isoformat(),
                 }
             else:
                 result = {
-                    'status': 'failed',
-                    'agent_id': agent_id,
-                    'agent_name': agent_name,
-                    'test_results': test_results,
-                    'reason': 'Insufficient test pass rate'
+                    "status": "failed",
+                    "agent_id": agent_id,
+                    "agent_name": agent_name,
+                    "test_results": test_results,
+                    "reason": "Insufficient test pass rate",
                 }
 
             # Move to completed
@@ -200,12 +196,8 @@ class ProvingGroundManager(BaseSpecialistAgent):
 
         except Exception as e:
             logger.error(f"Certification failed for {agent_name}: {e}")
-            self.pending_certifications[agent_id]['status'] = 'error'
-            return {
-                'status': 'error',
-                'agent_id': agent_id,
-                'error': str(e)
-            }
+            self.pending_certifications[agent_id]["status"] = "error"
+            return {"status": "error", "agent_id": agent_id, "error": str(e)}
 
     async def _handle_did_request(self, task: str, **kwargs) -> Dict[str, Any]:
         """
@@ -219,25 +211,17 @@ class ProvingGroundManager(BaseSpecialistAgent):
             DID operation result
         """
         if "create" in task.lower():
-            method = kwargs.get('method', 'terra')
+            method = kwargs.get("method", "terra")
             did = self.did_manager.create_did(method)
-            return {
-                'operation': 'create_did',
-                'did': did,
-                'method': method
-            }
+            return {"operation": "create_did", "did": did, "method": method}
         elif "resolve" in task.lower():
-            did = kwargs.get('did')
+            did = kwargs.get("did")
             if not did:
-                return {'error': 'DID required for resolution'}
+                return {"error": "DID required for resolution"}
             document = self.did_manager.resolve_did(did)
-            return {
-                'operation': 'resolve_did',
-                'did': did,
-                'document': document
-            }
+            return {"operation": "resolve_did", "did": did, "document": document}
         else:
-            return {'error': 'Unknown DID operation'}
+            return {"error": "Unknown DID operation"}
 
     async def _handle_vc_request(self, task: str, **kwargs) -> Dict[str, Any]:
         """
@@ -251,48 +235,41 @@ class ProvingGroundManager(BaseSpecialistAgent):
             VC operation result
         """
         if "issue" in task.lower():
-            issuer_did = kwargs.get('issuer_did')
-            subject_did = kwargs.get('subject_did')
-            credential_type = kwargs.get('credential_type', ['CertificationCredential'])
-            claims = kwargs.get('claims', {})
+            issuer_did = kwargs.get("issuer_did")
+            subject_did = kwargs.get("subject_did")
+            credential_type = kwargs.get("credential_type", ["CertificationCredential"])
+            claims = kwargs.get("claims", {})
 
             if not issuer_did or not subject_did:
-                return {'error': 'Issuer DID and Subject DID required'}
+                return {"error": "Issuer DID and Subject DID required"}
 
             vc = self.vc_issuer.issue_credential(
                 issuer_did=issuer_did,
                 subject_did=subject_did,
                 credential_type=credential_type,
-                claims=claims
+                claims=claims,
             )
 
             return {
-                'operation': 'issue_vc',
-                'vc': vc,
-                'issuer': issuer_did,
-                'subject': subject_did
+                "operation": "issue_vc",
+                "vc": vc,
+                "issuer": issuer_did,
+                "subject": subject_did,
             }
 
         elif "verify" in task.lower():
-            vc_jwt = kwargs.get('vc_jwt')
+            vc_jwt = kwargs.get("vc_jwt")
             if not vc_jwt:
-                return {'error': 'VC JWT required for verification'}
+                return {"error": "VC JWT required for verification"}
 
             is_valid = self.vc_issuer.verify_credential(vc_jwt)
-            return {
-                'operation': 'verify_vc',
-                'valid': is_valid,
-                'vc_jwt': vc_jwt
-            }
+            return {"operation": "verify_vc", "valid": is_valid, "vc_jwt": vc_jwt}
 
         else:
-            return {'error': 'Unknown VC operation'}
+            return {"error": "Unknown VC operation"}
 
     async def _issue_certification_vc(
-        self,
-        agent_id: str,
-        agent_name: str,
-        test_results: Dict[str, Any]
+        self, agent_id: str, agent_name: str, test_results: Dict[str, Any]
     ) -> Optional[str]:
         """
         Issue a certification Verifiable Credential.
@@ -306,33 +283,33 @@ class ProvingGroundManager(BaseSpecialistAgent):
             Signed VC JWT if successful, None otherwise
         """
         # Create issuer DID if not exists
-        issuer_did = self.did_manager.create_did('terra')
+        issuer_did = self.did_manager.create_did("terra")
 
         # Create subject DID for the agent
         subject_did = f"did:terra:agent:{agent_id}"
 
         # Prepare claims
         claims = {
-            'agentName': agent_name,
-            'certificationLevel': 'Certified Agent',
-            'capabilities': self.capabilities,
-            'testResults': {
-                'overallScore': test_results['overall_score'],
-                'passRate': test_results['pass_rate'],
-                'passedTests': test_results['passed_tests'],
-                'totalTests': test_results['total_tests']
+            "agentName": agent_name,
+            "certificationLevel": "Certified Agent",
+            "capabilities": self.capabilities,
+            "testResults": {
+                "overallScore": test_results["overall_score"],
+                "passRate": test_results["pass_rate"],
+                "passedTests": test_results["passed_tests"],
+                "totalTests": test_results["total_tests"],
             },
-            'issuedBy': 'ProvingGround Manager',
-            'certificationDate': datetime.utcnow().isoformat()
+            "issuedBy": "ProvingGround Manager",
+            "certificationDate": datetime.utcnow().isoformat(),
         }
 
         # Issue VC
         vc = self.vc_issuer.issue_credential(
             issuer_did=issuer_did,
             subject_did=subject_did,
-            credential_type=['CertificationCredential', 'TerraConstellataAgent'],
+            credential_type=["CertificationCredential", "TerraConstellataAgent"],
             claims=claims,
-            validity_days=365
+            validity_days=365,
         )
 
         return vc
@@ -350,7 +327,9 @@ class ProvingGroundManager(BaseSpecialistAgent):
             try:
                 # Check for pending certifications
                 if self.pending_certifications:
-                    logger.info(f"Processing {len(self.pending_certifications)} pending certifications")
+                    logger.info(
+                        f"Processing {len(self.pending_certifications)} pending certifications"
+                    )
 
                 # Perform security checks
                 await self._perform_security_audit()
@@ -384,8 +363,7 @@ class ProvingGroundManager(BaseSpecialistAgent):
         logger.debug("Cleaning up expired credentials...")
 
     async def handle_certification_request(
-        self,
-        request: CertificationRequest
+        self, request: CertificationRequest
     ) -> Dict[str, Any]:
         """
         Handle incoming certification requests via A2A protocol.
@@ -403,7 +381,7 @@ class ProvingGroundManager(BaseSpecialistAgent):
             f"Certify agent {request.sender_agent}",
             agent_id=request.sender_agent,
             agent_name=request.sender_agent,
-            security_features=['a2a_communication']  # Basic security feature
+            security_features=["a2a_communication"],  # Basic security feature
         )
 
         return result
@@ -426,16 +404,20 @@ class ProvingGroundManager(BaseSpecialistAgent):
 
     def get_statistics(self) -> Dict[str, Any]:
         """Get certification statistics."""
-        total_certified = len([
-            cert for cert in self.completed_certifications.values()
-            if cert['status'] == 'certified'
-        ])
+        total_certified = len(
+            [
+                cert
+                for cert in self.completed_certifications.values()
+                if cert["status"] == "certified"
+            ]
+        )
 
         return {
-            'total_certifications': len(self.completed_certifications),
-            'successful_certifications': total_certified,
-            'pending_certifications': len(self.pending_certifications),
-            'failed_certifications': len(self.completed_certifications) - total_certified,
-            'active_dids': len(self.did_manager.list_dids()),
-            'issued_credentials': len(self.vc_issuer.issued_credentials)
+            "total_certifications": len(self.completed_certifications),
+            "successful_certifications": total_certified,
+            "pending_certifications": len(self.pending_certifications),
+            "failed_certifications": len(self.completed_certifications)
+            - total_certified,
+            "active_dids": len(self.did_manager.list_dids()),
+            "issued_credentials": len(self.vc_issuer.issued_credentials),
         }

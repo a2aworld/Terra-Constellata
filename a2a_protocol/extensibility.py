@@ -105,17 +105,18 @@ class PluginManager:
         """Register message types and handlers from plugin module"""
         # Look for message classes
         for name, obj in inspect.getmembers(module):
-            if (inspect.isclass(obj) and
-                issubclass(obj, A2AMessage) and
-                obj != A2AMessage):
+            if (
+                inspect.isclass(obj)
+                and issubclass(obj, A2AMessage)
+                and obj != A2AMessage
+            ):
                 # Register as message type
-                message_type_name = getattr(obj, '_message_type_name', name.upper())
+                message_type_name = getattr(obj, "_message_type_name", name.upper())
                 self.registry.register_message_type(message_type_name, obj)
 
         # Look for handler functions
         for name, obj in inspect.getmembers(module):
-            if (inspect.iscoroutinefunction(obj) and
-                name.startswith('handle_')):
+            if inspect.iscoroutinefunction(obj) and name.startswith("handle_"):
                 # Extract message type from function name
                 message_type = name[7:].upper()  # Remove 'handle_' prefix
                 self.registry.register_handler(message_type, obj)
@@ -162,10 +163,14 @@ class ExtensibleA2AServer(A2AServer):
             message_class = self.registry.get_message_type(method)
             if message_class:
                 from .validation import MessageValidator
+
                 a2a_message = MessageValidator.validate_a2a_message(method, params)
                 if a2a_message is None:
                     return MessageValidator._create_error_response(
-                        -32602, "Invalid params", "Invalid A2A message parameters", msg_id
+                        -32602,
+                        "Invalid params",
+                        "Invalid A2A message parameters",
+                        msg_id,
                     )
                 result = await handler(a2a_message)
             else:
@@ -173,11 +178,13 @@ class ExtensibleA2AServer(A2AServer):
                 result = await handler(params)
 
             from .validation import MessageValidator
+
             return MessageValidator.create_success_response(result, msg_id)
 
         except Exception as e:
             logger.error(f"Error executing extensible method {method}: {e}")
             from .validation import MessageValidator
+
             return MessageValidator._create_error_response(
                 -32603, "Internal error", str(e), msg_id
             )
@@ -236,11 +243,13 @@ async def handle_custom_analysis_result(message: CustomAnalysisResult):
 # Utility functions
 def save_plugin_to_file(plugin_content: str, filename: str):
     """Save plugin content to a file"""
-    with open(filename, 'w') as f:
+    with open(filename, "w") as f:
         f.write(plugin_content)
 
 
-def load_plugin_from_file(filepath: str, plugin_name: str, registry: MessageTypeRegistry):
+def load_plugin_from_file(
+    filepath: str, plugin_name: str, registry: MessageTypeRegistry
+):
     """Load plugin from file"""
     import sys
     import os
@@ -259,15 +268,16 @@ def load_plugin_from_file(filepath: str, plugin_name: str, registry: MessageType
 
         # Register components
         for name, obj in inspect.getmembers(module):
-            if (inspect.isclass(obj) and
-                issubclass(obj, A2AMessage) and
-                obj != A2AMessage):
-                message_type_name = getattr(obj, '_message_type_name', name.upper())
+            if (
+                inspect.isclass(obj)
+                and issubclass(obj, A2AMessage)
+                and obj != A2AMessage
+            ):
+                message_type_name = getattr(obj, "_message_type_name", name.upper())
                 registry.register_message_type(message_type_name, obj)
 
         for name, obj in inspect.getmembers(module):
-            if (inspect.iscoroutinefunction(obj) and
-                name.startswith('handle_')):
+            if inspect.iscoroutinefunction(obj) and name.startswith("handle_"):
                 message_type = name[7:].upper()
                 registry.register_handler(message_type, obj)
 

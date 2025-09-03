@@ -14,10 +14,10 @@ from .training_pipeline import TrainingPipeline
 from .style_transfer import StyleTransfer
 
 __all__ = [
-    'ApprenticeAgent',
-    'CycleGAN',
-    'ImageDataset',
-    'DataLoader',
-    'TrainingPipeline',
-    'StyleTransfer'
+    "ApprenticeAgent",
+    "CycleGAN",
+    "ImageDataset",
+    "DataLoader",
+    "TrainingPipeline",
+    "StyleTransfer",
 ]

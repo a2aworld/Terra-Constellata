@@ -49,7 +49,7 @@ class KnowledgeBase:
         """Load existing knowledge entries from storage."""
         for file_path in self.storage_path.glob("*.json"):
             try:
-                with open(file_path, 'r') as f:
+                with open(file_path, "r") as f:
                     data = json.load(f)
                     entry = KnowledgeEntry.from_dict(data)
                     self.knowledge_entries[entry.entry_id] = entry
@@ -74,7 +74,7 @@ class KnowledgeBase:
         confidence_score: float = 1.0,
         tags: Optional[List[str]] = None,
         related_entries: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """
         Add a new knowledge entry.
@@ -109,7 +109,7 @@ class KnowledgeBase:
             last_updated=datetime.utcnow(),
             tags=tags or [],
             related_entries=related_entries or [],
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         # Store in memory
@@ -126,7 +126,9 @@ class KnowledgeBase:
         logger.info(f"Added knowledge entry: {entry_id} - {title}")
         return entry_id
 
-    def extract_patterns_from_contributions(self, contributions: List[Dict[str, Any]]) -> List[str]:
+    def extract_patterns_from_contributions(
+        self, contributions: List[Dict[str, Any]]
+    ) -> List[str]:
         """
         Extract patterns from agent contributions.
 
@@ -144,12 +146,15 @@ class KnowledgeBase:
             entry_id = self.add_knowledge_entry(
                 category="success_patterns",
                 title=f"Success Pattern: {pattern['title']}",
-                content=pattern['description'],
+                content=pattern["description"],
                 source_type="contribution_analysis",
                 source_id="pattern_extraction",
-                confidence_score=pattern['confidence'],
+                confidence_score=pattern["confidence"],
                 tags=["pattern", "success", "learning"],
-                metadata={"pattern_type": pattern['type'], "frequency": pattern['frequency']}
+                metadata={
+                    "pattern_type": pattern["type"],
+                    "frequency": pattern["frequency"],
+                },
             )
             entry_ids.append(entry_id)
 
@@ -159,12 +164,15 @@ class KnowledgeBase:
             entry_id = self.add_knowledge_entry(
                 category="collaboration_patterns",
                 title=f"Collaboration Pattern: {pattern['title']}",
-                content=pattern['description'],
+                content=pattern["description"],
                 source_type="contribution_analysis",
                 source_id="collaboration_analysis",
-                confidence_score=pattern['confidence'],
+                confidence_score=pattern["confidence"],
                 tags=["collaboration", "teamwork", "pattern"],
-                metadata={"agents_involved": pattern['agents'], "success_rate": pattern['success_rate']}
+                metadata={
+                    "agents_involved": pattern["agents"],
+                    "success_rate": pattern["success_rate"],
+                },
             )
             entry_ids.append(entry_id)
 
@@ -174,18 +182,23 @@ class KnowledgeBase:
             entry_id = self.add_knowledge_entry(
                 category="failure_lessons",
                 title=f"Failure Lesson: {lesson['title']}",
-                content=lesson['description'],
+                content=lesson["description"],
                 source_type="contribution_analysis",
                 source_id="failure_analysis",
-                confidence_score=lesson['confidence'],
+                confidence_score=lesson["confidence"],
                 tags=["failure", "lesson", "improvement"],
-                metadata={"failure_type": lesson['type'], "recovery_strategy": lesson['recovery']}
+                metadata={
+                    "failure_type": lesson["type"],
+                    "recovery_strategy": lesson["recovery"],
+                },
             )
             entry_ids.append(entry_id)
 
         return entry_ids
 
-    def extract_insights_from_strategies(self, strategies: List[Dict[str, Any]]) -> List[str]:
+    def extract_insights_from_strategies(
+        self, strategies: List[Dict[str, Any]]
+    ) -> List[str]:
         """
         Extract insights from documented strategies.
 
@@ -204,12 +217,15 @@ class KnowledgeBase:
                 entry_id = self.add_knowledge_entry(
                     category="strategy_insights",
                     title=f"Strategy Insight: {insight['title']}",
-                    content=insight['content'],
+                    content=insight["content"],
                     source_type="strategy",
-                    source_id=strategy['strategy_id'],
-                    confidence_score=insight['confidence'],
+                    source_id=strategy["strategy_id"],
+                    confidence_score=insight["confidence"],
                     tags=["strategy", "insight", "optimization"],
-                    metadata={"strategy_type": strategy['strategy_type'], "applicability": insight['applicability']}
+                    metadata={
+                        "strategy_type": strategy["strategy_type"],
+                        "applicability": insight["applicability"],
+                    },
                 )
                 entry_ids.append(entry_id)
 
@@ -221,7 +237,7 @@ class KnowledgeBase:
         category: Optional[str] = None,
         tags: Optional[List[str]] = None,
         min_confidence: float = 0.0,
-        limit: int = 10
+        limit: int = 10,
     ) -> List[KnowledgeEntry]:
         """
         Search knowledge base for relevant entries.
@@ -278,12 +294,20 @@ class KnowledgeBase:
     def get_knowledge_by_category(self, category: str) -> List[KnowledgeEntry]:
         """Get all knowledge entries in a category."""
         entry_ids = self.category_index.get(category, [])
-        return [self.knowledge_entries[eid] for eid in entry_ids if eid in self.knowledge_entries]
+        return [
+            self.knowledge_entries[eid]
+            for eid in entry_ids
+            if eid in self.knowledge_entries
+        ]
 
     def get_knowledge_by_tag(self, tag: str) -> List[KnowledgeEntry]:
         """Get all knowledge entries with a specific tag."""
         entry_ids = self.tag_index.get(tag, [])
-        return [self.knowledge_entries[eid] for eid in entry_ids if eid in self.knowledge_entries]
+        return [
+            self.knowledge_entries[eid]
+            for eid in entry_ids
+            if eid in self.knowledge_entries
+        ]
 
     def get_related_knowledge(self, entry_id: str) -> List[KnowledgeEntry]:
         """Get knowledge entries related to a specific entry."""
@@ -292,7 +316,11 @@ class KnowledgeBase:
 
         entry = self.knowledge_entries[entry_id]
         related_ids = entry.related_entries
-        return [self.knowledge_entries[eid] for eid in related_ids if eid in self.knowledge_entries]
+        return [
+            self.knowledge_entries[eid]
+            for eid in related_ids
+            if eid in self.knowledge_entries
+        ]
 
     def update_knowledge_usefulness(self, entry_id: str, usefulness_score: float):
         """
@@ -312,8 +340,12 @@ class KnowledgeBase:
         """Get statistics about the knowledge base."""
         total_entries = len(self.knowledge_entries)
         categories = set(entry.category for entry in self.knowledge_entries.values())
-        avg_confidence = sum(e.confidence_score for e in self.knowledge_entries.values()) / max(total_entries, 1)
-        avg_usefulness = sum(e.usefulness_score for e in self.knowledge_entries.values()) / max(total_entries, 1)
+        avg_confidence = sum(
+            e.confidence_score for e in self.knowledge_entries.values()
+        ) / max(total_entries, 1)
+        avg_usefulness = sum(
+            e.usefulness_score for e in self.knowledge_entries.values()
+        ) / max(total_entries, 1)
 
         category_counts = {}
         for entry in self.knowledge_entries.values():
@@ -325,56 +357,80 @@ class KnowledgeBase:
                 tag_counts[tag] = tag_counts.get(tag, 0) + 1
 
         return {
-            'total_entries': total_entries,
-            'categories': list(categories),
-            'category_counts': category_counts,
-            'tag_counts': tag_counts,
-            'avg_confidence': avg_confidence,
-            'avg_usefulness': avg_usefulness,
-            'most_accessed': max(self.knowledge_entries.values(), key=lambda e: e.access_count, default=None)
+            "total_entries": total_entries,
+            "categories": list(categories),
+            "category_counts": category_counts,
+            "tag_counts": tag_counts,
+            "avg_confidence": avg_confidence,
+            "avg_usefulness": avg_usefulness,
+            "most_accessed": max(
+                self.knowledge_entries.values(),
+                key=lambda e: e.access_count,
+                default=None,
+            ),
         }
 
-    def _analyze_success_patterns(self, contributions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _analyze_success_patterns(
+        self, contributions: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
         """Analyze successful patterns from contributions."""
         # Simplified pattern analysis
         patterns = []
 
         # Pattern: High success with collaboration
-        collab_contributions = [c for c in contributions if c.get('collaboration_partners')]
+        collab_contributions = [
+            c for c in contributions if c.get("collaboration_partners")
+        ]
         if collab_contributions:
-            success_rate = sum(1 for c in collab_contributions if c.get('success_metrics', {}).get('success', False)) / len(collab_contributions)
+            success_rate = sum(
+                1
+                for c in collab_contributions
+                if c.get("success_metrics", {}).get("success", False)
+            ) / len(collab_contributions)
             if success_rate > 0.7:
-                patterns.append({
-                    'title': 'Collaboration Improves Success',
-                    'description': f'Contributions involving collaboration have a {success_rate:.1%} success rate, suggesting collaborative approaches are more effective.',
-                    'type': 'collaboration',
-                    'confidence': min(success_rate, 0.9),
-                    'frequency': len(collab_contributions)
-                })
+                patterns.append(
+                    {
+                        "title": "Collaboration Improves Success",
+                        "description": f"Contributions involving collaboration have a {success_rate:.1%} success rate, suggesting collaborative approaches are more effective.",
+                        "type": "collaboration",
+                        "confidence": min(success_rate, 0.9),
+                        "frequency": len(collab_contributions),
+                    }
+                )
 
         # Pattern: Fast execution correlates with success
-        fast_contributions = [c for c in contributions if c.get('duration', float('inf')) < 60]  # Under 1 minute
+        fast_contributions = [
+            c for c in contributions if c.get("duration", float("inf")) < 60
+        ]  # Under 1 minute
         if fast_contributions:
-            success_rate = sum(1 for c in fast_contributions if c.get('success_metrics', {}).get('success', False)) / len(fast_contributions)
+            success_rate = sum(
+                1
+                for c in fast_contributions
+                if c.get("success_metrics", {}).get("success", False)
+            ) / len(fast_contributions)
             if success_rate > 0.8:
-                patterns.append({
-                    'title': 'Fast Execution Indicates Efficiency',
-                    'description': f'Quick task completion (under 1 minute) correlates with {success_rate:.1%} success rate, indicating efficient processes.',
-                    'type': 'efficiency',
-                    'confidence': min(success_rate * 0.8, 0.85),
-                    'frequency': len(fast_contributions)
-                })
+                patterns.append(
+                    {
+                        "title": "Fast Execution Indicates Efficiency",
+                        "description": f"Quick task completion (under 1 minute) correlates with {success_rate:.1%} success rate, indicating efficient processes.",
+                        "type": "efficiency",
+                        "confidence": min(success_rate * 0.8, 0.85),
+                        "frequency": len(fast_contributions),
+                    }
+                )
 
         return patterns
 
-    def _analyze_collaboration_patterns(self, contributions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _analyze_collaboration_patterns(
+        self, contributions: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
         """Analyze collaboration patterns."""
         patterns = []
 
         # Find most common collaboration pairs
         collab_pairs = defaultdict(int)
         for contribution in contributions:
-            partners = contribution.get('collaboration_partners', [])
+            partners = contribution.get("collaboration_partners", [])
             if len(partners) >= 2:
                 for i in range(len(partners)):
                     for j in range(i + 1, len(partners)):
@@ -383,58 +439,78 @@ class KnowledgeBase:
 
         if collab_pairs:
             top_pair = max(collab_pairs.items(), key=lambda x: x[1])
-            patterns.append({
-                'title': f'Frequent Collaboration: {top_pair[0][0]} + {top_pair[0][1]}',
-                'description': f'These agents collaborate frequently ({top_pair[1]} times), suggesting effective partnership patterns.',
-                'agents': list(top_pair[0]),
-                'confidence': min(top_pair[1] / 10, 0.9),  # Scale confidence by frequency
-                'success_rate': 0.85  # Placeholder
-            })
+            patterns.append(
+                {
+                    "title": f"Frequent Collaboration: {top_pair[0][0]} + {top_pair[0][1]}",
+                    "description": f"These agents collaborate frequently ({top_pair[1]} times), suggesting effective partnership patterns.",
+                    "agents": list(top_pair[0]),
+                    "confidence": min(
+                        top_pair[1] / 10, 0.9
+                    ),  # Scale confidence by frequency
+                    "success_rate": 0.85,  # Placeholder
+                }
+            )
 
         return patterns
 
-    def _analyze_failure_lessons(self, contributions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _analyze_failure_lessons(
+        self, contributions: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
         """Analyze lessons from failures."""
         lessons = []
 
-        failed_contributions = [c for c in contributions if not c.get('success_metrics', {}).get('success', True)]
+        failed_contributions = [
+            c
+            for c in contributions
+            if not c.get("success_metrics", {}).get("success", True)
+        ]
         if failed_contributions:
             # Common failure types
-            timeout_failures = [c for c in failed_contributions if c.get('duration', 0) > 300]  # Over 5 minutes
+            timeout_failures = [
+                c for c in failed_contributions if c.get("duration", 0) > 300
+            ]  # Over 5 minutes
             if timeout_failures:
-                lessons.append({
-                    'title': 'Avoid Long-Running Tasks',
-                    'description': f'{len(timeout_failures)} contributions failed due to timeouts. Consider breaking down complex tasks or implementing timeouts.',
-                    'type': 'timeout',
-                    'confidence': 0.8,
-                    'recovery': 'Implement task decomposition and timeout handling'
-                })
+                lessons.append(
+                    {
+                        "title": "Avoid Long-Running Tasks",
+                        "description": f"{len(timeout_failures)} contributions failed due to timeouts. Consider breaking down complex tasks or implementing timeouts.",
+                        "type": "timeout",
+                        "confidence": 0.8,
+                        "recovery": "Implement task decomposition and timeout handling",
+                    }
+                )
 
         return lessons
 
-    def _extract_strategy_insights(self, strategy: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _extract_strategy_insights(
+        self, strategy: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         """Extract insights from a strategy document."""
         insights = []
 
         # Extract step-based insights
-        steps = strategy.get('steps', [])
+        steps = strategy.get("steps", [])
         if len(steps) > 5:
-            insights.append({
-                'title': 'Complex Strategy Requires Careful Planning',
-                'content': f'Strategies with {len(steps)} steps need thorough validation and monitoring.',
-                'confidence': 0.7,
-                'applicability': 'complex_tasks'
-            })
+            insights.append(
+                {
+                    "title": "Complex Strategy Requires Careful Planning",
+                    "content": f"Strategies with {len(steps)} steps need thorough validation and monitoring.",
+                    "confidence": 0.7,
+                    "applicability": "complex_tasks",
+                }
+            )
 
         # Extract success criteria insights
-        success_criteria = strategy.get('success_criteria', [])
+        success_criteria = strategy.get("success_criteria", [])
         if success_criteria:
-            insights.append({
-                'title': 'Clear Success Criteria Improve Outcomes',
-                'content': f'Defining {len(success_criteria)} success criteria helps measure and validate strategy effectiveness.',
-                'confidence': 0.8,
-                'applicability': 'strategy_design'
-            })
+            insights.append(
+                {
+                    "title": "Clear Success Criteria Improve Outcomes",
+                    "content": f"Defining {len(success_criteria)} success criteria helps measure and validate strategy effectiveness.",
+                    "confidence": 0.8,
+                    "applicability": "strategy_design",
+                }
+            )
 
         return insights
 
@@ -443,5 +519,5 @@ class KnowledgeBase:
         filename = f"{entry.entry_id}.json"
         filepath = self.storage_path / filename
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(entry.to_dict(), f, indent=2, default=str)

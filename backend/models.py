@@ -1,7 +1,18 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Float, Boolean, ForeignKey, JSON
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Text,
+    DateTime,
+    Float,
+    Boolean,
+    ForeignKey,
+    JSON,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
+
 
 class User(Base):
     __tablename__ = "users"
@@ -12,6 +23,7 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     contents = relationship("Content", back_populates="creator")
+
 
 class Content(Base):
     __tablename__ = "contents"
@@ -29,6 +41,7 @@ class Content(Base):
     multimedia = relationship("Multimedia", back_populates="content")
     tags = relationship("Tag", secondary="content_tags", back_populates="contents")
 
+
 class Multimedia(Base):
     __tablename__ = "multimedia"
 
@@ -41,6 +54,7 @@ class Multimedia(Base):
 
     content = relationship("Content", back_populates="multimedia")
 
+
 class Tag(Base):
     __tablename__ = "tags"
 
@@ -49,11 +63,13 @@ class Tag(Base):
 
     contents = relationship("Content", secondary="content_tags", back_populates="tags")
 
+
 class ContentTag(Base):
     __tablename__ = "content_tags"
 
     content_id = Column(Integer, ForeignKey("contents.id"), primary_key=True)
     tag_id = Column(Integer, ForeignKey("tags.id"), primary_key=True)
+
 
 class Map(Base):
     __tablename__ = "maps"
@@ -64,6 +80,7 @@ class Map(Base):
     content_id = Column(Integer, ForeignKey("contents.id"))
 
     content = relationship("Content")
+
 
 class Artwork(Base):
     __tablename__ = "artworks"

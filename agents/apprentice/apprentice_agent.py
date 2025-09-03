@@ -27,7 +27,7 @@ from ...a2a_protocol.schemas import (
     ToolProposal,
     NarrativePrompt,
     CertificationRequest,
-    GeospatialAnomalyIdentified
+    GeospatialAnomalyIdentified,
 )
 from .cyclegan_model import CycleGAN
 from .data_loader import ImageDataset, DataLoader
@@ -119,12 +119,16 @@ class ApprenticeAgent(BaseSpecialistAgent):
         model_dir: str = "./models/apprentice",
         data_dir: str = "./data/apprentice",
         device: str = "auto",
-        **kwargs
+        **kwargs,
     ):
         # Initialize model components
         self.model_dir = Path(model_dir)
         self.data_dir = Path(data_dir)
-        self.device = torch.device(device if device != "auto" else ("cuda" if torch.cuda.is_available() else "cpu"))
+        self.device = torch.device(
+            device
+            if device != "auto"
+            else ("cuda" if torch.cuda.is_available() else "cpu")
+        )
 
         # Create directories
         self.model_dir.mkdir(parents=True, exist_ok=True)
@@ -145,12 +149,7 @@ class ApprenticeAgent(BaseSpecialistAgent):
             ModelTrainingTool(self),
         ]
 
-        super().__init__(
-            name="Apprentice_Agent",
-            llm=llm,
-            tools=tools,
-            **kwargs
-        )
+        super().__init__(name="Apprentice_Agent", llm=llm, tools=tools, **kwargs)
 
         # Agent-specific attributes
         self.artwork_history = []
@@ -190,21 +189,17 @@ class ApprenticeAgent(BaseSpecialistAgent):
 
         prompt = PromptTemplate(
             input_variables=["input", "tools", "chat_history", "agent_scratchpad"],
-            template=template
+            template=template,
         )
 
-        agent = create_react_agent(
-            llm=self.llm,
-            tools=self.tools,
-            prompt=prompt
-        )
+        agent = create_react_agent(llm=self.llm, tools=self.tools, prompt=prompt)
 
         return AgentExecutor.from_agent_and_tools(
             agent=agent,
             tools=self.tools,
             memory=self.memory,
             verbose=True,
-            handle_parsing_errors=True
+            handle_parsing_errors=True,
         )
 
     async def process_task(self, task: str, **kwargs) -> Any:
@@ -223,18 +218,18 @@ class ApprenticeAgent(BaseSpecialistAgent):
 
             # Execute the artistic task
             result = await asyncio.get_event_loop().run_in_executor(
-                None,
-                self.agent_executor.run,
-                task
+                None, self.agent_executor.run, task
             )
 
             # Store in artwork history
-            self.artwork_history.append({
-                "task": task,
-                "result": result,
-                "timestamp": datetime.utcnow(),
-                "kwargs": kwargs
-            })
+            self.artwork_history.append(
+                {
+                    "task": task,
+                    "result": result,
+                    "timestamp": datetime.utcnow(),
+                    "kwargs": kwargs,
+                }
+            )
 
             return result
 
@@ -285,6 +280,7 @@ class ApprenticeAgent(BaseSpecialistAgent):
         try:
             # Parse training configuration
             import json
+
             config = json.loads(training_config)
 
             # Start training job
@@ -295,7 +291,7 @@ class ApprenticeAgent(BaseSpecialistAgent):
                 "job_id": job_id,
                 "config": config,
                 "status": "started",
-                "start_time": datetime.utcnow()
+                "start_time": datetime.utcnow(),
             }
 
             # Store in training history
@@ -319,11 +315,13 @@ class ApprenticeAgent(BaseSpecialistAgent):
 
     def _store_artwork_result(self, description: str, result_path: str):
         """Store artwork result in history."""
-        self.artwork_history.append({
-            "description": description,
-            "result_path": result_path,
-            "timestamp": datetime.utcnow()
-        })
+        self.artwork_history.append(
+            {
+                "description": description,
+                "result_path": result_path,
+                "timestamp": datetime.utcnow(),
+            }
+        )
 
     async def _autonomous_loop(self):
         """
@@ -367,8 +365,7 @@ class ApprenticeAgent(BaseSpecialistAgent):
         try:
             # Request inspiration from other agents
             inspiration = await self.request_inspiration(
-                context="artistic creation",
-                domain="visual arts"
+                context="artistic creation", domain="visual arts"
             )
             logger.info(f"Received inspiration: {inspiration}")
         except Exception as e:
@@ -379,7 +376,8 @@ class ApprenticeAgent(BaseSpecialistAgent):
         # Remove results older than 30 days
         cutoff = datetime.utcnow().timestamp() - (30 * 24 * 60 * 60)
         self.artwork_history = [
-            item for item in self.artwork_history
+            item
+            for item in self.artwork_history
             if item["timestamp"].timestamp() > cutoff
         ]
 
@@ -399,16 +397,13 @@ class ApprenticeAgent(BaseSpecialistAgent):
             "model_dir": str(self.model_dir),
             "data_dir": str(self.data_dir),
             "training_jobs_count": len(self.training_history),
-            "artwork_count": len(self.artwork_history)
+            "artwork_count": len(self.artwork_history),
         }
 
     # A2A Protocol Integration Methods
 
     async def request_artistic_inspiration(
-        self,
-        theme: str,
-        medium: str = "visual",
-        target_agent: Optional[str] = None
+        self, theme: str, medium: str = "visual", target_agent: Optional[str] = None
     ) -> Any:
         """
         Request artistic inspiration from other agents.
@@ -428,17 +423,13 @@ class ApprenticeAgent(BaseSpecialistAgent):
             context=context,
             domain=domain,
             constraints=[f"medium:{medium}", f"theme:{theme}"],
-            inspiration_type="visual"
+            inspiration_type="visual",
         )
 
         return await self.send_message(message, target_agent)
 
     async def share_artwork(
-        self,
-        artwork_path: str,
-        description: str,
-        style_used: str,
-        target_agent: str
+        self, artwork_path: str, description: str, style_used: str, target_agent: str
     ):
         """
         Share generated artwork with another agent.
@@ -450,10 +441,7 @@ class ApprenticeAgent(BaseSpecialistAgent):
             target_agent: Agent to share with
         """
         # Create a custom message for artwork sharing
-        message = A2AMessage(
-            sender_agent=self.name,
-            target_agent=target_agent
-        )
+        message = A2AMessage(sender_agent=self.name, target_agent=target_agent)
         # Add custom fields for artwork sharing
         message.artwork_path = artwork_path
         message.description = description
@@ -467,7 +455,7 @@ class ApprenticeAgent(BaseSpecialistAgent):
         self,
         input_description: str,
         target_agent: str,
-        collaboration_type: str = "style_blend"
+        collaboration_type: str = "style_blend",
     ) -> Any:
         """
         Request collaboration on style transfer tasks.
@@ -485,7 +473,7 @@ class ApprenticeAgent(BaseSpecialistAgent):
             description=f"Collaborative style transfer: {input_description}",
             capabilities=["style_transfer", "artistic_creation", collaboration_type],
             use_case=f"Create novel artwork through {collaboration_type} collaboration",
-            target_agent=target_agent
+            target_agent=target_agent,
         )
 
         return await self.send_message(message, target_agent)
@@ -496,7 +484,7 @@ class ApprenticeAgent(BaseSpecialistAgent):
         feedback_content: str,
         rating: int,
         target_agent: str,
-        suggestions: Optional[List[str]] = None
+        suggestions: Optional[List[str]] = None,
     ):
         """
         Provide creative feedback on artwork.
@@ -514,7 +502,7 @@ class ApprenticeAgent(BaseSpecialistAgent):
             content=feedback_content,
             rating=rating,
             suggestions=suggestions or [],
-            target_agent=target_agent
+            target_agent=target_agent,
         )
 
         await self.send_notification(message, target_agent)
@@ -524,7 +512,7 @@ class ApprenticeAgent(BaseSpecialistAgent):
         self,
         artwork_description: str,
         target_agent: str,
-        narrative_style: str = "descriptive"
+        narrative_style: str = "descriptive",
     ) -> Any:
         """
         Request narrative generation for artwork.
@@ -544,16 +532,13 @@ class ApprenticeAgent(BaseSpecialistAgent):
             theme=theme,
             elements=elements,
             style=narrative_style,
-            target_agent=target_agent
+            target_agent=target_agent,
         )
 
         return await self.send_message(message, target_agent)
 
     async def certify_artwork_quality(
-        self,
-        artwork_path: str,
-        quality_criteria: List[str],
-        target_agent: str
+        self, artwork_path: str, quality_criteria: List[str], target_agent: str
     ) -> Any:
         """
         Request certification/validation of artwork quality.
@@ -570,7 +555,7 @@ class ApprenticeAgent(BaseSpecialistAgent):
             "artwork_path": artwork_path,
             "generated_by": self.name,
             "quality_criteria": quality_criteria,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.utcnow().isoformat(),
         }
 
         message = CertificationRequest(
@@ -578,7 +563,7 @@ class ApprenticeAgent(BaseSpecialistAgent):
             certification_type="artwork_quality",
             evidence=evidence,
             criteria=quality_criteria,
-            target_agent=target_agent
+            target_agent=target_agent,
         )
 
         return await self.send_message(message, target_agent)
@@ -588,7 +573,7 @@ class ApprenticeAgent(BaseSpecialistAgent):
         anomaly_description: str,
         location_data: Optional[Dict[str, float]] = None,
         confidence: float = 0.8,
-        target_agent: Optional[str] = None
+        target_agent: Optional[str] = None,
     ):
         """
         Report an artistic or creative anomaly discovered during generation.
@@ -605,7 +590,7 @@ class ApprenticeAgent(BaseSpecialistAgent):
             confidence=confidence,
             description=anomaly_description,
             data_source=f"Apprentice_Agent_{self.name}",
-            target_agent=target_agent
+            target_agent=target_agent,
         )
 
         await self.send_notification(message, target_agent)
@@ -652,8 +637,7 @@ class ApprenticeAgent(BaseSpecialistAgent):
         """Seek inspiration from other agents."""
         try:
             inspiration = await self.request_artistic_inspiration(
-                theme="emergent_creativity",
-                medium="visual"
+                theme="emergent_creativity", medium="visual"
             )
             logger.info(f"Received artistic inspiration: {inspiration}")
         except Exception as e:

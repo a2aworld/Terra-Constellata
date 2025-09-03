@@ -12,6 +12,7 @@ import uuid
 
 class ToolMetadata(BaseModel):
     """Metadata for a tool"""
+
     name: str
     description: str
     author: str
@@ -26,6 +27,7 @@ class ToolMetadata(BaseModel):
 
 class ToolCapabilities(BaseModel):
     """Capabilities and features of a tool"""
+
     functions: List[str] = Field(default_factory=list)
     input_types: List[str] = Field(default_factory=list)
     output_types: List[str] = Field(default_factory=list)
@@ -36,6 +38,7 @@ class ToolCapabilities(BaseModel):
 
 class ToolValidation(BaseModel):
     """Validation results for a tool"""
+
     security_scan_passed: bool = False
     linting_passed: bool = False
     unit_tests_passed: bool = False
@@ -49,6 +52,7 @@ class ToolValidation(BaseModel):
 
 class Tool(BaseModel):
     """Complete tool definition"""
+
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     metadata: ToolMetadata
     capabilities: ToolCapabilities
@@ -65,6 +69,7 @@ class Tool(BaseModel):
 
 class ToolProposal(BaseModel):
     """Proposal for a new tool"""
+
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     proposer_agent: str
     tool_name: str
@@ -83,6 +88,7 @@ class ToolProposal(BaseModel):
 
 class ToolVersion(BaseModel):
     """Version information for tool evolution"""
+
     tool_id: str
     version: str
     changes: str
@@ -95,6 +101,7 @@ class ToolVersion(BaseModel):
 
 class ToolRegistryEntry(BaseModel):
     """Entry in the tool registry"""
+
     tool: Tool
     versions: List[ToolVersion] = Field(default_factory=list)
     proposals: List[ToolProposal] = Field(default_factory=list)
@@ -104,6 +111,7 @@ class ToolRegistryEntry(BaseModel):
 
 class SearchQuery(BaseModel):
     """Query for tool search"""
+
     query: str
     category: Optional[str] = None
     tags: List[str] = Field(default_factory=list)
@@ -116,6 +124,7 @@ class SearchQuery(BaseModel):
 
 class SearchResult(BaseModel):
     """Result from tool search"""
+
     tools: List[Tool]
     total_count: int
     query_time: float
@@ -124,6 +133,7 @@ class SearchResult(BaseModel):
 
 class ToolEvolutionRequest(BaseModel):
     """Request for tool evolution"""
+
     tool_id: str
     evolution_type: str  # "enhancement", "bug_fix", "optimization", "deprecation"
     description: str

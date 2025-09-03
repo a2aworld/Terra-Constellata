@@ -49,7 +49,7 @@ class CycleGANConfig:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'CycleGANConfig':
+    def from_dict(cls, data: Dict[str, Any]) -> "CycleGANConfig":
         """Create config from dictionary."""
         return cls(**data)
 
@@ -78,10 +78,10 @@ class DataConfig:
     def __post_init__(self):
         if self.augmentation_params is None:
             self.augmentation_params = {
-                'brightness': 0.1,
-                'contrast': 0.1,
-                'saturation': 0.1,
-                'hue': 0.1
+                "brightness": 0.1,
+                "contrast": 0.1,
+                "saturation": 0.1,
+                "hue": 0.1,
             }
 
     def to_dict(self) -> Dict[str, Any]:
@@ -89,7 +89,7 @@ class DataConfig:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'DataConfig':
+    def from_dict(cls, data: Dict[str, Any]) -> "DataConfig":
         """Create config from dictionary."""
         return cls(**data)
 
@@ -121,7 +121,7 @@ class TrainingConfig:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'TrainingConfig':
+    def from_dict(cls, data: Dict[str, Any]) -> "TrainingConfig":
         """Create config from dictionary."""
         return cls(**data)
 
@@ -151,7 +151,7 @@ class InferenceConfig:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'InferenceConfig':
+    def from_dict(cls, data: Dict[str, Any]) -> "InferenceConfig":
         """Create config from dictionary."""
         return cls(**data)
 
@@ -181,7 +181,7 @@ class A2AConfig:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'A2AConfig':
+    def from_dict(cls, data: Dict[str, Any]) -> "A2AConfig":
         """Create config from dictionary."""
         return cls(**data)
 
@@ -223,38 +223,45 @@ class ApprenticeConfig:
     def to_dict(self) -> Dict[str, Any]:
         """Convert entire config to dictionary."""
         return {
-            'cyclegan': self.cyclegan.to_dict(),
-            'data': self.data.to_dict(),
-            'training': self.training.to_dict(),
-            'inference': self.inference.to_dict(),
-            'a2a': self.a2a.to_dict(),
-            'model_dir': self.model_dir,
-            'log_level': self.log_level,
-            'random_seed': self.random_seed,
-            'num_workers': self.num_workers,
-            'pin_memory': self.pin_memory,
-            'prefetch_factor': self.prefetch_factor
+            "cyclegan": self.cyclegan.to_dict(),
+            "data": self.data.to_dict(),
+            "training": self.training.to_dict(),
+            "inference": self.inference.to_dict(),
+            "a2a": self.a2a.to_dict(),
+            "model_dir": self.model_dir,
+            "log_level": self.log_level,
+            "random_seed": self.random_seed,
+            "num_workers": self.num_workers,
+            "pin_memory": self.pin_memory,
+            "prefetch_factor": self.prefetch_factor,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'ApprenticeConfig':
+    def from_dict(cls, data: Dict[str, Any]) -> "ApprenticeConfig":
         """Create config from dictionary."""
         config = cls()
 
         # Load component configs
-        if 'cyclegan' in data:
-            config.cyclegan = CycleGANConfig.from_dict(data['cyclegan'])
-        if 'data' in data:
-            config.data = DataConfig.from_dict(data['data'])
-        if 'training' in data:
-            config.training = TrainingConfig.from_dict(data['training'])
-        if 'inference' in data:
-            config.inference = InferenceConfig.from_dict(data['inference'])
-        if 'a2a' in data:
-            config.a2a = A2AConfig.from_dict(data['a2a'])
+        if "cyclegan" in data:
+            config.cyclegan = CycleGANConfig.from_dict(data["cyclegan"])
+        if "data" in data:
+            config.data = DataConfig.from_dict(data["data"])
+        if "training" in data:
+            config.training = TrainingConfig.from_dict(data["training"])
+        if "inference" in data:
+            config.inference = InferenceConfig.from_dict(data["inference"])
+        if "a2a" in data:
+            config.a2a = A2AConfig.from_dict(data["a2a"])
 
         # Load general settings
-        for key in ['model_dir', 'log_level', 'random_seed', 'num_workers', 'pin_memory', 'prefetch_factor']:
+        for key in [
+            "model_dir",
+            "log_level",
+            "random_seed",
+            "num_workers",
+            "pin_memory",
+            "prefetch_factor",
+        ]:
             if key in data:
                 setattr(config, key, data[key])
 
@@ -301,7 +308,7 @@ class ConfigManager:
 
         if config_path.exists():
             try:
-                with open(config_path, 'r') as f:
+                with open(config_path, "r") as f:
                     data = json.load(f)
                 config = ApprenticeConfig.from_dict(data)
                 logger.info(f"Loaded config: {config_name}")
@@ -324,7 +331,7 @@ class ConfigManager:
         config_path = self.config_dir / f"{config_name}.json"
 
         try:
-            with open(config_path, 'w') as f:
+            with open(config_path, "w") as f:
                 json.dump(config.to_dict(), f, indent=2)
             logger.info(f"Saved config: {config_name}")
         except Exception as e:
@@ -334,7 +341,7 @@ class ConfigManager:
         self,
         base_config: ApprenticeConfig,
         experiment_name: str,
-        hyperparams: Dict[str, Any]
+        hyperparams: Dict[str, Any],
     ) -> ApprenticeConfig:
         """
         Create a new configuration for hyperparameter experimentation.
@@ -361,9 +368,9 @@ class ConfigManager:
     def _apply_hyperparams(self, config: ApprenticeConfig, hyperparams: Dict[str, Any]):
         """Apply hyperparameter modifications to config."""
         for key, value in hyperparams.items():
-            if '.' in key:
+            if "." in key:
                 # Nested parameter (e.g., 'cyclegan.learning_rate')
-                parts = key.split('.')
+                parts = key.split(".")
                 obj = config
                 for part in parts[:-1]:
                     if hasattr(obj, part):
@@ -383,9 +390,7 @@ class ConfigManager:
                     logger.warning(f"Invalid hyperparameter: {key}")
 
     def generate_hyperparameter_grid(
-        self,
-        base_config: ApprenticeConfig,
-        param_ranges: Dict[str, List[Any]]
+        self, base_config: ApprenticeConfig, param_ranges: Dict[str, List[Any]]
     ) -> List[ApprenticeConfig]:
         """
         Generate a grid of configurations for hyperparameter search.
@@ -408,7 +413,9 @@ class ConfigManager:
         for i, combo in enumerate(combinations):
             hyperparams = dict(zip(param_names, combo))
             experiment_name = f"grid_search_{i}"
-            config = self.create_experiment_config(base_config, experiment_name, hyperparams)
+            config = self.create_experiment_config(
+                base_config, experiment_name, hyperparams
+            )
             configs.append(config)
 
         logger.info(f"Generated {len(configs)} configurations for grid search")
@@ -459,40 +466,40 @@ class ConfigManager:
             Summary dictionary
         """
         return {
-            'model_architecture': {
-                'input_channels': config.cyclegan.input_channels,
-                'residual_blocks': config.cyclegan.n_residual_blocks,
-                'lambda_cycle': config.cyclegan.lambda_cycle,
-                'lambda_identity': config.cyclegan.lambda_identity
+            "model_architecture": {
+                "input_channels": config.cyclegan.input_channels,
+                "residual_blocks": config.cyclegan.n_residual_blocks,
+                "lambda_cycle": config.cyclegan.lambda_cycle,
+                "lambda_identity": config.cyclegan.lambda_identity,
             },
-            'training': {
-                'epochs': config.cyclegan.num_epochs,
-                'batch_size': config.cyclegan.batch_size,
-                'learning_rate': config.cyclegan.learning_rate,
-                'image_size': config.cyclegan.image_size
+            "training": {
+                "epochs": config.cyclegan.num_epochs,
+                "batch_size": config.cyclegan.batch_size,
+                "learning_rate": config.cyclegan.learning_rate,
+                "image_size": config.cyclegan.image_size,
             },
-            'data': {
-                'data_root': config.data.data_root,
-                'image_size': config.data.image_size,
-                'use_augmentation': config.data.use_augmentation
+            "data": {
+                "data_root": config.data.data_root,
+                "image_size": config.data.image_size,
+                "use_augmentation": config.data.use_augmentation,
             },
-            'inference': {
-                'model_name': config.inference.model_name,
-                'direction': config.inference.direction,
-                'batch_size': config.inference.batch_size
+            "inference": {
+                "model_name": config.inference.model_name,
+                "direction": config.inference.direction,
+                "batch_size": config.inference.batch_size,
             },
-            'a2a': {
-                'server_url': config.a2a.server_url,
-                'agent_name': config.a2a.agent_name,
-                'enable_collaboration': config.a2a.enable_collaboration
-            }
+            "a2a": {
+                "server_url": config.a2a.server_url,
+                "agent_name": config.a2a.agent_name,
+                "enable_collaboration": config.a2a.enable_collaboration,
+            },
         }
 
     def export_config_for_experiment(
         self,
         config: ApprenticeConfig,
         experiment_name: str,
-        output_dir: Optional[str] = None
+        output_dir: Optional[str] = None,
     ):
         """
         Export configuration for experiment tracking.
@@ -511,18 +518,18 @@ class ConfigManager:
 
         # Save full config
         config_path = output_dir / f"{experiment_name}_config.json"
-        with open(config_path, 'w') as f:
+        with open(config_path, "w") as f:
             json.dump(config.to_dict(), f, indent=2)
 
         # Save summary
         summary_path = output_dir / f"{experiment_name}_summary.json"
         summary = self.get_config_summary(config)
-        with open(summary_path, 'w') as f:
+        with open(summary_path, "w") as f:
             json.dump(summary, f, indent=2)
 
         # Save timestamp
         timestamp_path = output_dir / f"{experiment_name}_timestamp.txt"
-        with open(timestamp_path, 'w') as f:
+        with open(timestamp_path, "w") as f:
             f.write(datetime.now().isoformat())
 
         logger.info(f"Exported config for experiment: {experiment_name}")

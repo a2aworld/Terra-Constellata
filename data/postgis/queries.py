@@ -12,6 +12,7 @@ from .connection import PostGISConnection
 
 logger = logging.getLogger(__name__)
 
+
 class GeospatialQueries:
     """
     Handles geospatial queries for puzzle pieces data.
@@ -26,9 +27,14 @@ class GeospatialQueries:
         """
         self.db = db
 
-    def get_puzzle_pieces_in_bbox(self, min_lon: float, min_lat: float,
-                                 max_lon: float, max_lat: float,
-                                 limit: int = 1000) -> List[Dict[str, Any]]:
+    def get_puzzle_pieces_in_bbox(
+        self,
+        min_lon: float,
+        min_lat: float,
+        max_lon: float,
+        max_lat: float,
+        limit: int = 1000,
+    ) -> List[Dict[str, Any]]:
         """
         Get puzzle pieces within a bounding box.
 
@@ -53,15 +59,17 @@ class GeospatialQueries:
         """
 
         try:
-            results = self.db.execute_query(query, (min_lon, min_lat, max_lon, max_lat, limit))
+            results = self.db.execute_query(
+                query, (min_lon, min_lat, max_lon, max_lat, limit)
+            )
             return [dict(row) for row in results] if results else []
         except Exception as e:
             logger.error(f"Failed to query bounding box: {e}")
             return []
 
-    def get_puzzle_pieces_near_point(self, lon: float, lat: float,
-                                   distance_meters: float = 1000,
-                                   limit: int = 100) -> List[Dict[str, Any]]:
+    def get_puzzle_pieces_near_point(
+        self, lon: float, lat: float, distance_meters: float = 1000, limit: int = 100
+    ) -> List[Dict[str, Any]]:
         """
         Get puzzle pieces within a certain distance from a point.
 
@@ -86,13 +94,17 @@ class GeospatialQueries:
         """
 
         try:
-            results = self.db.execute_query(query, (lon, lat, lon, lat, distance_meters, limit))
+            results = self.db.execute_query(
+                query, (lon, lat, lon, lat, distance_meters, limit)
+            )
             return [dict(row) for row in results] if results else []
         except Exception as e:
             logger.error(f"Failed to query nearby points: {e}")
             return []
 
-    def get_puzzle_pieces_by_entity(self, entity: str, limit: int = 1000) -> List[Dict[str, Any]]:
+    def get_puzzle_pieces_by_entity(
+        self, entity: str, limit: int = 1000
+    ) -> List[Dict[str, Any]]:
         """
         Get puzzle pieces by entity type.
 
@@ -120,7 +132,9 @@ class GeospatialQueries:
             logger.error(f"Failed to query by entity: {e}")
             return []
 
-    def get_puzzle_pieces_by_sub_entity(self, sub_entity: str, limit: int = 1000) -> List[Dict[str, Any]]:
+    def get_puzzle_pieces_by_sub_entity(
+        self, sub_entity: str, limit: int = 1000
+    ) -> List[Dict[str, Any]]:
         """
         Get puzzle pieces by sub-entity type.
 
@@ -148,7 +162,9 @@ class GeospatialQueries:
             logger.error(f"Failed to query by sub-entity: {e}")
             return []
 
-    def search_puzzle_pieces_by_name(self, search_term: str, limit: int = 100) -> List[Dict[str, Any]]:
+    def search_puzzle_pieces_by_name(
+        self, search_term: str, limit: int = 100
+    ) -> List[Dict[str, Any]]:
         """
         Search puzzle pieces by name (case-insensitive partial match).
 
@@ -177,7 +193,9 @@ class GeospatialQueries:
             logger.error(f"Failed to search by name: {e}")
             return []
 
-    def get_puzzle_pieces_within_polygon(self, polygon_wkt: str, limit: int = 1000) -> List[Dict[str, Any]]:
+    def get_puzzle_pieces_within_polygon(
+        self, polygon_wkt: str, limit: int = 1000
+    ) -> List[Dict[str, Any]]:
         """
         Get puzzle pieces within a polygon defined by WKT.
 
@@ -205,7 +223,9 @@ class GeospatialQueries:
             logger.error(f"Failed to query within polygon: {e}")
             return []
 
-    def get_cluster_analysis(self, cluster_distance: float = 1000) -> List[Dict[str, Any]]:
+    def get_cluster_analysis(
+        self, cluster_distance: float = 1000
+    ) -> List[Dict[str, Any]]:
         """
         Perform cluster analysis on puzzle pieces.
 
@@ -267,10 +287,10 @@ class GeospatialQueries:
         count_query = "SELECT COUNT(*) as total_count FROM puzzle_pieces"
         try:
             result = self.db.execute_query(count_query)
-            stats['total_count'] = result[0]['total_count'] if result else 0
+            stats["total_count"] = result[0]["total_count"] if result else 0
         except Exception as e:
             logger.error(f"Failed to get total count: {e}")
-            stats['total_count'] = 0
+            stats["total_count"] = 0
 
         # Bounding box
         bbox_query = """
@@ -284,18 +304,18 @@ class GeospatialQueries:
         """
         try:
             result = self.db.execute_query(bbox_query)
-            if result and result[0]['min_lon'] is not None:
-                stats['bounding_box'] = {
-                    'min_lon': result[0]['min_lon'],
-                    'min_lat': result[0]['min_lat'],
-                    'max_lon': result[0]['max_lon'],
-                    'max_lat': result[0]['max_lat']
+            if result and result[0]["min_lon"] is not None:
+                stats["bounding_box"] = {
+                    "min_lon": result[0]["min_lon"],
+                    "min_lat": result[0]["min_lat"],
+                    "max_lon": result[0]["max_lon"],
+                    "max_lat": result[0]["max_lat"],
                 }
             else:
-                stats['bounding_box'] = None
+                stats["bounding_box"] = None
         except Exception as e:
             logger.error(f"Failed to get bounding box: {e}")
-            stats['bounding_box'] = None
+            stats["bounding_box"] = None
 
         # Entity distribution
         entity_query = """
@@ -307,10 +327,12 @@ class GeospatialQueries:
         """
         try:
             results = self.db.execute_query(entity_query)
-            stats['entity_distribution'] = [dict(row) for row in results] if results else []
+            stats["entity_distribution"] = (
+                [dict(row) for row in results] if results else []
+            )
         except Exception as e:
             logger.error(f"Failed to get entity distribution: {e}")
-            stats['entity_distribution'] = []
+            stats["entity_distribution"] = []
 
         # Coordinate validity
         coord_query = """
@@ -323,14 +345,16 @@ class GeospatialQueries:
         try:
             result = self.db.execute_query(coord_query)
             if result:
-                stats['coordinate_stats'] = dict(result[0])
+                stats["coordinate_stats"] = dict(result[0])
         except Exception as e:
             logger.error(f"Failed to get coordinate stats: {e}")
-            stats['coordinate_stats'] = {}
+            stats["coordinate_stats"] = {}
 
         return stats
 
-    def find_nearest_neighbors(self, lon: float, lat: float, k: int = 5) -> List[Dict[str, Any]]:
+    def find_nearest_neighbors(
+        self, lon: float, lat: float, k: int = 5
+    ) -> List[Dict[str, Any]]:
         """
         Find k nearest neighbors to a point.
 
@@ -360,8 +384,9 @@ class GeospatialQueries:
             logger.error(f"Failed to find nearest neighbors: {e}")
             return []
 
-    def get_puzzle_pieces_in_buffer(self, lon: float, lat: float,
-                                  buffer_distance: float = 5000) -> List[Dict[str, Any]]:
+    def get_puzzle_pieces_in_buffer(
+        self, lon: float, lat: float, buffer_distance: float = 5000
+    ) -> List[Dict[str, Any]]:
         """
         Get puzzle pieces within a buffer around a point.
 
@@ -384,11 +409,14 @@ class GeospatialQueries:
         """
 
         try:
-            results = self.db.execute_query(query, (lon, lat, buffer_distance, lon, lat, buffer_distance))
+            results = self.db.execute_query(
+                query, (lon, lat, buffer_distance, lon, lat, buffer_distance)
+            )
             return [dict(row) for row in results] if results else []
         except Exception as e:
             logger.error(f"Failed to query buffer: {e}")
             return []
+
 
 def perform_geospatial_query(query_type: str, db: PostGISConnection, **kwargs) -> Any:
     """
@@ -404,28 +432,29 @@ def perform_geospatial_query(query_type: str, db: PostGISConnection, **kwargs) -
     """
     queries = GeospatialQueries(db)
 
-    if query_type == 'bbox':
+    if query_type == "bbox":
         return queries.get_puzzle_pieces_in_bbox(**kwargs)
-    elif query_type == 'nearby':
+    elif query_type == "nearby":
         return queries.get_puzzle_pieces_near_point(**kwargs)
-    elif query_type == 'by_entity':
+    elif query_type == "by_entity":
         return queries.get_puzzle_pieces_by_entity(**kwargs)
-    elif query_type == 'by_sub_entity':
+    elif query_type == "by_sub_entity":
         return queries.get_puzzle_pieces_by_sub_entity(**kwargs)
-    elif query_type == 'search_name':
+    elif query_type == "search_name":
         return queries.search_puzzle_pieces_by_name(**kwargs)
-    elif query_type == 'within_polygon':
+    elif query_type == "within_polygon":
         return queries.get_puzzle_pieces_within_polygon(**kwargs)
-    elif query_type == 'clusters':
+    elif query_type == "clusters":
         return queries.get_cluster_analysis(**kwargs)
-    elif query_type == 'statistics':
+    elif query_type == "statistics":
         return queries.get_spatial_statistics()
-    elif query_type == 'nearest':
+    elif query_type == "nearest":
         return queries.find_nearest_neighbors(**kwargs)
-    elif query_type == 'buffer':
+    elif query_type == "buffer":
         return queries.get_puzzle_pieces_in_buffer(**kwargs)
     else:
         raise ValueError(f"Unknown query type: {query_type}")
+
 
 if __name__ == "__main__":
     # Test geospatial queries

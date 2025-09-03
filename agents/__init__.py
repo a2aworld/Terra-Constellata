@@ -5,11 +5,7 @@ This package contains the specialist agent implementations for the Terra Constel
 system, including the base agent class and specific agent types.
 """
 
-from .base_agent import (
-    BaseSpecialistAgent,
-    SpecialistAgentRegistry,
-    agent_registry
-)
+from .base_agent import BaseSpecialistAgent, SpecialistAgentRegistry, agent_registry
 
 # Import specific agents
 from .atlas import AtlasRelationalAnalyst
@@ -24,5 +20,5 @@ __all__ = [
     "AtlasRelationalAnalyst",
     "ComparativeMythologyAgent",
     "LinguistAgent",
-    "SentinelOrchestrator"
+    "SentinelOrchestrator",
 ]

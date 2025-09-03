@@ -26,7 +26,7 @@ class TestProvingGroundManager(unittest.TestCase):
             name="TestProvingGroundManager",
             llm=self.mock_llm,
             tools=self.mock_tools,
-            a2a_server_url="http://localhost:8080"
+            a2a_server_url="http://localhost:8080",
         )
 
     def test_initialization(self):
@@ -37,7 +37,7 @@ class TestProvingGroundManager(unittest.TestCase):
         self.assertIsInstance(self.manager.test_suite, CertificationTestSuite)
         self.assertIn("agent_certification", self.manager.capabilities)
 
-    @patch('langchain.agents.initialize_agent')
+    @patch("langchain.agents.initialize_agent")
     def test_create_agent_executor(self, mock_initialize_agent):
         """Test agent executor creation"""
         mock_agent = Mock()
@@ -51,13 +51,15 @@ class TestProvingGroundManager(unittest.TestCase):
     async def test_process_certification_task(self):
         """Test processing certification task"""
         # Mock the test suite
-        self.manager.test_suite.run_all_tests = AsyncMock(return_value={
-            'overall_score': 0.9,
-            'pass_rate': 0.9,
-            'passed_tests': 9,
-            'total_tests': 10,
-            'results': []
-        })
+        self.manager.test_suite.run_all_tests = AsyncMock(
+            return_value={
+                "overall_score": 0.9,
+                "pass_rate": 0.9,
+                "passed_tests": 9,
+                "total_tests": 10,
+                "results": [],
+            }
+        )
 
         # Mock VC issuance
         self.manager._issue_certification_vc = AsyncMock(return_value="mock_vc_jwt")
@@ -65,43 +67,34 @@ class TestProvingGroundManager(unittest.TestCase):
         result = await self.manager.process_task(
             "Certify agent test_agent",
             agent_id="test_agent_id",
-            agent_name="Test Agent"
+            agent_name="Test Agent",
         )
 
-        self.assertIn('status', result)
-        self.assertEqual(result['status'], 'certified')
-        self.assertIn('certificate_vc', result)
+        self.assertIn("status", result)
+        self.assertEqual(result["status"], "certified")
+        self.assertIn("certificate_vc", result)
 
     async def test_process_did_create_task(self):
         """Test processing DID creation task"""
-        result = await self.manager.process_task(
-            "Create DID",
-            method="terra"
-        )
+        result = await self.manager.process_task("Create DID", method="terra")
 
-        self.assertIn('operation', result)
-        self.assertEqual(result['operation'], 'create_did')
-        self.assertTrue(result['did'].startswith('did:terra:'))
+        self.assertIn("operation", result)
+        self.assertEqual(result["operation"], "create_did")
+        self.assertTrue(result["did"].startswith("did:terra:"))
 
     async def test_process_did_resolve_task(self):
         """Test processing DID resolution task"""
         # Create a DID first
-        create_result = await self.manager.process_task(
-            "Create DID",
-            method="terra"
-        )
-        did = create_result['did']
+        create_result = await self.manager.process_task("Create DID", method="terra")
+        did = create_result["did"]
 
         # Resolve the DID
-        resolve_result = await self.manager.process_task(
-            "Resolve DID",
-            did=did
-        )
+        resolve_result = await self.manager.process_task("Resolve DID", did=did)
 
-        self.assertIn('operation', resolve_result)
-        self.assertEqual(resolve_result['operation'], 'resolve_did')
-        self.assertEqual(resolve_result['did'], did)
-        self.assertIsNotNone(resolve_result['document'])
+        self.assertIn("operation", resolve_result)
+        self.assertEqual(resolve_result["operation"], "resolve_did")
+        self.assertEqual(resolve_result["did"], did)
+        self.assertIsNotNone(resolve_result["document"])
 
     async def test_process_vc_issue_task(self):
         """Test processing VC issuance task"""
@@ -109,8 +102,8 @@ class TestProvingGroundManager(unittest.TestCase):
         issuer_result = await self.manager.process_task("Create DID", method="terra")
         subject_result = await self.manager.process_task("Create DID", method="terra")
 
-        issuer_did = issuer_result['did']
-        subject_did = subject_result['did']
+        issuer_did = issuer_result["did"]
+        subject_did = subject_result["did"]
 
         # Issue VC
         vc_result = await self.manager.process_task(
@@ -118,12 +111,12 @@ class TestProvingGroundManager(unittest.TestCase):
             issuer_did=issuer_did,
             subject_did=subject_did,
             credential_type=["TestCredential"],
-            claims={"name": "Test Subject"}
+            claims={"name": "Test Subject"},
         )
 
-        self.assertIn('operation', vc_result)
-        self.assertEqual(vc_result['operation'], 'issue_vc')
-        self.assertIsNotNone(vc_result['vc'])
+        self.assertIn("operation", vc_result)
+        self.assertEqual(vc_result["operation"], "issue_vc")
+        self.assertIsNotNone(vc_result["vc"])
 
     async def test_process_vc_verify_task(self):
         """Test processing VC verification task"""
@@ -131,28 +124,27 @@ class TestProvingGroundManager(unittest.TestCase):
         issuer_result = await self.manager.process_task("Create DID", method="terra")
         subject_result = await self.manager.process_task("Create DID", method="terra")
 
-        issuer_did = issuer_result['did']
-        subject_did = subject_result['did']
+        issuer_did = issuer_result["did"]
+        subject_did = subject_result["did"]
 
         vc_result = await self.manager.process_task(
             "Issue Verifiable Credential",
             issuer_did=issuer_did,
             subject_did=subject_did,
             credential_type=["TestCredential"],
-            claims={"name": "Test Subject"}
+            claims={"name": "Test Subject"},
         )
 
-        vc_jwt = vc_result['vc']
+        vc_jwt = vc_result["vc"]
 
         # Verify VC
         verify_result = await self.manager.process_task(
-            "Verify Verifiable Credential",
-            vc_jwt=vc_jwt
+            "Verify Verifiable Credential", vc_jwt=vc_jwt
         )
 
-        self.assertIn('operation', verify_result)
-        self.assertEqual(verify_result['operation'], 'verify_vc')
-        self.assertTrue(verify_result['valid'])
+        self.assertIn("operation", verify_result)
+        self.assertEqual(verify_result["operation"], "verify_vc")
+        self.assertTrue(verify_result["valid"])
 
     def test_get_certification_status(self):
         """Test getting certification status"""
@@ -162,27 +154,27 @@ class TestProvingGroundManager(unittest.TestCase):
 
         # Test pending certification
         self.manager.pending_certifications["test_agent"] = {
-            'agent_name': 'Test Agent',
-            'start_time': '2023-01-01T00:00:00',
-            'status': 'running'
+            "agent_name": "Test Agent",
+            "start_time": "2023-01-01T00:00:00",
+            "status": "running",
         }
 
         status = self.manager.get_certification_status("test_agent")
         self.assertIsNotNone(status)
-        self.assertEqual(status['status'], 'running')
+        self.assertEqual(status["status"], "running")
 
     def test_get_statistics(self):
         """Test getting statistics"""
         stats = self.manager.get_statistics()
 
-        self.assertIn('total_certifications', stats)
-        self.assertIn('successful_certifications', stats)
-        self.assertIn('pending_certifications', stats)
-        self.assertIn('active_dids', stats)
-        self.assertIn('issued_credentials', stats)
+        self.assertIn("total_certifications", stats)
+        self.assertIn("successful_certifications", stats)
+        self.assertIn("pending_certifications", stats)
+        self.assertIn("active_dids", stats)
+        self.assertIn("issued_credentials", stats)
 
         # Should have some DIDs from tests
-        self.assertGreaterEqual(stats['active_dids'], 0)
+        self.assertGreaterEqual(stats["active_dids"], 0)
 
     async def test_issue_certification_vc(self):
         """Test issuing certification VC"""
@@ -191,16 +183,14 @@ class TestProvingGroundManager(unittest.TestCase):
         subject_did = "did:terra:agent:test_agent"
 
         test_results = {
-            'overall_score': 0.85,
-            'pass_rate': 0.85,
-            'passed_tests': 17,
-            'total_tests': 20
+            "overall_score": 0.85,
+            "pass_rate": 0.85,
+            "passed_tests": 17,
+            "total_tests": 20,
         }
 
         vc_jwt = await self.manager._issue_certification_vc(
-            "test_agent",
-            "Test Agent",
-            test_results
+            "test_agent", "Test Agent", test_results
         )
 
         self.assertIsNotNone(vc_jwt)
@@ -215,20 +205,19 @@ class TestProvingGroundManager(unittest.TestCase):
             subject="test_subject",
             certification_type="agent_certification",
             evidence={"test": "data"},
-            criteria=["communication", "security"]
+            criteria=["communication", "security"],
         )
 
         # Mock the process_task method
-        self.manager.process_task = AsyncMock(return_value={
-            'status': 'certified',
-            'certificate_vc': 'mock_vc'
-        })
+        self.manager.process_task = AsyncMock(
+            return_value={"status": "certified", "certificate_vc": "mock_vc"}
+        )
 
         result = await self.manager.handle_certification_request(request)
 
-        self.assertIn('status', result)
-        self.assertEqual(result['status'], 'certified')
+        self.assertIn("status", result)
+        self.assertEqual(result["status"], "certified")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

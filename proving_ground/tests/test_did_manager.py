@@ -124,9 +124,10 @@ class TestDIDDocument(unittest.TestCase):
         self.assertIsInstance(doc_json, str)
         # Should be valid JSON
         import json
+
         parsed = json.loads(doc_json)
         self.assertEqual(parsed["id"], "did:terra:test")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

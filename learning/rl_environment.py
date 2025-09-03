@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 class OrchestrationAction(Enum):
     """Possible actions the orchestrator can take."""
+
     SCAN_TERRITORIES = 0
     DISPATCH_SINGLE_AGENT = 1
     DISPATCH_MULTIPLE_AGENTS = 2
@@ -41,10 +42,13 @@ class OrchestratorRLEnvironment(gym.Env):
     - Rewards: Based on task completion, efficiency, agent utilization, user satisfaction
     """
 
-    def __init__(self, orchestrator: SentinelOrchestrator,
-                 workflow_tracer: WorkflowTracer,
-                 pattern_analyzer: PatternAnalyzer,
-                 max_steps: int = 100):
+    def __init__(
+        self,
+        orchestrator: SentinelOrchestrator,
+        workflow_tracer: WorkflowTracer,
+        pattern_analyzer: PatternAnalyzer,
+        max_steps: int = 100,
+    ):
         """
         Initialize the RL environment.
 
@@ -89,15 +93,18 @@ class OrchestratorRLEnvironment(gym.Env):
 
     def _get_initial_state(self) -> np.ndarray:
         """Get the initial environment state."""
-        return np.array([
-            0.0,  # active_tasks (0-1 normalized)
-            0.5,  # agent_utilization (0-1)
-            0.0,  # workflow_progress (0-1)
-            0.8,  # system_health (0-1)
-            0.0,  # pending_inspirations (0-1)
-            0.0,  # coordination_complexity (0-1)
-            0.0   # time_pressure (0-1)
-        ], dtype=np.float32)
+        return np.array(
+            [
+                0.0,  # active_tasks (0-1 normalized)
+                0.5,  # agent_utilization (0-1)
+                0.0,  # workflow_progress (0-1)
+                0.8,  # system_health (0-1)
+                0.0,  # pending_inspirations (0-1)
+                0.0,  # coordination_complexity (0-1)
+                0.0,  # time_pressure (0-1)
+            ],
+            dtype=np.float32,
+        )
 
     def reset(self, seed=None, options=None) -> Tuple[np.ndarray, Dict[str, Any]]:
         """Reset the environment to initial state."""
@@ -147,11 +154,11 @@ class OrchestratorRLEnvironment(gym.Env):
         self.episode_reward += reward
 
         info = {
-            'step': self.current_step,
-            'action': action_enum.name,
-            'task_completion_rate': self.task_completion_rate,
-            'agent_utilization': self.agent_utilization,
-            'system_efficiency': self.system_efficiency
+            "step": self.current_step,
+            "action": action_enum.name,
+            "task_completion_rate": self.task_completion_rate,
+            "agent_utilization": self.agent_utilization,
+            "system_efficiency": self.system_efficiency,
         }
 
         return next_state, reward, terminated, truncated, info
@@ -187,15 +194,19 @@ class OrchestratorRLEnvironment(gym.Env):
     def _action_scan_territories(self) -> float:
         """Execute scan territories action."""
         # Simulate scanning for creative territories
-        scan_result = self.orchestrator.tools[3]._run("comprehensive scan")  # CreativeTerritoryScannerTool
+        scan_result = self.orchestrator.tools[3]._run(
+            "comprehensive scan"
+        )  # CreativeTerritoryScannerTool
 
         # Reward based on territories found
-        territories_found = len(scan_result.split('\n')) - 1  # Rough estimate
+        territories_found = len(scan_result.split("\n")) - 1  # Rough estimate
         reward = min(territories_found * 0.1, 1.0)
 
         # Add new pending tasks based on scan
         if territories_found > 0:
-            self.pending_tasks.extend([f"territory_{i}" for i in range(territories_found)])
+            self.pending_tasks.extend(
+                [f"territory_{i}" for i in range(territories_found)]
+            )
 
         return reward
 
@@ -207,24 +218,27 @@ class OrchestratorRLEnvironment(gym.Env):
         task = self.pending_tasks.pop(0)
 
         # Get pattern recommendations for optimal agent
-        recommendations = self.pattern_analyzer.get_pattern_recommendations({
-            'task_type': task.split('_')[0],
-            'workflow_type': 'single_agent'
-        })
+        recommendations = self.pattern_analyzer.get_pattern_recommendations(
+            {"task_type": task.split("_")[0], "workflow_type": "single_agent"}
+        )
 
-        if recommendations['suggested_agent_combinations']:
-            optimal_agents = recommendations['suggested_agent_combinations'][0]['agents']
-            agent_name = optimal_agents[0] if optimal_agents else 'Atlas_Relational_Analyst'
+        if recommendations["suggested_agent_combinations"]:
+            optimal_agents = recommendations["suggested_agent_combinations"][0][
+                "agents"
+            ]
+            agent_name = (
+                optimal_agents[0] if optimal_agents else "Atlas_Relational_Analyst"
+            )
         else:
-            agent_name = 'Atlas_Relational_Analyst'  # Default
+            agent_name = "Atlas_Relational_Analyst"  # Default
 
         # Simulate agent dispatch
         try:
             # This would normally dispatch via A2A protocol
             self.active_workflows[task] = {
-                'agent': agent_name,
-                'start_time': self.current_step,
-                'status': 'active'
+                "agent": agent_name,
+                "start_time": self.current_step,
+                "status": "active",
             }
             return 0.3  # Reward for successful dispatch
         except Exception:
@@ -239,23 +253,24 @@ class OrchestratorRLEnvironment(gym.Env):
         self.pending_tasks = self.pending_tasks[2:]
 
         # Get pattern recommendations
-        recommendations = self.pattern_analyzer.get_pattern_recommendations({
-            'task_type': 'multi_agent',
-            'workflow_type': 'coordination'
-        })
+        recommendations = self.pattern_analyzer.get_pattern_recommendations(
+            {"task_type": "multi_agent", "workflow_type": "coordination"}
+        )
 
-        if recommendations['suggested_agent_combinations']:
-            optimal_agents = recommendations['suggested_agent_combinations'][0]['agents']
+        if recommendations["suggested_agent_combinations"]:
+            optimal_agents = recommendations["suggested_agent_combinations"][0][
+                "agents"
+            ]
         else:
-            optimal_agents = ['Atlas_Relational_Analyst', 'ComparativeMythologyAgent']
+            optimal_agents = ["Atlas_Relational_Analyst", "ComparativeMythologyAgent"]
 
         # Simulate multi-agent dispatch
         for i, task in enumerate(tasks):
             agent_name = optimal_agents[i % len(optimal_agents)]
             self.active_workflows[task] = {
-                'agent': agent_name,
-                'start_time': self.current_step,
-                'status': 'active'
+                "agent": agent_name,
+                "start_time": self.current_step,
+                "status": "active",
             }
 
         return 0.5  # Higher reward for multi-agent coordination
@@ -266,7 +281,9 @@ class OrchestratorRLEnvironment(gym.Env):
             return -0.1  # No active workflows to coordinate
 
         # Simulate workflow coordination
-        coordination_result = self.orchestrator.tools[1]._run("optimize active workflows")  # WorkflowManagementTool
+        coordination_result = self.orchestrator.tools[1]._run(
+            "optimize active workflows"
+        )  # WorkflowManagementTool
 
         # Reward based on coordination success
         if "optimization" in coordination_result.lower():
@@ -277,7 +294,9 @@ class OrchestratorRLEnvironment(gym.Env):
     def _action_monitor_system(self) -> float:
         """Execute monitor system action."""
         # Simulate system monitoring
-        health_report = self.orchestrator.tools[2]._run("generate health report")  # SystemMonitoringTool
+        health_report = self.orchestrator.tools[2]._run(
+            "generate health report"
+        )  # SystemMonitoringTool
 
         # Reward for monitoring (always positive, encourages regular monitoring)
         return 0.2
@@ -318,7 +337,7 @@ class OrchestratorRLEnvironment(gym.Env):
         workflow = self.active_workflows.pop(task_to_complete)
 
         # Calculate completion reward based on efficiency
-        duration = self.current_step - workflow['start_time']
+        duration = self.current_step - workflow["start_time"]
         efficiency_bonus = max(0, 1.0 - (duration / 20.0))  # Bonus for quick completion
 
         self.completed_tasks.append(task_to_complete)
@@ -328,25 +347,34 @@ class OrchestratorRLEnvironment(gym.Env):
         """Update the environment state based on the action taken."""
         # Update state components
         active_tasks = len(self.pending_tasks) + len(self.active_workflows)
-        agent_utilization = min(len(self.active_workflows) / 5.0, 1.0)  # Max 5 concurrent tasks
-        workflow_progress = len(self.completed_tasks) / max(len(self.completed_tasks) + active_tasks, 1)
+        agent_utilization = min(
+            len(self.active_workflows) / 5.0, 1.0
+        )  # Max 5 concurrent tasks
+        workflow_progress = len(self.completed_tasks) / max(
+            len(self.completed_tasks) + active_tasks, 1
+        )
         system_health = 0.8 + np.random.normal(0, 0.1)  # Base health with noise
-        pending_inspirations = len([t for t in self.pending_tasks if 'inspiration' in t]) / max(len(self.pending_tasks), 1)
+        pending_inspirations = len(
+            [t for t in self.pending_tasks if "inspiration" in t]
+        ) / max(len(self.pending_tasks), 1)
         coordination_complexity = min(len(self.active_workflows) / 3.0, 1.0)
         time_pressure = min(self.current_step / self.max_steps, 1.0)
 
         # Normalize values
         system_health = np.clip(system_health, 0.0, 1.0)
 
-        new_state = np.array([
-            min(active_tasks / 10.0, 1.0),  # Normalize active tasks
-            agent_utilization,
-            workflow_progress,
-            system_health,
-            pending_inspirations,
-            coordination_complexity,
-            time_pressure
-        ], dtype=np.float32)
+        new_state = np.array(
+            [
+                min(active_tasks / 10.0, 1.0),  # Normalize active tasks
+                agent_utilization,
+                workflow_progress,
+                system_health,
+                pending_inspirations,
+                coordination_complexity,
+                time_pressure,
+            ],
+            dtype=np.float32,
+        )
 
         self.current_state = new_state
         return new_state
@@ -376,12 +404,14 @@ class OrchestratorRLEnvironment(gym.Env):
     def _is_terminal(self) -> bool:
         """Check if the episode should terminate."""
         # Terminate if all tasks completed or system health critical
-        all_tasks_done = len(self.pending_tasks) == 0 and len(self.active_workflows) == 0
+        all_tasks_done = (
+            len(self.pending_tasks) == 0 and len(self.active_workflows) == 0
+        )
         system_critical = self.current_state[3] < 0.2  # system_health
 
         return all_tasks_done or system_critical
 
-    def render(self, mode='human'):
+    def render(self, mode="human"):
         """Render the current environment state."""
         print(f"Step: {self.current_step}")
         print(f"Active Tasks: {len(self.pending_tasks) + len(self.active_workflows)}")
@@ -415,19 +445,23 @@ class OrchestratorRewardWrapper(gym.RewardWrapper):
 
         # Amplify task completion rewards
         if reward > 0.5:  # Likely a task completion
-            shaped_reward *= self.reward_config.get('task_completion_multiplier', 1.2)
+            shaped_reward *= self.reward_config.get("task_completion_multiplier", 1.2)
 
         # Penalize inefficient actions more heavily
         if reward < -0.1:
-            shaped_reward *= self.reward_config.get('inefficiency_penalty_multiplier', 1.5)
+            shaped_reward *= self.reward_config.get(
+                "inefficiency_penalty_multiplier", 1.5
+            )
 
         return shaped_reward
 
 
-def create_orchestrator_env(orchestrator: SentinelOrchestrator,
-                           workflow_tracer: WorkflowTracer,
-                           pattern_analyzer: PatternAnalyzer,
-                           reward_config: Optional[Dict[str, float]] = None) -> gym.Env:
+def create_orchestrator_env(
+    orchestrator: SentinelOrchestrator,
+    workflow_tracer: WorkflowTracer,
+    pattern_analyzer: PatternAnalyzer,
+    reward_config: Optional[Dict[str, float]] = None,
+) -> gym.Env:
     """
     Factory function to create a configured orchestrator environment.
 

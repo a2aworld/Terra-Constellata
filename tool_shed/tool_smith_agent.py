@@ -35,10 +35,19 @@ class SecurityScanner:
 
     def __init__(self):
         self.dangerous_patterns = [
-            r"exec\(", r"eval\(", r"__import__\(", r"open\(",
-            r"subprocess\.", r"os\.system", r"os\.popen",
-            r"importlib\.import_module", r"import\s+os", r"import\s+subprocess",
-            r"import\s+sys", r"from\s+os\s+import", r"from\s+subprocess\s+import"
+            r"exec\(",
+            r"eval\(",
+            r"__import__\(",
+            r"open\(",
+            r"subprocess\.",
+            r"os\.system",
+            r"os\.popen",
+            r"importlib\.import_module",
+            r"import\s+os",
+            r"import\s+subprocess",
+            r"import\s+sys",
+            r"from\s+os\s+import",
+            r"from\s+subprocess\s+import",
         ]
 
     def scan_code(self, code: str) -> Tuple[bool, List[str]]:
@@ -56,7 +65,9 @@ class SecurityScanner:
         for pattern in self.dangerous_patterns:
             matches = re.findall(pattern, code)
             if matches:
-                issues.extend([f"Potentially dangerous pattern found: {pattern}" for _ in matches])
+                issues.extend(
+                    [f"Potentially dangerous pattern found: {pattern}" for _ in matches]
+                )
 
         # Check for network access
         if re.search(r"(socket|requests|urllib|http)", code):
@@ -75,11 +86,41 @@ class CodeLinter:
 
     def __init__(self):
         self.python_keywords = {
-            'False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await',
-            'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except',
-            'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is',
-            'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return',
-            'try', 'while', 'with', 'yield'
+            "False",
+            "None",
+            "True",
+            "and",
+            "as",
+            "assert",
+            "async",
+            "await",
+            "break",
+            "class",
+            "continue",
+            "def",
+            "del",
+            "elif",
+            "else",
+            "except",
+            "finally",
+            "for",
+            "from",
+            "global",
+            "if",
+            "import",
+            "in",
+            "is",
+            "lambda",
+            "nonlocal",
+            "not",
+            "or",
+            "pass",
+            "raise",
+            "return",
+            "try",
+            "while",
+            "with",
+            "yield",
         }
 
     def lint_code(self, code: str) -> Tuple[bool, List[str]]:
@@ -101,7 +142,7 @@ class CodeLinter:
             issues.append(f"Syntax error: {e}")
             return False, issues
 
-        lines = code.split('\n')
+        lines = code.split("\n")
 
         for i, line in enumerate(lines, 1):
             # Check line length
@@ -113,22 +154,26 @@ class CodeLinter:
                 issues.append(f"Line {i}: Trailing whitespace")
 
             # Check for multiple statements on one line
-            if line.count(';') > 1:
+            if line.count(";") > 1:
                 issues.append(f"Line {i}: Multiple statements on one line")
 
             # Check for proper indentation (basic check)
             stripped = line.lstrip()
-            if stripped and not line.startswith(' ' * (len(line) - len(stripped))):
-                if not (stripped.startswith('#') or len(stripped) == 0):
+            if stripped and not line.startswith(" " * (len(line) - len(stripped))):
+                if not (stripped.startswith("#") or len(stripped) == 0):
                     issues.append(f"Line {i}: Inconsistent indentation")
 
         # Check for proper docstrings
-        if 'def ' in code or 'class ' in code:
+        if "def " in code or "class " in code:
             if '"""' not in code and "'''" not in code:
                 issues.append("Missing docstring for function/class")
 
         # Check for unused imports (basic check)
-        import_lines = [line for line in lines if line.strip().startswith('import ') or line.strip().startswith('from ')]
+        import_lines = [
+            line
+            for line in lines
+            if line.strip().startswith("import ") or line.strip().startswith("from ")
+        ]
         if len(import_lines) > 10:
             issues.append("Too many imports - consider organizing into modules")
 
@@ -142,7 +187,9 @@ class UnitTestRunner:
     def __init__(self):
         self.temp_dir = Path(tempfile.mkdtemp())
 
-    def run_tests(self, code: str, test_code: Optional[str] = None) -> Tuple[bool, List[str], float]:
+    def run_tests(
+        self, code: str, test_code: Optional[str] = None
+    ) -> Tuple[bool, List[str], float]:
         """
         Run unit tests on the code.
 
@@ -161,25 +208,25 @@ class UnitTestRunner:
             main_file = self.temp_dir / "tool_main.py"
             test_file = self.temp_dir / "test_tool.py"
 
-            with open(main_file, 'w') as f:
+            with open(main_file, "w") as f:
                 f.write(code)
 
             if test_code:
-                with open(test_file, 'w') as f:
+                with open(test_file, "w") as f:
                     f.write(test_code)
             else:
                 # Generate basic tests
                 test_content = self._generate_basic_tests(code)
-                with open(test_file, 'w') as f:
+                with open(test_file, "w") as f:
                     f.write(test_content)
 
             # Run tests using subprocess
             result = subprocess.run(
-                ['python', '-m', 'pytest', str(test_file), '-v', '--tb=short'],
+                ["python", "-m", "pytest", str(test_file), "-v", "--tb=short"],
                 cwd=self.temp_dir,
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
 
             if result.returncode == 0:
@@ -187,16 +234,23 @@ class UnitTestRunner:
                 # Try to extract coverage if pytest-cov is available
                 try:
                     cov_result = subprocess.run(
-                        ['python', '-m', 'pytest', str(test_file), '--cov=tool_main', '--cov-report=term-missing'],
+                        [
+                            "python",
+                            "-m",
+                            "pytest",
+                            str(test_file),
+                            "--cov=tool_main",
+                            "--cov-report=term-missing",
+                        ],
                         cwd=self.temp_dir,
                         capture_output=True,
                         text=True,
-                        timeout=30
+                        timeout=30,
                     )
                     if cov_result.returncode == 0:
                         # Extract coverage percentage (basic parsing)
                         output = cov_result.stdout + cov_result.stderr
-                        cov_match = re.search(r'TOTAL\s+\d+\s+\d+\s+(\d+)%', output)
+                        cov_match = re.search(r"TOTAL\s+\d+\s+\d+\s+(\d+)%", output)
                         if cov_match:
                             coverage = float(cov_match.group(1)) / 100.0
                 except:
@@ -244,6 +298,7 @@ def test_edge_cases():
     def cleanup(self):
         """Clean up temporary files."""
         import shutil
+
         try:
             shutil.rmtree(self.temp_dir)
         except:
@@ -266,7 +321,7 @@ class ToolSmithAgent(BaseSpecialistAgent):
         llm: BaseLLM,
         registry: ToolRegistry,
         a2a_server_url: str = "http://localhost:8080",
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize the ToolSmith agent.
@@ -281,7 +336,7 @@ class ToolSmithAgent(BaseSpecialistAgent):
             self._create_validate_tool(),
             self._create_approve_tool(),
             self._create_reject_tool(),
-            self._create_review_proposals_tool()
+            self._create_review_proposals_tool(),
         ]
 
         super().__init__(
@@ -289,7 +344,7 @@ class ToolSmithAgent(BaseSpecialistAgent):
             llm=llm,
             tools=tools,
             a2a_server_url=a2a_server_url,
-            **kwargs
+            **kwargs,
         )
 
         self.registry = registry
@@ -395,7 +450,9 @@ def example_tool(x, y):
 """
 
         # Security scan
-        security_passed, security_issues = self.security_scanner.scan_code(proposal_code)
+        security_passed, security_issues = self.security_scanner.scan_code(
+            proposal_code
+        )
 
         # Code linting
         lint_passed, lint_issues = self.code_linter.lint_code(proposal_code)
@@ -412,7 +469,7 @@ def example_tool(x, y):
             linting_issues=lint_issues,
             test_coverage=coverage,
             validated_at=datetime.utcnow(),
-            validated_by=self.name
+            validated_by=self.name,
         )
 
         result = f"""
@@ -465,7 +522,9 @@ Overall Status: {'APPROVED' if all([security_passed, lint_passed, test_passed]) 
             Rejection result
         """
         try:
-            success = await self.registry.reject_proposal(proposal_id, self.name, reason)
+            success = await self.registry.reject_proposal(
+                proposal_id, self.name, reason
+            )
             if success:
                 return f"Proposal {proposal_id} rejected. Reason: {reason}"
             else:
@@ -513,7 +572,7 @@ Description: {proposal.description[:100]}...
             llm=self.llm,
             agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
             memory=self.memory,
-            verbose=True
+            verbose=True,
         )
 
     async def process_task(self, task: str, **kwargs) -> Any:
@@ -550,10 +609,14 @@ Description: {proposal.description[:100]}...
 
                         # Auto-approve if all checks pass
                         if "Overall Status: APPROVED" in validation_result:
-                            await self._approve_proposal(proposal.id, "Auto-approved by ToolSmith")
+                            await self._approve_proposal(
+                                proposal.id, "Auto-approved by ToolSmith"
+                            )
                         else:
                             # Send notification for manual review
-                            await self._notify_manual_review(proposal.id, validation_result)
+                            await self._notify_manual_review(
+                                proposal.id, validation_result
+                            )
 
                 # Wait before next check
                 await asyncio.sleep(60)  # Check every minute
@@ -566,7 +629,9 @@ Description: {proposal.description[:100]}...
         """Notify for manual review of a proposal."""
         # This would send a message via A2A protocol to human operators
         # For now, just log it
-        logger.info(f"Proposal {proposal_id} requires manual review:\n{validation_result}")
+        logger.info(
+            f"Proposal {proposal_id} requires manual review:\n{validation_result}"
+        )
 
     def cleanup(self):
         """Clean up resources."""

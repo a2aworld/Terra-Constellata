@@ -20,9 +20,14 @@ logger = logging.getLogger(__name__)
 class CATScore:
     """Represents a Creative Assessment Tool (CAT) score."""
 
-    def __init__(self, workflow_id: str, user_id: str, score: int,
-                 dimensions: Optional[Dict[str, int]] = None,
-                 comments: Optional[str] = None):
+    def __init__(
+        self,
+        workflow_id: str,
+        user_id: str,
+        score: int,
+        dimensions: Optional[Dict[str, int]] = None,
+        comments: Optional[str] = None,
+    ):
         """
         Initialize a CAT score.
 
@@ -44,27 +49,27 @@ class CATScore:
     def to_dict(self) -> Dict[str, Any]:
         """Convert CAT score to dictionary."""
         return {
-            'workflow_id': self.workflow_id,
-            'user_id': self.user_id,
-            'score': self.score,
-            'dimensions': self.dimensions,
-            'comments': self.comments,
-            'timestamp': self.timestamp.isoformat(),
-            'metadata': self.metadata
+            "workflow_id": self.workflow_id,
+            "user_id": self.user_id,
+            "score": self.score,
+            "dimensions": self.dimensions,
+            "comments": self.comments,
+            "timestamp": self.timestamp.isoformat(),
+            "metadata": self.metadata,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'CATScore':
+    def from_dict(cls, data: Dict[str, Any]) -> "CATScore":
         """Create CAT score from dictionary."""
         score = cls(
-            workflow_id=data['workflow_id'],
-            user_id=data['user_id'],
-            score=data['score'],
-            dimensions=data.get('dimensions', {}),
-            comments=data.get('comments')
+            workflow_id=data["workflow_id"],
+            user_id=data["user_id"],
+            score=data["score"],
+            dimensions=data.get("dimensions", {}),
+            comments=data.get("comments"),
         )
-        score.timestamp = datetime.fromisoformat(data['timestamp'])
-        score.metadata = data.get('metadata', {})
+        score.timestamp = datetime.fromisoformat(data["timestamp"])
+        score.metadata = data.get("metadata", {})
         return score
 
     def get_normalized_score(self) -> float:
@@ -86,30 +91,37 @@ class UserFeedback:
         self.user_id = user_id
         self.cat_score: Optional[CATScore] = None
         self.satisfaction_rating: Optional[float] = None  # 0-1
-        self.usefulness_rating: Optional[float] = None   # 0-1
-        self.novelty_rating: Optional[float] = None      # 0-1
-        self.quality_rating: Optional[float] = None      # 0-1
+        self.usefulness_rating: Optional[float] = None  # 0-1
+        self.novelty_rating: Optional[float] = None  # 0-1
+        self.quality_rating: Optional[float] = None  # 0-1
         self.feedback_text: Optional[str] = None
         self.suggested_improvements: List[str] = []
         self.tags: List[str] = []
         self.timestamp = datetime.utcnow()
         self.metadata: Dict[str, Any] = {}
 
-    def add_cat_score(self, score: int, dimensions: Optional[Dict[str, int]] = None,
-                     comments: Optional[str] = None):
+    def add_cat_score(
+        self,
+        score: int,
+        dimensions: Optional[Dict[str, int]] = None,
+        comments: Optional[str] = None,
+    ):
         """Add a CAT score to this feedback."""
         self.cat_score = CATScore(
             workflow_id=self.workflow_id,
             user_id=self.user_id,
             score=score,
             dimensions=dimensions,
-            comments=comments
+            comments=comments,
         )
 
-    def set_ratings(self, satisfaction: Optional[float] = None,
-                   usefulness: Optional[float] = None,
-                   novelty: Optional[float] = None,
-                   quality: Optional[float] = None):
+    def set_ratings(
+        self,
+        satisfaction: Optional[float] = None,
+        usefulness: Optional[float] = None,
+        novelty: Optional[float] = None,
+        quality: Optional[float] = None,
+    ):
         """Set various rating scores."""
         if satisfaction is not None:
             self.satisfaction_rating = max(0.0, min(1.0, satisfaction))
@@ -167,41 +179,38 @@ class UserFeedback:
     def to_dict(self) -> Dict[str, Any]:
         """Convert feedback to dictionary."""
         return {
-            'workflow_id': self.workflow_id,
-            'user_id': self.user_id,
-            'cat_score': self.cat_score.to_dict() if self.cat_score else None,
-            'satisfaction_rating': self.satisfaction_rating,
-            'usefulness_rating': self.usefulness_rating,
-            'novelty_rating': self.novelty_rating,
-            'quality_rating': self.quality_rating,
-            'feedback_text': self.feedback_text,
-            'suggested_improvements': self.suggested_improvements,
-            'tags': self.tags,
-            'timestamp': self.timestamp.isoformat(),
-            'composite_score': self.get_composite_score(),
-            'metadata': self.metadata
+            "workflow_id": self.workflow_id,
+            "user_id": self.user_id,
+            "cat_score": self.cat_score.to_dict() if self.cat_score else None,
+            "satisfaction_rating": self.satisfaction_rating,
+            "usefulness_rating": self.usefulness_rating,
+            "novelty_rating": self.novelty_rating,
+            "quality_rating": self.quality_rating,
+            "feedback_text": self.feedback_text,
+            "suggested_improvements": self.suggested_improvements,
+            "tags": self.tags,
+            "timestamp": self.timestamp.isoformat(),
+            "composite_score": self.get_composite_score(),
+            "metadata": self.metadata,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'UserFeedback':
+    def from_dict(cls, data: Dict[str, Any]) -> "UserFeedback":
         """Create feedback from dictionary."""
-        feedback = cls(
-            workflow_id=data['workflow_id'],
-            user_id=data['user_id']
-        )
+        feedback = cls(workflow_id=data["workflow_id"], user_id=data["user_id"])
 
-        if data.get('cat_score'):
-            feedback.cat_score = CATScore.from_dict(data['cat_score'])
+        if data.get("cat_score"):
+            feedback.cat_score = CATScore.from_dict(data["cat_score"])
 
-        feedback.satisfaction_rating = data.get('satisfaction_rating')
-        feedback.usefulness_rating = data.get('usefulness_rating')
-        feedback.novelty_rating = data.get('novelty_rating')
-        feedback.quality_rating = data.get('quality_rating')
-        feedback.feedback_text = data.get('feedback_text')
-        feedback.suggested_improvements = data.get('suggested_improvements', [])
-        feedback.tags = data.get('tags', [])
-        feedback.timestamp = datetime.fromisoformat(data['timestamp'])
-        feedback.metadata = data.get('metadata', {})
+        feedback.satisfaction_rating = data.get("satisfaction_rating")
+        feedback.usefulness_rating = data.get("usefulness_rating")
+        feedback.novelty_rating = data.get("novelty_rating")
+        feedback.quality_rating = data.get("quality_rating")
+        feedback.feedback_text = data.get("feedback_text")
+        feedback.suggested_improvements = data.get("suggested_improvements", [])
+        feedback.tags = data.get("tags", [])
+        feedback.timestamp = datetime.fromisoformat(data["timestamp"])
+        feedback.metadata = data.get("metadata", {})
 
         return feedback
 
@@ -209,7 +218,7 @@ class UserFeedback:
 class FeedbackCollector:
     """Main system for collecting and managing user feedback."""
 
-    def __init__(self, storage_path: str = './feedback'):
+    def __init__(self, storage_path: str = "./feedback"):
         """
         Initialize the feedback collector.
 
@@ -218,8 +227,12 @@ class FeedbackCollector:
         """
         self.storage_path = storage_path
         self.feedback_data: Dict[str, UserFeedback] = {}  # workflow_id -> feedback
-        self.user_feedback_history: Dict[str, List[UserFeedback]] = {}  # user_id -> feedback list
-        self.pending_feedback_requests: Dict[str, Dict[str, Any]] = {}  # workflow_id -> request info
+        self.user_feedback_history: Dict[
+            str, List[UserFeedback]
+        ] = {}  # user_id -> feedback list
+        self.pending_feedback_requests: Dict[
+            str, Dict[str, Any]
+        ] = {}  # workflow_id -> request info
 
         # Create storage directory
         os.makedirs(storage_path, exist_ok=True)
@@ -254,15 +267,18 @@ class FeedbackCollector:
             # Save to disk
             self._save_feedback(feedback)
 
-            logger.info(f"Feedback submitted for workflow {feedback.workflow_id} by user {feedback.user_id}")
+            logger.info(
+                f"Feedback submitted for workflow {feedback.workflow_id} by user {feedback.user_id}"
+            )
             return True
 
         except Exception as e:
             logger.error(f"Error submitting feedback: {e}")
             return False
 
-    def request_feedback(self, workflow_id: str, user_id: str,
-                        context: Optional[Dict[str, Any]] = None) -> str:
+    def request_feedback(
+        self, workflow_id: str, user_id: str, context: Optional[Dict[str, Any]] = None
+    ) -> str:
         """
         Request feedback from a user for a specific workflow.
 
@@ -274,18 +290,22 @@ class FeedbackCollector:
         Returns:
             Request ID for tracking
         """
-        request_id = f"req_{workflow_id}_{user_id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+        request_id = (
+            f"req_{workflow_id}_{user_id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+        )
 
         self.pending_feedback_requests[workflow_id] = {
-            'request_id': request_id,
-            'user_id': user_id,
-            'workflow_id': workflow_id,
-            'context': context or {},
-            'timestamp': datetime.utcnow(),
-            'status': 'pending'
+            "request_id": request_id,
+            "user_id": user_id,
+            "workflow_id": workflow_id,
+            "context": context or {},
+            "timestamp": datetime.utcnow(),
+            "status": "pending",
         }
 
-        logger.info(f"Feedback requested for workflow {workflow_id} from user {user_id}")
+        logger.info(
+            f"Feedback requested for workflow {workflow_id} from user {user_id}"
+        )
         return request_id
 
     def get_feedback(self, workflow_id: str) -> Optional[UserFeedback]:
@@ -296,12 +316,14 @@ class FeedbackCollector:
         """Get all feedback from a specific user."""
         return self.user_feedback_history.get(user_id, [])
 
-    def get_pending_requests(self, user_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_pending_requests(
+        self, user_id: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
         """Get pending feedback requests."""
         requests = list(self.pending_feedback_requests.values())
 
         if user_id:
-            requests = [r for r in requests if r['user_id'] == user_id]
+            requests = [r for r in requests if r["user_id"] == user_id]
 
         return requests
 
@@ -313,11 +335,11 @@ class FeedbackCollector:
 
         if total_feedback == 0:
             return {
-                'total_feedback': 0,
-                'total_users': 0,
-                'pending_requests': pending_requests,
-                'avg_cat_score': None,
-                'avg_composite_score': None
+                "total_feedback": 0,
+                "total_users": 0,
+                "pending_requests": pending_requests,
+                "avg_cat_score": None,
+                "avg_composite_score": None,
             }
 
         # Calculate averages
@@ -333,12 +355,12 @@ class FeedbackCollector:
         avg_composite_score = sum(composite_scores) / len(composite_scores)
 
         return {
-            'total_feedback': total_feedback,
-            'total_users': total_users,
-            'pending_requests': pending_requests,
-            'avg_cat_score': avg_cat_score,
-            'avg_composite_score': avg_composite_score,
-            'feedback_with_cat_scores': len(cat_scores)
+            "total_feedback": total_feedback,
+            "total_users": total_users,
+            "pending_requests": pending_requests,
+            "avg_cat_score": avg_cat_score,
+            "avg_composite_score": avg_composite_score,
+            "feedback_with_cat_scores": len(cat_scores),
         }
 
     def get_high_scoring_workflows(self, threshold: float = 0.8) -> List[str]:
@@ -354,78 +376,97 @@ class FeedbackCollector:
         cutoff_date = datetime.utcnow() - timedelta(days=days)
 
         recent_feedback = [
-            f for f in self.feedback_data.values()
-            if f.timestamp >= cutoff_date
+            f for f in self.feedback_data.values() if f.timestamp >= cutoff_date
         ]
 
         if not recent_feedback:
-            return {'error': 'No recent feedback data'}
+            return {"error": "No recent feedback data"}
 
         # Calculate trends
         cat_scores = [f.cat_score.score for f in recent_feedback if f.cat_score]
         composite_scores = [f.get_composite_score() for f in recent_feedback]
 
         return {
-            'period_days': days,
-            'total_feedback': len(recent_feedback),
-            'avg_cat_score': sum(cat_scores) / len(cat_scores) if cat_scores else None,
-            'avg_composite_score': sum(composite_scores) / len(composite_scores),
-            'feedback_with_cat_scores': len(cat_scores),
-            'score_distribution': self._calculate_score_distribution(composite_scores)
+            "period_days": days,
+            "total_feedback": len(recent_feedback),
+            "avg_cat_score": sum(cat_scores) / len(cat_scores) if cat_scores else None,
+            "avg_composite_score": sum(composite_scores) / len(composite_scores),
+            "feedback_with_cat_scores": len(cat_scores),
+            "score_distribution": self._calculate_score_distribution(composite_scores),
         }
 
     def _calculate_score_distribution(self, scores: List[float]) -> Dict[str, int]:
         """Calculate score distribution."""
-        distribution = {'0-0.2': 0, '0.2-0.4': 0, '0.4-0.6': 0, '0.6-0.8': 0, '0.8-1.0': 0}
+        distribution = {
+            "0-0.2": 0,
+            "0.2-0.4": 0,
+            "0.4-0.6": 0,
+            "0.6-0.8": 0,
+            "0.8-1.0": 0,
+        }
 
         for score in scores:
             if score < 0.2:
-                distribution['0-0.2'] += 1
+                distribution["0-0.2"] += 1
             elif score < 0.4:
-                distribution['0.2-0.4'] += 1
+                distribution["0.2-0.4"] += 1
             elif score < 0.6:
-                distribution['0.4-0.6'] += 1
+                distribution["0.4-0.6"] += 1
             elif score < 0.8:
-                distribution['0.6-0.8'] += 1
+                distribution["0.6-0.8"] += 1
             else:
-                distribution['0.8-1.0'] += 1
+                distribution["0.8-1.0"] += 1
 
         return distribution
 
-    def export_feedback_data(self, filename: str, format: str = 'json'):
+    def export_feedback_data(self, filename: str, format: str = "json"):
         """Export feedback data for analysis."""
-        if format == 'json':
+        if format == "json":
             data = {
-                'feedback': [f.to_dict() for f in self.feedback_data.values()],
-                'statistics': self.get_feedback_statistics(),
-                'export_timestamp': datetime.utcnow().isoformat()
+                "feedback": [f.to_dict() for f in self.feedback_data.values()],
+                "statistics": self.get_feedback_statistics(),
+                "export_timestamp": datetime.utcnow().isoformat(),
             }
 
             filepath = os.path.join(self.storage_path, f"{filename}.json")
-            with open(filepath, 'w') as f:
+            with open(filepath, "w") as f:
                 json.dump(data, f, indent=2, default=str)
 
-        elif format == 'csv':
+        elif format == "csv":
             import csv
+
             filepath = os.path.join(self.storage_path, f"{filename}.csv")
 
-            with open(filepath, 'w', newline='') as f:
+            with open(filepath, "w", newline="") as f:
                 writer = csv.writer(f)
-                writer.writerow(['workflow_id', 'user_id', 'cat_score', 'composite_score',
-                               'satisfaction', 'usefulness', 'novelty', 'quality', 'timestamp'])
+                writer.writerow(
+                    [
+                        "workflow_id",
+                        "user_id",
+                        "cat_score",
+                        "composite_score",
+                        "satisfaction",
+                        "usefulness",
+                        "novelty",
+                        "quality",
+                        "timestamp",
+                    ]
+                )
 
                 for feedback in self.feedback_data.values():
-                    writer.writerow([
-                        feedback.workflow_id,
-                        feedback.user_id,
-                        feedback.cat_score.score if feedback.cat_score else None,
-                        feedback.get_composite_score(),
-                        feedback.satisfaction_rating,
-                        feedback.usefulness_rating,
-                        feedback.novelty_rating,
-                        feedback.quality_rating,
-                        feedback.timestamp.isoformat()
-                    ])
+                    writer.writerow(
+                        [
+                            feedback.workflow_id,
+                            feedback.user_id,
+                            feedback.cat_score.score if feedback.cat_score else None,
+                            feedback.get_composite_score(),
+                            feedback.satisfaction_rating,
+                            feedback.usefulness_rating,
+                            feedback.novelty_rating,
+                            feedback.quality_rating,
+                            feedback.timestamp.isoformat(),
+                        ]
+                    )
 
         logger.info(f"Feedback data exported to {filepath}")
 
@@ -434,7 +475,7 @@ class FeedbackCollector:
         filename = f"feedback_{feedback.workflow_id}.json"
         filepath = os.path.join(self.storage_path, filename)
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(feedback.to_dict(), f, indent=2, default=str)
 
     def _load_feedback_data(self):
@@ -443,10 +484,11 @@ class FeedbackCollector:
             return
 
         import glob
+
         pattern = os.path.join(self.storage_path, "feedback_*.json")
         for filepath in glob.glob(pattern):
             try:
-                with open(filepath, 'r') as f:
+                with open(filepath, "r") as f:
                     data = json.load(f)
                     feedback = UserFeedback.from_dict(data)
                     self.feedback_data[feedback.workflow_id] = feedback
@@ -468,9 +510,14 @@ class FeedbackAPI:
     def __init__(self, feedback_collector: FeedbackCollector):
         self.feedback_collector = feedback_collector
 
-    async def submit_cat_score(self, workflow_id: str, user_id: str, score: int,
-                             dimensions: Optional[Dict[str, int]] = None,
-                             comments: Optional[str] = None) -> Dict[str, Any]:
+    async def submit_cat_score(
+        self,
+        workflow_id: str,
+        user_id: str,
+        score: int,
+        dimensions: Optional[Dict[str, int]] = None,
+        comments: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """API endpoint for submitting CAT scores."""
         try:
             feedback = UserFeedback(workflow_id, user_id)
@@ -479,19 +526,27 @@ class FeedbackAPI:
             success = self.feedback_collector.submit_feedback(feedback)
 
             return {
-                'success': success,
-                'message': 'CAT score submitted successfully' if success else 'Submission failed',
-                'normalized_score': feedback.cat_score.get_normalized_score() if success else None
+                "success": success,
+                "message": "CAT score submitted successfully"
+                if success
+                else "Submission failed",
+                "normalized_score": feedback.cat_score.get_normalized_score()
+                if success
+                else None,
             }
         except Exception as e:
             logger.error(f"Error submitting CAT score: {e}")
-            return {'success': False, 'error': str(e)}
+            return {"success": False, "error": str(e)}
 
-    async def submit_detailed_feedback(self, workflow_id: str, user_id: str,
-                                     ratings: Dict[str, float],
-                                     feedback_text: Optional[str] = None,
-                                     suggestions: Optional[List[str]] = None,
-                                     tags: Optional[List[str]] = None) -> Dict[str, Any]:
+    async def submit_detailed_feedback(
+        self,
+        workflow_id: str,
+        user_id: str,
+        ratings: Dict[str, float],
+        feedback_text: Optional[str] = None,
+        suggestions: Optional[List[str]] = None,
+        tags: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
         """API endpoint for submitting detailed feedback."""
         try:
             feedback = UserFeedback(workflow_id, user_id)
@@ -511,13 +566,15 @@ class FeedbackAPI:
             success = self.feedback_collector.submit_feedback(feedback)
 
             return {
-                'success': success,
-                'message': 'Detailed feedback submitted successfully' if success else 'Submission failed',
-                'composite_score': feedback.get_composite_score() if success else None
+                "success": success,
+                "message": "Detailed feedback submitted successfully"
+                if success
+                else "Submission failed",
+                "composite_score": feedback.get_composite_score() if success else None,
             }
         except Exception as e:
             logger.error(f"Error submitting detailed feedback: {e}")
-            return {'success': False, 'error': str(e)}
+            return {"success": False, "error": str(e)}
 
     async def get_feedback_status(self, workflow_id: str) -> Dict[str, Any]:
         """Get feedback status for a workflow."""
@@ -525,10 +582,10 @@ class FeedbackAPI:
 
         if feedback:
             return {
-                'has_feedback': True,
-                'composite_score': feedback.get_composite_score(),
-                'cat_score': feedback.cat_score.score if feedback.cat_score else None,
-                'timestamp': feedback.timestamp.isoformat()
+                "has_feedback": True,
+                "composite_score": feedback.get_composite_score(),
+                "cat_score": feedback.cat_score.score if feedback.cat_score else None,
+                "timestamp": feedback.timestamp.isoformat(),
             }
         else:
-            return {'has_feedback': False}
+            return {"has_feedback": False}

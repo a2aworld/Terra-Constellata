@@ -30,8 +30,13 @@ logger = logging.getLogger(__name__)
 class RewardDataPoint:
     """Represents a single reward training data point."""
 
-    def __init__(self, workflow_id: str, action_sequence: List[str],
-                 performance_metrics: Dict[str, float], user_feedback: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        workflow_id: str,
+        action_sequence: List[str],
+        performance_metrics: Dict[str, float],
+        user_feedback: Optional[Dict[str, Any]] = None,
+    ):
         self.workflow_id = workflow_id
         self.action_sequence = action_sequence
         self.performance_metrics = performance_metrics
@@ -46,53 +51,67 @@ class RewardDataPoint:
         score = 0.0
 
         # Performance-based rewards
-        if 'workflow_efficiency' in self.performance_metrics:
-            score += self.performance_metrics['workflow_efficiency'] * 0.3
+        if "workflow_efficiency" in self.performance_metrics:
+            score += self.performance_metrics["workflow_efficiency"] * 0.3
 
-        if 'agent_coordination_score' in self.performance_metrics:
-            score += self.performance_metrics['agent_coordination_score'] * 0.2
+        if "agent_coordination_score" in self.performance_metrics:
+            score += self.performance_metrics["agent_coordination_score"] * 0.2
 
-        if 'task_completion_rate' in self.performance_metrics:
-            score += self.performance_metrics['task_completion_rate'] * 0.3
+        if "task_completion_rate" in self.performance_metrics:
+            score += self.performance_metrics["task_completion_rate"] * 0.3
 
         # User feedback rewards
-        if 'cat_score' in self.user_feedback:
-            cat_score = self.user_feedback['cat_score']
+        if "cat_score" in self.user_feedback:
+            cat_score = self.user_feedback["cat_score"]
             # Normalize CAT score (assuming 1-10 scale) to 0-1
             normalized_cat = (cat_score - 1) / 9.0
             score += normalized_cat * 0.2
 
-        if 'user_satisfaction' in self.user_feedback:
-            score += self.user_feedback['user_satisfaction'] * 0.1
+        if "user_satisfaction" in self.user_feedback:
+            score += self.user_feedback["user_satisfaction"] * 0.1
 
         # Penalty for errors
-        if self.performance_metrics.get('error_count', 0) > 0:
-            score -= 0.1 * min(self.performance_metrics['error_count'], 5)
+        if self.performance_metrics.get("error_count", 0) > 0:
+            score -= 0.1 * min(self.performance_metrics["error_count"], 5)
 
         return max(0.0, min(1.0, score))  # Clamp to [0, 1]
 
     def to_features(self) -> Dict[str, Any]:
         """Convert data point to feature dictionary for model training."""
         features = {
-            'workflow_id': self.workflow_id,
-            'num_actions': len(self.action_sequence),
-            'avg_action_length': np.mean([len(action) for action in self.action_sequence]) if self.action_sequence else 0,
-            'unique_actions': len(set(self.action_sequence)),
-            'workflow_efficiency': self.performance_metrics.get('workflow_efficiency', 0.0),
-            'agent_coordination_score': self.performance_metrics.get('agent_coordination_score', 0.0),
-            'task_completion_rate': self.performance_metrics.get('task_completion_rate', 0.0),
-            'avg_response_time': self.performance_metrics.get('avg_agent_response_time', 0.0),
-            'error_count': self.performance_metrics.get('error_count', 0),
-            'has_user_feedback': 1 if self.user_feedback else 0,
-            'cat_score': self.user_feedback.get('cat_score', 0),
-            'user_satisfaction': self.user_feedback.get('user_satisfaction', 0.0),
-            'reward_score': self.reward_score
+            "workflow_id": self.workflow_id,
+            "num_actions": len(self.action_sequence),
+            "avg_action_length": np.mean(
+                [len(action) for action in self.action_sequence]
+            )
+            if self.action_sequence
+            else 0,
+            "unique_actions": len(set(self.action_sequence)),
+            "workflow_efficiency": self.performance_metrics.get(
+                "workflow_efficiency", 0.0
+            ),
+            "agent_coordination_score": self.performance_metrics.get(
+                "agent_coordination_score", 0.0
+            ),
+            "task_completion_rate": self.performance_metrics.get(
+                "task_completion_rate", 0.0
+            ),
+            "avg_response_time": self.performance_metrics.get(
+                "avg_agent_response_time", 0.0
+            ),
+            "error_count": self.performance_metrics.get("error_count", 0),
+            "has_user_feedback": 1 if self.user_feedback else 0,
+            "cat_score": self.user_feedback.get("cat_score", 0),
+            "user_satisfaction": self.user_feedback.get("user_satisfaction", 0.0),
+            "reward_score": self.reward_score,
         }
 
         # Add action type frequencies
         action_counts = {}
         for action in self.action_sequence:
-            action_counts[f'action_{action}'] = action_counts.get(f'action_{action}', 0) + 1
+            action_counts[f"action_{action}"] = (
+                action_counts.get(f"action_{action}", 0) + 1
+            )
 
         features.update(action_counts)
 
@@ -102,7 +121,7 @@ class RewardDataPoint:
 class RewardModel:
     """Machine learning model for predicting rewards from workflow features."""
 
-    def __init__(self, model_type: str = 'xgboost', model_path: str = './models'):
+    def __init__(self, model_type: str = "xgboost", model_path: str = "./models"):
         """
         Initialize the reward model.
 
@@ -125,34 +144,34 @@ class RewardModel:
 
     def _initialize_model(self):
         """Initialize the machine learning model."""
-        if self.model_type == 'xgboost':
+        if self.model_type == "xgboost":
             self.model = xgb.XGBRegressor(
-                objective='reg:squarederror',
+                objective="reg:squarederror",
                 n_estimators=100,
                 max_depth=6,
                 learning_rate=0.1,
-                random_state=42
+                random_state=42,
             )
-        elif self.model_type == 'lightgbm':
+        elif self.model_type == "lightgbm":
             self.model = lgb.LGBMRegressor(
-                objective='regression',
+                objective="regression",
                 n_estimators=100,
                 max_depth=6,
                 learning_rate=0.1,
-                random_state=42
+                random_state=42,
             )
-        elif self.model_type == 'random_forest':
+        elif self.model_type == "random_forest":
             self.model = RandomForestRegressor(
-                n_estimators=100,
-                max_depth=10,
-                random_state=42
+                n_estimators=100, max_depth=10, random_state=42
             )
-        elif self.model_type == 'linear':
+        elif self.model_type == "linear":
             self.model = LinearRegression()
         else:
             raise ValueError(f"Unsupported model type: {self.model_type}")
 
-    def train(self, training_data: List[RewardDataPoint], test_size: float = 0.2) -> Dict[str, float]:
+    def train(
+        self, training_data: List[RewardDataPoint], test_size: float = 0.2
+    ) -> Dict[str, float]:
         """
         Train the reward model.
 
@@ -165,18 +184,20 @@ class RewardModel:
         """
         if len(training_data) < 10:
             logger.warning("Insufficient training data for reward model")
-            return {'error': 'insufficient_data'}
+            return {"error": "insufficient_data"}
 
         # Convert to feature DataFrame
         features_list = [dp.to_features() for dp in training_data]
         df = pd.DataFrame(features_list)
 
         # Prepare features and target
-        feature_cols = [col for col in df.columns if col not in ['workflow_id', 'reward_score']]
+        feature_cols = [
+            col for col in df.columns if col not in ["workflow_id", "reward_score"]
+        ]
         self.feature_columns = feature_cols
 
         X = df[feature_cols]
-        y = df['reward_score']
+        y = df["reward_score"]
 
         # Handle missing values
         X = X.fillna(0)
@@ -191,7 +212,7 @@ class RewardModel:
         X_test_scaled = self.scaler.transform(X_test)
 
         # Train model
-        if self.model_type in ['xgboost', 'lightgbm']:
+        if self.model_type in ["xgboost", "lightgbm"]:
             self.model.fit(X_train_scaled, y_train)
         else:
             self.model.fit(X_train_scaled, y_train)
@@ -207,11 +228,11 @@ class RewardModel:
         self.save_model()
 
         metrics = {
-            'mse': mse,
-            'r2_score': r2,
-            'training_samples': len(X_train),
-            'test_samples': len(X_test),
-            'feature_count': len(feature_cols)
+            "mse": mse,
+            "r2_score": r2,
+            "training_samples": len(X_train),
+            "test_samples": len(X_test),
+            "feature_count": len(feature_cols),
         }
 
         logger.info(f"Reward model trained. MSE: {mse:.4f}, R²: {r2:.4f}")
@@ -259,8 +280,8 @@ class RewardModel:
 
         # Save feature columns
         feature_path = os.path.join(self.model_path, f"{filename}_features.txt")
-        with open(feature_path, 'w') as f:
-            f.write('\n'.join(self.feature_columns))
+        with open(feature_path, "w") as f:
+            f.write("\n".join(self.feature_columns))
 
         logger.info(f"Model saved to {model_path}")
 
@@ -274,7 +295,7 @@ class RewardModel:
             self.model = joblib.load(model_path)
             self.scaler = joblib.load(scaler_path)
 
-            with open(feature_path, 'r') as f:
+            with open(feature_path, "r") as f:
                 self.feature_columns = [line.strip() for line in f.readlines()]
 
             self.is_trained = True
@@ -287,7 +308,7 @@ class RewardModel:
 
     def get_feature_importance(self) -> Dict[str, float]:
         """Get feature importance scores."""
-        if not self.is_trained or not hasattr(self.model, 'feature_importances_'):
+        if not self.is_trained or not hasattr(self.model, "feature_importances_"):
             return {}
 
         importance_scores = self.model.feature_importances_
@@ -297,7 +318,7 @@ class RewardModel:
 class RewardModelTrainer:
     """System for training and managing reward models."""
 
-    def __init__(self, model_path: str = './models'):
+    def __init__(self, model_path: str = "./models"):
         self.model_path = model_path
         self.current_model: Optional[RewardModel] = None
         self.training_history: List[Dict[str, Any]] = []
@@ -306,8 +327,11 @@ class RewardModelTrainer:
         # Create model directory
         os.makedirs(model_path, exist_ok=True)
 
-    def add_training_data(self, workflow_traces: List[WorkflowTrace],
-                         user_feedback: Optional[Dict[str, Dict[str, Any]]] = None):
+    def add_training_data(
+        self,
+        workflow_traces: List[WorkflowTrace],
+        user_feedback: Optional[Dict[str, Dict[str, Any]]] = None,
+    ):
         """
         Add training data from workflow traces and user feedback.
 
@@ -324,7 +348,7 @@ class RewardModelTrainer:
             # Extract action sequence from trace
             action_sequence = []
             for node in trace.nodes_executed:
-                action_sequence.append(node.get('node_name', 'unknown'))
+                action_sequence.append(node.get("node_name", "unknown"))
 
             # Get user feedback for this workflow
             feedback = user_feedback.get(trace.workflow_id, {})
@@ -334,14 +358,16 @@ class RewardModelTrainer:
                 workflow_id=trace.workflow_id,
                 action_sequence=action_sequence,
                 performance_metrics=trace.success_metrics,
-                user_feedback=feedback
+                user_feedback=feedback,
             )
 
             self.data_points.append(data_point)
 
         logger.info(f"Added {len(workflow_traces)} training data points")
 
-    def train_model(self, model_type: str = 'xgboost', min_samples: int = 50) -> Dict[str, Any]:
+    def train_model(
+        self, model_type: str = "xgboost", min_samples: int = 50
+    ) -> Dict[str, Any]:
         """
         Train a new reward model.
 
@@ -354,37 +380,30 @@ class RewardModelTrainer:
         """
         if len(self.data_points) < min_samples:
             return {
-                'success': False,
-                'error': f'Insufficient training data: {len(self.data_points)} < {min_samples}'
+                "success": False,
+                "error": f"Insufficient training data: {len(self.data_points)} < {min_samples}",
             }
 
         # Create and train model
         model = RewardModel(model_type, self.model_path)
         metrics = model.train(self.data_points)
 
-        if 'error' not in metrics:
+        if "error" not in metrics:
             self.current_model = model
 
             # Record training history
             training_record = {
-                'timestamp': datetime.utcnow(),
-                'model_type': model_type,
-                'training_samples': len(self.data_points),
-                'metrics': metrics,
-                'model_filename': f"reward_model_{model_type}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+                "timestamp": datetime.utcnow(),
+                "model_type": model_type,
+                "training_samples": len(self.data_points),
+                "metrics": metrics,
+                "model_filename": f"reward_model_{model_type}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}",
             }
             self.training_history.append(training_record)
 
-            return {
-                'success': True,
-                'metrics': metrics,
-                'model': model
-            }
+            return {"success": True, "metrics": metrics, "model": model}
         else:
-            return {
-                'success': False,
-                'error': metrics['error']
-            }
+            return {"success": False, "error": metrics["error"]}
 
     def get_reward_prediction(self, workflow_features: Dict[str, Any]) -> float:
         """Get reward prediction for workflow features."""
@@ -397,14 +416,14 @@ class RewardModelTrainer:
     def evaluate_model_performance(self) -> Dict[str, Any]:
         """Evaluate the current model's performance."""
         if not self.current_model or not self.current_model.is_trained:
-            return {'error': 'No trained model available'}
+            return {"error": "No trained model available"}
 
         # Use recent data points for evaluation
         if len(self.data_points) < 10:
-            return {'error': 'Insufficient evaluation data'}
+            return {"error": "Insufficient evaluation data"}
 
         # Get predictions for recent data
-        recent_data = self.data_points[-min(50, len(self.data_points)):]
+        recent_data = self.data_points[-min(50, len(self.data_points)) :]
         predictions = []
         actuals = []
 
@@ -420,10 +439,10 @@ class RewardModelTrainer:
         mae = np.mean(np.abs(np.array(predictions) - np.array(actuals)))
 
         return {
-            'mse': mse,
-            'r2_score': r2,
-            'mae': mae,
-            'evaluation_samples': len(recent_data)
+            "mse": mse,
+            "r2_score": r2,
+            "mae": mae,
+            "evaluation_samples": len(recent_data),
         }
 
     def get_training_history(self) -> List[Dict[str, Any]]:
@@ -436,11 +455,12 @@ class RewardModelTrainer:
             return False
 
         # Find model with best R² score
-        best_record = max(self.training_history,
-                         key=lambda x: x['metrics'].get('r2_score', -1))
+        best_record = max(
+            self.training_history, key=lambda x: x["metrics"].get("r2_score", -1)
+        )
 
-        model_filename = best_record['model_filename']
-        model = RewardModel(best_record['model_type'], self.model_path)
+        model_filename = best_record["model_filename"]
+        model = RewardModel(best_record["model_type"], self.model_path)
 
         if model.load_model(model_filename):
             self.current_model = model

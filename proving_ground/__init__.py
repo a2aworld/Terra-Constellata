@@ -19,9 +19,4 @@ from .vc_issuer import VCIssuer
 from .did_manager import DIDManager
 from .certification_tests import CertificationTestSuite
 
-__all__ = [
-    "ProvingGroundManager",
-    "VCIssuer",
-    "DIDManager",
-    "CertificationTestSuite"
-]
+__all__ = ["ProvingGroundManager", "VCIssuer", "DIDManager", "CertificationTestSuite"]

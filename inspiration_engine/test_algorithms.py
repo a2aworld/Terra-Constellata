@@ -12,7 +12,7 @@ from .algorithms import (
     RPADAlgorithm,
     PeculiarityAlgorithm,
     BeliefChangeAlgorithm,
-    NoveltyScore
+    NoveltyScore,
 )
 
 
@@ -54,10 +54,12 @@ class TestRPADAlgorithm(unittest.TestCase):
 
     def test_calculate_novelty_dataframe(self):
         """Test novelty calculation with DataFrame"""
-        df = pd.DataFrame({
-            'entity': ['god', 'hero', 'god', 'monster'],
-            'type': ['divine', 'mortal', 'divine', 'monster']
-        })
+        df = pd.DataFrame(
+            {
+                "entity": ["god", "hero", "god", "monster"],
+                "type": ["divine", "mortal", "divine", "monster"],
+            }
+        )
         result = self.algorithm.calculate_novelty(df)
 
         self.assertIsInstance(result, NoveltyScore)
@@ -85,15 +87,17 @@ class TestPeculiarityAlgorithm(unittest.TestCase):
 
     def test_calculate_novelty_with_context(self):
         """Test novelty calculation with proper context"""
-        data = pd.DataFrame({
-            'feature1': [1, 2, 3, 4],
-            'feature2': ['a', 'b', 'a', 'c'],
-            'class': ['positive', 'negative', 'positive', 'negative']
-        })
+        data = pd.DataFrame(
+            {
+                "feature1": [1, 2, 3, 4],
+                "feature2": ["a", "b", "a", "c"],
+                "class": ["positive", "negative", "positive", "negative"],
+            }
+        )
 
         context = {
-            'class_label': 'positive',
-            'features': {'feature1': 3, 'feature2': 'a'}
+            "class_label": "positive",
+            "features": {"feature1": 3, "feature2": "a"},
         }
 
         result = self.algorithm.calculate_novelty(data, context)
@@ -128,14 +132,8 @@ class TestBeliefChangeAlgorithm(unittest.TestCase):
         data = ["new_evidence"]
 
         context = {
-            'prior_beliefs': {
-                'hypothesis1': 0.6,
-                'hypothesis2': 0.4
-            },
-            'likelihoods': {
-                'hypothesis1': 0.8,
-                'hypothesis2': 0.2
-            }
+            "prior_beliefs": {"hypothesis1": 0.6, "hypothesis2": 0.4},
+            "likelihoods": {"hypothesis1": 0.8, "hypothesis2": 0.2},
         }
 
         result = self.algorithm.calculate_novelty(data, context)
@@ -182,7 +180,7 @@ class TestNoveltyDetector(unittest.TestCase):
         scores = {
             "rpad": NoveltyScore(0.8, "rpad", 0.9, {}),
             "peculiarity": NoveltyScore(0.6, "peculiarity", 0.8, {}),
-            "belief_change": NoveltyScore(0.4, "belief_change", 0.7, {})
+            "belief_change": NoveltyScore(0.4, "belief_change", 0.7, {}),
         }
 
         combined = self.detector.calculate_combined_score(scores)
@@ -198,7 +196,7 @@ class TestNoveltyDetector(unittest.TestCase):
         """Test combined score calculation with custom weights"""
         scores = {
             "rpad": NoveltyScore(0.8, "rpad", 0.9, {}),
-            "peculiarity": NoveltyScore(0.6, "peculiarity", 0.8, {})
+            "peculiarity": NoveltyScore(0.6, "peculiarity", 0.8, {}),
         }
 
         weights = {"rpad": 0.7, "peculiarity": 0.3}
@@ -218,7 +216,7 @@ class TestNoveltyScore(unittest.TestCase):
             score=0.75,
             algorithm="test_algorithm",
             confidence=0.85,
-            metadata={"test": "data"}
+            metadata={"test": "data"},
         )
 
         self.assertEqual(score.score, 0.75)
@@ -236,5 +234,5 @@ class TestNoveltyScore(unittest.TestCase):
         self.assertEqual(score.metadata, {})  # Default metadata
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

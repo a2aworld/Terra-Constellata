@@ -15,6 +15,7 @@ from .search import SemanticSearchEngine
 from .evolution import ToolEvolutionManager
 from .tool_smith_agent import ToolSmithAgent
 
+
 # Mock LLM for demonstration
 class MockLLM:
     def __init__(self):
@@ -22,6 +23,7 @@ class MockLLM:
 
     async def arun(self, prompt: str) -> str:
         return f"Mock response to: {prompt[:50]}..."
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -46,9 +48,7 @@ async def main():
 
     # Create ToolSmith Agent
     tool_smith = ToolSmithAgent(
-        llm=mock_llm,
-        registry=registry,
-        a2a_server_url="http://localhost:8080"
+        llm=mock_llm, registry=registry, a2a_server_url="http://localhost:8080"
     )
 
     print("✓ Components initialized")
@@ -63,13 +63,13 @@ async def main():
             description="Advanced data analysis and visualization tool",
             author="DataScienceAgent",
             category="data_science",
-            tags=["analysis", "visualization", "statistics"]
+            tags=["analysis", "visualization", "statistics"],
         ),
         capabilities=ToolCapabilities(
             functions=["analyze_data", "create_charts", "statistical_tests"],
             input_types=["csv", "json", "dataframe"],
             output_types=["charts", "reports", "insights"],
-            security_level="medium"
+            security_level="medium",
         ),
         code="""
 def analyze_data(data):
@@ -80,7 +80,7 @@ def create_charts(data):
     # Mock implementation
     return {"chart_type": "bar", "data": data}
 """,
-        documentation="A comprehensive tool for data analysis and visualization."
+        documentation="A comprehensive tool for data analysis and visualization.",
     )
 
     # Tool 2: Text Processing Tool
@@ -90,13 +90,13 @@ def create_charts(data):
             description="Natural language processing and text analysis",
             author="NLPAgent",
             category="nlp",
-            tags=["nlp", "text", "language"]
+            tags=["nlp", "text", "language"],
         ),
         capabilities=ToolCapabilities(
             functions=["tokenize", "sentiment_analysis", "summarize"],
             input_types=["text", "documents"],
             output_types=["tokens", "sentiment", "summary"],
-            security_level="high"
+            security_level="high",
         ),
         code="""
 def tokenize(text):
@@ -106,7 +106,7 @@ def sentiment_analysis(text):
     # Mock implementation
     return {"sentiment": "positive", "confidence": 0.85}
 """,
-        documentation="Advanced text processing and NLP capabilities."
+        documentation="Advanced text processing and NLP capabilities.",
     )
 
     # Register tools
@@ -130,7 +130,7 @@ def sentiment_analysis(text):
     advanced_results = search_engine.advanced_search(
         query="text processing",
         filters={"category": "nlp", "min_rating": 3.0},
-        sort_by="rating"
+        sort_by="rating",
     )
 
     print(f"Advanced search: Found {advanced_results.total_count} NLP tools")
@@ -145,18 +145,22 @@ def sentiment_analysis(text):
         description="Add machine learning capabilities",
         proposed_changes={
             "capabilities": {
-                "functions": ["analyze_data", "create_charts", "statistical_tests", "predict"]
+                "functions": [
+                    "analyze_data",
+                    "create_charts",
+                    "statistical_tests",
+                    "predict",
+                ]
             }
         },
-        requester_agent="MLAgent"
+        requester_agent="MLAgent",
     )
 
     print(f"✓ Evolution request created: {evolution_id}")
 
     # Approve evolution
     success = await evolution_manager.approve_evolution_request(
-        evolution_id,
-        reviewer_agent="ToolSmith"
+        evolution_id, reviewer_agent="ToolSmith"
     )
 
     if success:
@@ -187,7 +191,9 @@ def sentiment_analysis(text):
     similar = registry.get_similar_tools(data_tool.id, limit=3)
     print(f"Tools similar to {data_tool.metadata.name}:")
     for sim in similar:
-        print(f"  - {sim['metadata']['name']} (similarity: {sim['similarity_score']:.2f})")
+        print(
+            f"  - {sim['metadata']['name']} (similarity: {sim['similarity_score']:.2f})"
+        )
 
     # Clean up
     print("\n8. Cleaning up...")
@@ -226,9 +232,13 @@ async def agent_autonomy_demo():
             proposer_agent="VisionAgent",
             tool_name="ImageAnalyzer",
             description="Computer vision and image analysis tool",
-            capabilities=["object_detection", "image_classification", "feature_extraction"],
+            capabilities=[
+                "object_detection",
+                "image_classification",
+                "feature_extraction",
+            ],
             use_case="Analyze images for patterns and objects",
-            priority="high"
+            priority="high",
         )
 
         proposal_id = await registry.submit_proposal(proposal)
@@ -249,20 +259,20 @@ async def agent_autonomy_demo():
                     description="Computer vision and image analysis",
                     author="VisionAgent",
                     category="computer_vision",
-                    tags=["vision", "image", "analysis"]
+                    tags=["vision", "image", "analysis"],
                 ),
                 capabilities=ToolCapabilities(
                     functions=["object_detection", "image_classification"],
                     input_types=["images", "video"],
                     output_types=["detections", "classifications"],
-                    security_level="medium"
+                    security_level="medium",
                 ),
                 code="""
 def object_detection(image):
     # Mock implementation
     return {"objects": ["person", "car"], "confidence": 0.95}
 """,
-                documentation="Advanced computer vision capabilities."
+                documentation="Advanced computer vision capabilities.",
             )
 
             await registry.register_tool(image_tool)

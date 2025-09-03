@@ -27,7 +27,7 @@ class VerifiableCredential:
         credential_type: List[str],
         claims: Dict[str, Any],
         expiration_date: Optional[datetime] = None,
-        issuance_date: Optional[datetime] = None
+        issuance_date: Optional[datetime] = None,
     ):
         self.id = f"urn:uuid:{uuid4()}"
         self.issuer = issuer_did
@@ -35,24 +35,23 @@ class VerifiableCredential:
         self.type = ["VerifiableCredential"] + credential_type
         self.claims = claims
         self.issuance_date = issuance_date or datetime.utcnow()
-        self.expiration_date = expiration_date or (self.issuance_date + timedelta(days=365))
+        self.expiration_date = expiration_date or (
+            self.issuance_date + timedelta(days=365)
+        )
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert VC to dictionary"""
         return {
             "@context": [
                 "https://www.w3.org/2018/credentials/v1",
-                "https://www.w3.org/2018/credentials/examples/v1"
+                "https://www.w3.org/2018/credentials/examples/v1",
             ],
             "id": self.id,
             "type": self.type,
             "issuer": self.issuer,
             "issuanceDate": self.issuance_date.isoformat() + "Z",
             "expirationDate": self.expiration_date.isoformat() + "Z",
-            "credentialSubject": {
-                "id": self.subject,
-                **self.claims
-            }
+            "credentialSubject": {"id": self.subject, **self.claims},
         }
 
     def to_json(self) -> str:
@@ -77,7 +76,7 @@ class VerifiablePresentation:
             "type": ["VerifiablePresentation"],
             "holder": self.holder,
             "verifiableCredential": [vc.to_dict() for vc in self.credentials],
-            "created": self.created.isoformat() + "Z"
+            "created": self.created.isoformat() + "Z",
         }
 
 
@@ -95,7 +94,7 @@ class VCIssuer:
         subject_did: str,
         credential_type: List[str],
         claims: Dict[str, Any],
-        validity_days: int = 365
+        validity_days: int = 365,
     ) -> Optional[str]:
         """
         Issue a new Verifiable Credential.
@@ -122,7 +121,7 @@ class VCIssuer:
             subject_did=subject_did,
             credential_type=credential_type,
             claims=claims,
-            expiration_date=expiration_date
+            expiration_date=expiration_date,
         )
 
         # Sign the credential
@@ -149,14 +148,16 @@ class VCIssuer:
         payload["jti"] = vc.id  # JWT ID
 
         # Convert to JSON and sign
-        vc_json = json.dumps(payload, separators=(',', ':'))
-        signature = self.did_manager.sign_data(vc.issuer, vc_json.encode('utf-8'))
+        vc_json = json.dumps(payload, separators=(",", ":"))
+        signature = self.did_manager.sign_data(vc.issuer, vc_json.encode("utf-8"))
 
         if signature:
             # Create JWT (simplified - in practice would use proper JWT library)
             header = {"alg": "EdDSA", "typ": "JWT"}
-            header_b64 = base64.b64encode(json.dumps(header).encode()).decode().rstrip('=')
-            payload_b64 = base64.b64encode(vc_json.encode()).decode().rstrip('=')
+            header_b64 = (
+                base64.b64encode(json.dumps(header).encode()).decode().rstrip("=")
+            )
+            payload_b64 = base64.b64encode(vc_json.encode()).decode().rstrip("=")
             jwt = f"{header_b64}.{payload_b64}.{signature}"
             return jwt
 
@@ -174,31 +175,29 @@ class VCIssuer:
         """
         try:
             # Parse JWT (simplified)
-            parts = signed_credential.split('.')
+            parts = signed_credential.split(".")
             if len(parts) != 3:
                 return False
 
             header_b64, payload_b64, signature = parts
-            vc_json = base64.b64decode(payload_b64 + '==').decode('utf-8')
+            vc_json = base64.b64decode(payload_b64 + "==").decode("utf-8")
             vc_data = json.loads(vc_json)
 
             # Check if revoked
-            if vc_data.get('jti') in self.revoked_credentials:
+            if vc_data.get("jti") in self.revoked_credentials:
                 logger.warning(f"Credential revoked: {vc_data.get('jti')}")
                 return False
 
             # Check expiration
-            exp_date = datetime.fromisoformat(vc_data['expirationDate'][:-1])
+            exp_date = datetime.fromisoformat(vc_data["expirationDate"][:-1])
             if datetime.utcnow() > exp_date:
                 logger.warning(f"Credential expired: {vc_data.get('jti')}")
                 return False
 
             # Verify signature
-            issuer_did = vc_data['issuer']
+            issuer_did = vc_data["issuer"]
             return self.did_manager.verify_signature(
-                issuer_did,
-                f"{header_b64}.{payload_b64}".encode(),
-                signature
+                issuer_did, f"{header_b64}.{payload_b64}".encode(), signature
             )
 
         except Exception as e:
@@ -216,9 +215,7 @@ class VCIssuer:
         logger.info(f"Revoked credential: {credential_id}")
 
     def create_presentation(
-        self,
-        holder_did: str,
-        credentials: List[str]
+        self, holder_did: str, credentials: List[str]
     ) -> Optional[VerifiablePresentation]:
         """
         Create a Verifiable Presentation from credentials.
@@ -237,28 +234,32 @@ class VCIssuer:
                 return None
 
             # Parse credential to get VC object
-            parts = cred.split('.')
+            parts = cred.split(".")
             payload_b64 = parts[1]
-            vc_json = base64.b64decode(payload_b64 + '==').decode('utf-8')
+            vc_json = base64.b64decode(payload_b64 + "==").decode("utf-8")
             vc_data = json.loads(vc_json)
 
             # Reconstruct VC object (simplified)
             vc = VerifiableCredential(
-                issuer_did=vc_data['issuer'],
-                subject_did=vc_data['credentialSubject']['id'],
-                credential_type=vc_data['type'][1:],  # Remove "VerifiableCredential"
-                claims={k: v for k, v in vc_data['credentialSubject'].items() if k != 'id'},
-                issuance_date=datetime.fromisoformat(vc_data['issuanceDate'][:-1]),
-                expiration_date=datetime.fromisoformat(vc_data['expirationDate'][:-1])
+                issuer_did=vc_data["issuer"],
+                subject_did=vc_data["credentialSubject"]["id"],
+                credential_type=vc_data["type"][1:],  # Remove "VerifiableCredential"
+                claims={
+                    k: v for k, v in vc_data["credentialSubject"].items() if k != "id"
+                },
+                issuance_date=datetime.fromisoformat(vc_data["issuanceDate"][:-1]),
+                expiration_date=datetime.fromisoformat(vc_data["expirationDate"][:-1]),
             )
-            vc.id = vc_data['id']
+            vc.id = vc_data["id"]
             vc_objects.append(vc)
 
         presentation = VerifiablePresentation(holder_did, vc_objects)
         logger.info(f"Created presentation for holder: {holder_did}")
         return presentation
 
-    def get_issued_credentials(self, subject_did: Optional[str] = None) -> List[VerifiableCredential]:
+    def get_issued_credentials(
+        self, subject_did: Optional[str] = None
+    ) -> List[VerifiableCredential]:
         """
         Get issued credentials, optionally filtered by subject.
 
@@ -269,7 +270,11 @@ class VCIssuer:
             List of issued credentials
         """
         if subject_did:
-            return [vc for vc in self.issued_credentials.values() if vc.subject == subject_did]
+            return [
+                vc
+                for vc in self.issued_credentials.values()
+                if vc.subject == subject_did
+            ]
         return list(self.issued_credentials.values())
 
 

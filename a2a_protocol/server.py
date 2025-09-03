@@ -123,14 +123,16 @@ class A2AServer:
 
     async def _handle_health(self, request: Request) -> Response:
         """Health check endpoint"""
-        return self._json_response({"status": "healthy", "methods": list(self.methods.keys())})
+        return self._json_response(
+            {"status": "healthy", "methods": list(self.methods.keys())}
+        )
 
     def _json_response(self, data: Dict[str, Any]) -> Response:
         """Create JSON response"""
         return Response(
             text=json.dumps(data),
             content_type="application/json",
-            headers={"Access-Control-Allow-Origin": "*"}
+            headers={"Access-Control-Allow-Origin": "*"},
         )
 
     def register_method(self, method_name: str, handler: Callable):

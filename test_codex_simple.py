@@ -12,6 +12,7 @@ from datetime import datetime
 # Add the current directory to Python path
 sys.path.insert(0, os.path.dirname(__file__))
 
+
 def test_codex_core():
     """Test the core Codex components."""
     print("🧪 Testing Agent's Codex Core Components")
@@ -27,7 +28,7 @@ def test_codex_core():
             StrategyDocument,
             StrategyType,
             LegacyChapter,
-            KnowledgeEntry
+            KnowledgeEntry,
         )
 
         # Create test contribution
@@ -41,7 +42,7 @@ def test_codex_core():
             output_data={"test": "output"},
             success_metrics={"success": True},
             timestamp=datetime.utcnow(),
-            duration=10.5
+            duration=10.5,
         )
 
         print(f"✅ Created contribution: {contribution.contribution_id}")
@@ -53,7 +54,7 @@ def test_codex_core():
             contribution_type=ContributionType.TASK_EXECUTION,
             timestamp=datetime.utcnow(),
             ai_model="test-model",
-            ai_provider="test-provider"
+            ai_provider="test-provider",
         )
 
         print(f"✅ Created attribution record for: {attribution.agent_name}")
@@ -69,7 +70,7 @@ def test_codex_core():
             success_criteria=["Success criterion"],
             lessons_learned=["Lesson learned"],
             created_by="TestAgent",
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         )
 
         print(f"✅ Created strategy: {strategy.strategy_id}")
@@ -84,7 +85,7 @@ def test_codex_core():
             source_id="test_source",
             confidence_score=0.8,
             created_at=datetime.utcnow(),
-            last_updated=datetime.utcnow()
+            last_updated=datetime.utcnow(),
         )
 
         print(f"✅ Created knowledge entry: {knowledge.entry_id}")
@@ -103,7 +104,7 @@ def test_codex_core():
             contribution_type=ContributionType.TASK_EXECUTION,
             input_data={"test": "data"},
             output_data={"result": "success"},
-            success_metrics={"archived": True}
+            success_metrics={"archived": True},
         )
 
         print(f"✅ Archived contribution: {contrib_id}")
@@ -117,7 +118,7 @@ def test_codex_core():
             steps=[{"step": 1, "action": "Archive data"}],
             success_criteria=["Data archived successfully"],
             lessons_learned=["Archival is important"],
-            created_by="TestAgent"
+            created_by="TestAgent",
         )
 
         print(f"✅ Archived strategy: {strategy_id}")
@@ -136,7 +137,7 @@ def test_codex_core():
             source_type="test",
             source_id="test_source",
             confidence_score=0.9,
-            tags=["test", "pattern"]
+            tags=["test", "pattern"],
         )
 
         print(f"✅ Added knowledge entry: {kb_id}")
@@ -154,17 +155,16 @@ def test_codex_core():
         # Generate a simple chapter
         chapter_id = chapter_gen.generate_agent_hero_chapter(
             agent_name="TestAgent",
-            contributions=[{
-                'contribution_id': contrib_id,
-                'agent_name': 'TestAgent',
-                'task_description': 'Test task',
-                'timestamp': datetime.utcnow()
-            }],
-            strategies=[{
-                'strategy_id': strategy_id,
-                'title': 'Test Strategy'
-            }],
-            theme="test_journey"
+            contributions=[
+                {
+                    "contribution_id": contrib_id,
+                    "agent_name": "TestAgent",
+                    "task_description": "Test task",
+                    "timestamp": datetime.utcnow(),
+                }
+            ],
+            strategies=[{"strategy_id": strategy_id, "title": "Test Strategy"}],
+            theme="test_journey",
         )
 
         print(f"✅ Generated chapter: {chapter_id}")
@@ -181,7 +181,7 @@ def test_codex_core():
             agent_type="TestType",
             contribution_type="task_execution",
             ai_model="test-model",
-            ai_provider="test-provider"
+            ai_provider="test-provider",
         )
 
         print(f"✅ Recorded attribution: {attr_id}")
@@ -204,18 +204,22 @@ def test_codex_core():
             contribution_type="task_execution",
             input_data={"test": "manager"},
             output_data={"result": "integrated"},
-            success_metrics={"integrated": True}
+            success_metrics={"integrated": True},
         )
 
         print(f"✅ Codex manager archived task: {task_id}")
 
         # Get statistics
         stats = codex.get_codex_statistics()
-        print(f"✅ Codex statistics: {stats.total_contributions} contributions, {stats.total_strategies} strategies")
+        print(
+            f"✅ Codex statistics: {stats.total_contributions} contributions, {stats.total_strategies} strategies"
+        )
 
         # Test search
         search_results = codex.search_codex("test", "all")
-        total_results = sum(len(v) for v in search_results.values() if isinstance(v, list))
+        total_results = sum(
+            len(v) for v in search_results.values() if isinstance(v, list)
+        )
         print(f"✅ Codex search found {total_results} total results")
 
         print("\n🎉 All Codex core tests passed!")
@@ -235,8 +239,10 @@ def test_codex_core():
     except Exception as e:
         print(f"❌ Codex test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 if __name__ == "__main__":
     success = test_codex_core()

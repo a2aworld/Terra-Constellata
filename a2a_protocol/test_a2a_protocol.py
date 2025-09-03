@@ -17,7 +17,7 @@ from .schemas import (
     CreationFeedback,
     JSONRPCRequest,
     JSONRPCResponse,
-    JSONRPCNotification
+    JSONRPCNotification,
 )
 from .validation import MessageValidator
 from .client import A2AClient
@@ -36,7 +36,7 @@ class TestSchemas:
             location={"lat": 40.7128, "lon": -74.0060},
             confidence=0.85,
             description="Test anomaly",
-            data_source="test_source"
+            data_source="test_source",
         )
 
         assert anomaly.sender_agent == "test_agent"
@@ -50,7 +50,7 @@ class TestSchemas:
             sender_agent="test_agent",
             context="Create a story",
             domain="mythology",
-            constraints=["must include heroes", "no modern elements"]
+            constraints=["must include heroes", "no modern elements"],
         )
 
         assert request.context == "Create a story"
@@ -64,7 +64,7 @@ class TestSchemas:
             original_request_id="req_123",
             feedback_type="positive",
             content="Great work!",
-            rating=5
+            rating=5,
         )
 
         assert feedback.feedback_type == "positive"
@@ -73,9 +73,7 @@ class TestSchemas:
     def test_jsonrpc_request_creation(self):
         """Test JSON-RPC request creation"""
         request = JSONRPCRequest(
-            method="GEOSPATIAL_ANOMALY_IDENTIFIED",
-            params={"test": "data"},
-            id="req_1"
+            method="GEOSPATIAL_ANOMALY_IDENTIFIED", params={"test": "data"}, id="req_1"
         )
 
         assert request.jsonrpc == "2.0"
@@ -85,13 +83,12 @@ class TestSchemas:
     def test_jsonrpc_notification_creation(self):
         """Test JSON-RPC notification creation"""
         notification = JSONRPCNotification(
-            method="GEOSPATIAL_ANOMALY_IDENTIFIED",
-            params={"test": "data"}
+            method="GEOSPATIAL_ANOMALY_IDENTIFIED", params={"test": "data"}
         )
 
         assert notification.jsonrpc == "2.0"
         assert notification.method == "GEOSPATIAL_ANOMALY_IDENTIFIED"
-        assert not hasattr(notification, 'id')
+        assert not hasattr(notification, "id")
 
 
 class TestMessageValidator:
@@ -108,9 +105,9 @@ class TestMessageValidator:
                 "location": {"lat": 0, "lon": 0},
                 "confidence": 0.8,
                 "description": "test",
-                "data_source": "test"
+                "data_source": "test",
             },
-            "id": "test_1"
+            "id": "test_1",
         }
 
         raw_message = json.dumps(message)
@@ -123,21 +120,17 @@ class TestMessageValidator:
         """Test validating invalid JSON"""
         result = MessageValidator.validate_jsonrpc_message("invalid json")
 
-        assert hasattr(result, 'error')
+        assert hasattr(result, "error")
         assert result.error.code == -32700
 
     def test_validate_invalid_jsonrpc_version(self):
         """Test validating message with wrong JSON-RPC version"""
-        message = {
-            "jsonrpc": "1.0",
-            "method": "test",
-            "id": "test_1"
-        }
+        message = {"jsonrpc": "1.0", "method": "test", "id": "test_1"}
 
         raw_message = json.dumps(message)
         result = MessageValidator.validate_jsonrpc_message(raw_message)
 
-        assert hasattr(result, 'error')
+        assert hasattr(result, "error")
         assert result.error.code == -32600
 
     def test_validate_a2a_message_valid(self):
@@ -148,22 +141,23 @@ class TestMessageValidator:
             "location": {"lat": 0, "lon": 0},
             "confidence": 0.8,
             "description": "test",
-            "data_source": "test"
+            "data_source": "test",
         }
 
-        result = MessageValidator.validate_a2a_message("GEOSPATIAL_ANOMALY_IDENTIFIED", params)
+        result = MessageValidator.validate_a2a_message(
+            "GEOSPATIAL_ANOMALY_IDENTIFIED", params
+        )
 
         assert isinstance(result, GeospatialAnomalyIdentified)
         assert result.sender_agent == "test_agent"
 
     def test_validate_a2a_message_invalid(self):
         """Test validating an invalid A2A message"""
-        params = {
-            "sender_agent": "test_agent",
-            "invalid_field": "test"
-        }
+        params = {"sender_agent": "test_agent", "invalid_field": "test"}
 
-        result = MessageValidator.validate_a2a_message("GEOSPATIAL_ANOMALY_IDENTIFIED", params)
+        result = MessageValidator.validate_a2a_message(
+            "GEOSPATIAL_ANOMALY_IDENTIFIED", params
+        )
 
         assert result is None
 
@@ -175,7 +169,7 @@ class TestMessageValidator:
             location={"lat": 0, "lon": 0},
             confidence=0.8,
             description="test",
-            data_source="test"
+            data_source="test",
         )
 
         result = MessageValidator.validate_business_rules(message)
@@ -190,7 +184,7 @@ class TestMessageValidator:
             location={"lat": 0, "lon": 0},
             confidence=0.05,  # Too low
             description="test",
-            data_source="test"
+            data_source="test",
         )
 
         result = MessageValidator.validate_business_rules(message)
@@ -214,13 +208,15 @@ class TestA2AClient:
         # Mock the session
         mock_response = Mock()
         mock_response.status = 200
-        mock_response.json = AsyncMock(return_value={
-            "jsonrpc": "2.0",
-            "result": {"status": "success"},
-            "id": "test_1"
-        })
+        mock_response.json = AsyncMock(
+            return_value={
+                "jsonrpc": "2.0",
+                "result": {"status": "success"},
+                "id": "test_1",
+            }
+        )
 
-        with patch.object(client, '_send_request', new_callable=AsyncMock) as mock_send:
+        with patch.object(client, "_send_request", new_callable=AsyncMock) as mock_send:
             mock_send.return_value = mock_response.json.return_value
 
             anomaly = GeospatialAnomalyIdentified(
@@ -229,7 +225,7 @@ class TestA2AClient:
                 location={"lat": 0, "lon": 0},
                 confidence=0.8,
                 description="test",
-                data_source="test"
+                data_source="test",
             )
 
             result = await client.send_request("GEOSPATIAL_ANOMALY_IDENTIFIED", anomaly)
@@ -242,13 +238,15 @@ class TestA2AClient:
         """Test sending a request that returns an error"""
         mock_response = Mock()
         mock_response.status = 200
-        mock_response.json = AsyncMock(return_value={
-            "jsonrpc": "2.0",
-            "error": {"code": -32601, "message": "Method not found"},
-            "id": "test_1"
-        })
+        mock_response.json = AsyncMock(
+            return_value={
+                "jsonrpc": "2.0",
+                "error": {"code": -32601, "message": "Method not found"},
+                "id": "test_1",
+            }
+        )
 
-        with patch.object(client, '_send_request', new_callable=AsyncMock) as mock_send:
+        with patch.object(client, "_send_request", new_callable=AsyncMock) as mock_send:
             mock_send.return_value = mock_response.json.return_value
 
             anomaly = GeospatialAnomalyIdentified(
@@ -257,7 +255,7 @@ class TestA2AClient:
                 location={"lat": 0, "lon": 0},
                 confidence=0.8,
                 description="test",
-                data_source="test"
+                data_source="test",
             )
 
             with pytest.raises(RuntimeError, match="Method not found"):
@@ -266,7 +264,7 @@ class TestA2AClient:
     @pytest.mark.asyncio
     async def test_send_notification(self, client):
         """Test sending a notification"""
-        with patch.object(client, '_send_request', new_callable=AsyncMock) as mock_send:
+        with patch.object(client, "_send_request", new_callable=AsyncMock) as mock_send:
             mock_send.return_value = None
 
             anomaly = GeospatialAnomalyIdentified(
@@ -275,7 +273,7 @@ class TestA2AClient:
                 location={"lat": 0, "lon": 0},
                 confidence=0.8,
                 description="test",
-                data_source="test"
+                data_source="test",
             )
 
             await client.send_notification("GEOSPATIAL_ANOMALY_IDENTIFIED", anomaly)
@@ -294,6 +292,7 @@ class TestA2AServer:
 
     def test_register_method(self, server):
         """Test registering a method"""
+
         async def test_handler(message):
             return {"result": "test"}
 
@@ -335,13 +334,15 @@ class TestMessageTypeRegistry:
 
     def test_create_message(self, registry):
         """Test creating a message instance"""
-        message = registry.create_message("GEOSPATIAL_ANOMALY_IDENTIFIED",
-                                        sender_agent="test",
-                                        anomaly_type="test",
-                                        location={"lat": 0, "lon": 0},
-                                        confidence=0.8,
-                                        description="test",
-                                        data_source="test")
+        message = registry.create_message(
+            "GEOSPATIAL_ANOMALY_IDENTIFIED",
+            sender_agent="test",
+            anomaly_type="test",
+            location={"lat": 0, "lon": 0},
+            confidence=0.8,
+            description="test",
+            data_source="test",
+        )
 
         assert isinstance(message, GeospatialAnomalyIdentified)
         assert message.sender_agent == "test"
@@ -353,6 +354,7 @@ class TestMessageTypeRegistry:
 
     def test_register_handler(self, registry):
         """Test registering a handler"""
+
         async def test_handler(message):
             return {"result": "test"}
 

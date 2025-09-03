@@ -23,16 +23,19 @@ from ...data.postgis.connection import PostGISConnection
 
 logger = logging.getLogger(__name__)
 
+
 class LoreWeaverVectorStore:
     """
     Vector store manager for the Lore Weaver chatbot.
     Handles embeddings creation, storage, and retrieval for both CKG and PostGIS data.
     """
 
-    def __init__(self,
-                 embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
-                 persist_directory: str = "./chroma_db",
-                 use_chroma: bool = True):
+    def __init__(
+        self,
+        embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
+        persist_directory: str = "./chroma_db",
+        use_chroma: bool = True,
+    ):
         """
         Initialize the vector store.
 
@@ -52,7 +55,7 @@ class LoreWeaverVectorStore:
         if use_chroma:
             self.chroma_client = chromadb.PersistentClient(
                 path=str(self.persist_directory),
-                settings=Settings(anonymized_telemetry=False)
+                settings=Settings(anonymized_telemetry=False),
             )
             self.vector_store = None  # Will be initialized per collection
         else:
@@ -64,7 +67,9 @@ class LoreWeaverVectorStore:
 
         logger.info(f"Initialized LoreWeaverVectorStore with {embedding_model}")
 
-    def _get_or_create_chroma_collection(self, collection_name: str) -> chromadb.Collection:
+    def _get_or_create_chroma_collection(
+        self, collection_name: str
+    ) -> chromadb.Collection:
         """
         Get or create a ChromaDB collection.
 
@@ -91,10 +96,15 @@ class LoreWeaverVectorStore:
             Dictionary with loading statistics
         """
         if collections is None:
-            collections = ['MythologicalEntity', 'GeographicFeature',
-                          'CulturalConcept', 'TextSource', 'GeospatialPoint']
+            collections = [
+                "MythologicalEntity",
+                "GeographicFeature",
+                "CulturalConcept",
+                "TextSource",
+                "GeospatialPoint",
+            ]
 
-        stats = {'total_documents': 0, 'collections_loaded': 0}
+        stats = {"total_documents": 0, "collections_loaded": 0}
 
         try:
             self.ckg.connect()
@@ -109,10 +119,10 @@ class LoreWeaverVectorStore:
                     # Create document from entity data
                     content = self._entity_to_text(entity, collection_name)
                     metadata = {
-                        'source': 'ckg',
-                        'collection': collection_name,
-                        'entity_id': entity.get('_key', ''),
-                        'entity_type': collection_name
+                        "source": "ckg",
+                        "collection": collection_name,
+                        "entity_id": entity.get("_key", ""),
+                        "entity_type": collection_name,
                     }
 
                     doc = Document(page_content=content, metadata=metadata)
@@ -121,14 +131,20 @@ class LoreWeaverVectorStore:
                 if documents:
                     # Store in vector database
                     if self.use_chroma:
-                        collection = self._get_or_create_chroma_collection(f"ckg_{collection_name.lower()}")
+                        collection = self._get_or_create_chroma_collection(
+                            f"ckg_{collection_name.lower()}"
+                        )
                         self._store_in_chroma(collection, documents)
                     else:
-                        self._store_in_faiss(documents, f"ckg_{collection_name.lower()}")
+                        self._store_in_faiss(
+                            documents, f"ckg_{collection_name.lower()}"
+                        )
 
-                    stats['collections_loaded'] += 1
-                    stats['total_documents'] += len(documents)
-                    logger.info(f"Loaded {len(documents)} documents from {collection_name}")
+                    stats["collections_loaded"] += 1
+                    stats["total_documents"] += len(documents)
+                    logger.info(
+                        f"Loaded {len(documents)} documents from {collection_name}"
+                    )
 
         except Exception as e:
             logger.error(f"Error loading CKG data: {e}")
@@ -148,7 +164,7 @@ class LoreWeaverVectorStore:
         Returns:
             Dictionary with loading statistics
         """
-        stats = {'total_documents': 0}
+        stats = {"total_documents": 0}
 
         try:
             if self.postgis.connect():
@@ -161,13 +177,13 @@ class LoreWeaverVectorStore:
                     # Create document from PostGIS data
                     content = self._postgis_row_to_text(row)
                     metadata = {
-                        'source': 'postgis',
-                        'table': table_name,
-                        'id': row.get('id', ''),
-                        'latitude': row.get('latitude'),
-                        'longitude': row.get('longitude'),
-                        'entity': row.get('entity', ''),
-                        'sub_entity': row.get('sub_entity', '')
+                        "source": "postgis",
+                        "table": table_name,
+                        "id": row.get("id", ""),
+                        "latitude": row.get("latitude"),
+                        "longitude": row.get("longitude"),
+                        "entity": row.get("entity", ""),
+                        "sub_entity": row.get("sub_entity", ""),
                     }
 
                     doc = Document(page_content=content, metadata=metadata)
@@ -176,13 +192,17 @@ class LoreWeaverVectorStore:
                 if documents:
                     # Store in vector database
                     if self.use_chroma:
-                        collection = self._get_or_create_chroma_collection(f"postgis_{table_name}")
+                        collection = self._get_or_create_chroma_collection(
+                            f"postgis_{table_name}"
+                        )
                         self._store_in_chroma(collection, documents)
                     else:
                         self._store_in_faiss(documents, f"postgis_{table_name}")
 
-                    stats['total_documents'] = len(documents)
-                    logger.info(f"Loaded {len(documents)} documents from PostGIS {table_name}")
+                    stats["total_documents"] = len(documents)
+                    logger.info(
+                        f"Loaded {len(documents)} documents from PostGIS {table_name}"
+                    )
 
         except Exception as e:
             logger.error(f"Error loading PostGIS data: {e}")
@@ -205,13 +225,13 @@ class LoreWeaverVectorStore:
         text_parts = []
 
         # Add entity name/title
-        if 'name' in entity:
+        if "name" in entity:
             text_parts.append(f"Name: {entity['name']}")
-        elif 'title' in entity:
+        elif "title" in entity:
             text_parts.append(f"Title: {entity['title']}")
 
         # Add description
-        if 'description' in entity:
+        if "description" in entity:
             text_parts.append(f"Description: {entity['description']}")
 
         # Add entity type
@@ -219,7 +239,10 @@ class LoreWeaverVectorStore:
 
         # Add other relevant fields
         for key, value in entity.items():
-            if key not in ['_key', '_id', '_rev', 'name', 'title', 'description'] and value:
+            if (
+                key not in ["_key", "_id", "_rev", "name", "title", "description"]
+                and value
+            ):
                 text_parts.append(f"{key}: {value}")
 
         return " | ".join(text_parts)
@@ -237,30 +260,32 @@ class LoreWeaverVectorStore:
         text_parts = []
 
         # Add name and entity info
-        if row.get('name'):
+        if row.get("name"):
             text_parts.append(f"Name: {row['name']}")
 
-        if row.get('entity'):
+        if row.get("entity"):
             text_parts.append(f"Entity: {row['entity']}")
 
-        if row.get('sub_entity'):
+        if row.get("sub_entity"):
             text_parts.append(f"Sub-entity: {row['sub_entity']}")
 
         # Add description
-        if row.get('description'):
+        if row.get("description"):
             text_parts.append(f"Description: {row['description']}")
 
         # Add location info
-        if row.get('latitude') and row.get('longitude'):
+        if row.get("latitude") and row.get("longitude"):
             text_parts.append(f"Location: {row['latitude']}, {row['longitude']}")
 
         # Add source
-        if row.get('source_url'):
+        if row.get("source_url"):
             text_parts.append(f"Source: {row['source_url']}")
 
         return " | ".join(text_parts)
 
-    def _store_in_chroma(self, collection: chromadb.Collection, documents: List[Document]):
+    def _store_in_chroma(
+        self, collection: chromadb.Collection, documents: List[Document]
+    ):
         """
         Store documents in ChromaDB collection.
 
@@ -270,13 +295,12 @@ class LoreWeaverVectorStore:
         """
         texts = [doc.page_content for doc in documents]
         metadatas = [doc.metadata for doc in documents]
-        ids = [f"{meta.get('source', 'unknown')}_{meta.get('id', str(i))}" for i, meta in enumerate(metadatas)]
+        ids = [
+            f"{meta.get('source', 'unknown')}_{meta.get('id', str(i))}"
+            for i, meta in enumerate(metadatas)
+        ]
 
-        collection.add(
-            documents=texts,
-            metadatas=metadatas,
-            ids=ids
-        )
+        collection.add(documents=texts, metadatas=metadatas, ids=ids)
 
     def _store_in_faiss(self, documents: List[Document], collection_name: str):
         """
@@ -291,7 +315,9 @@ class LoreWeaverVectorStore:
         else:
             self.vector_store.add_documents(documents)
 
-    def similarity_search(self, query: str, k: int = 5, collection_name: Optional[str] = None) -> List[Document]:
+    def similarity_search(
+        self, query: str, k: int = 5, collection_name: Optional[str] = None
+    ) -> List[Document]:
         """
         Perform similarity search across vector stores.
 
@@ -308,7 +334,9 @@ class LoreWeaverVectorStore:
         else:
             return self._faiss_similarity_search(query, k)
 
-    def _chroma_similarity_search(self, query: str, k: int, collection_name: Optional[str]) -> List[Document]:
+    def _chroma_similarity_search(
+        self, query: str, k: int, collection_name: Optional[str]
+    ) -> List[Document]:
         """
         Perform similarity search in ChromaDB.
 
@@ -331,17 +359,11 @@ class LoreWeaverVectorStore:
         for col_name in collections:
             try:
                 collection = self.chroma_client.get_collection(name=col_name)
-                chroma_results = collection.query(
-                    query_texts=[query],
-                    n_results=k
-                )
+                chroma_results = collection.query(query_texts=[query], n_results=k)
 
-                for i, doc in enumerate(chroma_results['documents'][0]):
-                    metadata = chroma_results['metadatas'][0][i]
-                    results.append(Document(
-                        page_content=doc,
-                        metadata=metadata
-                    ))
+                for i, doc in enumerate(chroma_results["documents"][0]):
+                    metadata = chroma_results["metadatas"][0][i]
+                    results.append(Document(page_content=doc, metadata=metadata))
             except Exception as e:
                 logger.warning(f"Error searching collection {col_name}: {e}")
 
@@ -376,12 +398,8 @@ class LoreWeaverVectorStore:
             collections = self.chroma_client.list_collections()
             for collection in collections:
                 col = self.chroma_client.get_collection(name=collection.name)
-                stats[collection.name] = {
-                    'count': col.count()
-                }
+                stats[collection.name] = {"count": col.count()}
         else:
-            stats['faiss'] = {
-                'initialized': self.vector_store is not None
-            }
+            stats["faiss"] = {"initialized": self.vector_store is not None}
 
         return stats

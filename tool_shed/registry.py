@@ -11,8 +11,13 @@ from datetime import datetime
 import json
 
 from .models import (
-    Tool, ToolProposal, ToolRegistryEntry, ToolVersion,
-    ToolEvolutionRequest, SearchQuery, SearchResult
+    Tool,
+    ToolProposal,
+    ToolRegistryEntry,
+    ToolVersion,
+    ToolEvolutionRequest,
+    SearchQuery,
+    SearchResult,
 )
 from .vector_store import ToolVectorStore
 
@@ -61,13 +66,15 @@ class ToolRegistry:
             # Create registry entry
             entry = ToolRegistryEntry(
                 tool=tool,
-                versions=[ToolVersion(
-                    tool_id=tool.id,
-                    version=tool.metadata.version,
-                    changes="Initial registration",
-                    author=proposer_agent,
-                    created_at=datetime.utcnow()
-                )]
+                versions=[
+                    ToolVersion(
+                        tool_id=tool.id,
+                        version=tool.metadata.version,
+                        changes="Initial registration",
+                        author=proposer_agent,
+                        created_at=datetime.utcnow(),
+                    )
+                ],
             )
 
             # Add to registry
@@ -113,7 +120,7 @@ class ToolRegistry:
                 version=updated_tool.metadata.version,
                 changes=f"Updated from {current_version}",
                 author=author,
-                created_at=datetime.utcnow()
+                created_at=datetime.utcnow(),
             )
 
             # Update tool
@@ -126,7 +133,9 @@ class ToolRegistry:
             if not success:
                 logger.error(f"Failed to update tool {tool_id} in vector store")
 
-            logger.info(f"Updated tool {tool_id} to version {updated_tool.metadata.version}")
+            logger.info(
+                f"Updated tool {tool_id} to version {updated_tool.metadata.version}"
+            )
             return True
 
         except Exception as e:
@@ -184,7 +193,7 @@ class ToolRegistry:
         self,
         category: Optional[str] = None,
         author: Optional[str] = None,
-        active_only: bool = True
+        active_only: bool = True,
     ) -> List[Tool]:
         """
         List tools with optional filtering.
@@ -252,7 +261,9 @@ class ToolRegistry:
         logger.info(f"Approved proposal {proposal_id} for {proposal.tool_name}")
         return True
 
-    async def reject_proposal(self, proposal_id: str, reviewer_agent: str, comments: str) -> bool:
+    async def reject_proposal(
+        self, proposal_id: str, reviewer_agent: str, comments: str
+    ) -> bool:
         """
         Reject a tool proposal.
 
@@ -295,7 +306,9 @@ class ToolRegistry:
         logger.info(f"Submitted evolution request for tool {request.tool_id}")
         return request.id
 
-    def get_evolution_requests(self, tool_id: Optional[str] = None) -> List[ToolEvolutionRequest]:
+    def get_evolution_requests(
+        self, tool_id: Optional[str] = None
+    ) -> List[ToolEvolutionRequest]:
         """
         Get evolution requests, optionally filtered by tool ID.
 
@@ -355,9 +368,13 @@ class ToolRegistry:
     def get_registry_stats(self) -> Dict[str, Any]:
         """Get statistics about the registry."""
         total_tools = len(self.registry)
-        active_tools = sum(1 for entry in self.registry.values() if entry.tool.is_active)
+        active_tools = sum(
+            1 for entry in self.registry.values() if entry.tool.is_active
+        )
         total_proposals = len(self.proposals)
-        pending_proposals = sum(1 for p in self.proposals.values() if p.status == "pending")
+        pending_proposals = sum(
+            1 for p in self.proposals.values() if p.status == "pending"
+        )
         total_evolution_requests = len(self.evolution_requests)
 
         categories = {}
@@ -365,7 +382,9 @@ class ToolRegistry:
 
         for entry in self.registry.values():
             tool = entry.tool
-            categories[tool.metadata.category] = categories.get(tool.metadata.category, 0) + 1
+            categories[tool.metadata.category] = (
+                categories.get(tool.metadata.category, 0) + 1
+            )
             authors[tool.metadata.author] = authors.get(tool.metadata.author, 0) + 1
 
         return {
@@ -377,7 +396,7 @@ class ToolRegistry:
             "total_evolution_requests": total_evolution_requests,
             "categories": categories,
             "authors": authors,
-            "vector_store_stats": self.vector_store.get_collection_stats()
+            "vector_store_stats": self.vector_store.get_collection_stats(),
         }
 
     async def export_registry(self, filepath: str) -> bool:
@@ -399,12 +418,13 @@ class ToolRegistry:
                     prop_id: prop.dict() for prop_id, prop in self.proposals.items()
                 },
                 "evolution_requests": {
-                    req_id: req.dict() for req_id, req in self.evolution_requests.items()
+                    req_id: req.dict()
+                    for req_id, req in self.evolution_requests.items()
                 },
-                "exported_at": datetime.utcnow().isoformat()
+                "exported_at": datetime.utcnow().isoformat(),
             }
 
-            with open(filepath, 'w') as f:
+            with open(filepath, "w") as f:
                 json.dump(data, f, indent=2, default=str)
 
             logger.info(f"Exported registry to {filepath}")
@@ -425,7 +445,7 @@ class ToolRegistry:
             True if import successful, False otherwise
         """
         try:
-            with open(filepath, 'r') as f:
+            with open(filepath, "r") as f:
                 data = json.load(f)
 
             # Import registry entries

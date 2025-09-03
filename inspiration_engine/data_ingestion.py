@@ -26,16 +26,18 @@ class DataIngestor:
     Handles data ingestion from CKG and PostGIS databases for novelty detection
     """
 
-    def __init__(self,
-                 ckg_host: str = 'http://localhost:8529',
-                 ckg_db: str = 'ckg_db',
-                 ckg_user: str = 'root',
-                 ckg_password: str = '',
-                 postgis_host: str = 'localhost',
-                 postgis_port: int = 5432,
-                 postgis_db: str = 'terra_constellata',
-                 postgis_user: str = 'postgres',
-                 postgis_password: str = ''):
+    def __init__(
+        self,
+        ckg_host: str = "http://localhost:8529",
+        ckg_db: str = "ckg_db",
+        ckg_user: str = "root",
+        ckg_password: str = "",
+        postgis_host: str = "localhost",
+        postgis_port: int = 5432,
+        postgis_db: str = "terra_constellata",
+        postgis_user: str = "postgres",
+        postgis_password: str = "",
+    ):
         """
         Initialize data ingestor with database connection parameters
 
@@ -51,18 +53,18 @@ class DataIngestor:
             postgis_password: PostGIS password
         """
         self.ckg_config = {
-            'host': ckg_host,
-            'database': ckg_db,
-            'username': ckg_user,
-            'password': ckg_password
+            "host": ckg_host,
+            "database": ckg_db,
+            "username": ckg_user,
+            "password": ckg_password,
         }
 
         self.postgis_config = {
-            'host': postgis_host,
-            'port': postgis_port,
-            'database': postgis_db,
-            'user': postgis_user,
-            'password': postgis_password
+            "host": postgis_host,
+            "port": postgis_port,
+            "database": postgis_db,
+            "user": postgis_user,
+            "password": postgis_password,
         }
 
         self.ckg_db = None
@@ -78,20 +80,20 @@ class DataIngestor:
         try:
             # Connect to CKG
             self.ckg_db = get_ckg_connection(
-                host=self.ckg_config['host'],
-                username=self.ckg_config['username'],
-                password=self.ckg_config['password'],
-                database=self.ckg_config['database']
+                host=self.ckg_config["host"],
+                username=self.ckg_config["username"],
+                password=self.ckg_config["password"],
+                database=self.ckg_config["database"],
             )
             logger.info("Connected to CKG database")
 
             # Connect to PostGIS
             self.postgis_db = PostGISConnection(
-                host=self.postgis_config['host'],
-                port=self.postgis_config['port'],
-                database=self.postgis_config['database'],
-                user=self.postgis_config['user'],
-                password=self.postgis_config['password']
+                host=self.postgis_config["host"],
+                port=self.postgis_config["port"],
+                database=self.postgis_config["database"],
+                user=self.postgis_config["user"],
+                password=self.postgis_config["password"],
             )
 
             if self.postgis_db.connect():
@@ -112,10 +114,12 @@ class DataIngestor:
         # CKG connection doesn't need explicit disconnect
         logger.info("Database connections closed")
 
-    def get_ckg_data(self,
-                    collections: List[str] = None,
-                    limit: int = 1000,
-                    filters: Dict[str, Any] = None) -> Dict[str, pd.DataFrame]:
+    def get_ckg_data(
+        self,
+        collections: List[str] = None,
+        limit: int = 1000,
+        filters: Dict[str, Any] = None,
+    ) -> Dict[str, pd.DataFrame]:
         """
         Retrieve data from CKG collections
 
@@ -133,8 +137,13 @@ class DataIngestor:
 
         if collections is None:
             # Get all vertex collections
-            collections = ['MythologicalEntity', 'GeographicFeature',
-                         'CulturalConcept', 'TextSource', 'GeospatialPoint']
+            collections = [
+                "MythologicalEntity",
+                "GeographicFeature",
+                "CulturalConcept",
+                "TextSource",
+                "GeospatialPoint",
+            ]
 
         data_frames = {}
 
@@ -168,12 +177,14 @@ class DataIngestor:
 
         return data_frames
 
-    def get_postgis_data(self,
-                        table_name: str = 'puzzle_pieces',
-                        columns: List[str] = None,
-                        limit: int = 1000,
-                        filters: Dict[str, Any] = None,
-                        spatial_filters: Dict[str, Any] = None) -> pd.DataFrame:
+    def get_postgis_data(
+        self,
+        table_name: str = "puzzle_pieces",
+        columns: List[str] = None,
+        limit: int = 1000,
+        filters: Dict[str, Any] = None,
+        spatial_filters: Dict[str, Any] = None,
+    ) -> pd.DataFrame:
         """
         Retrieve geospatial data from PostGIS
 
@@ -194,9 +205,9 @@ class DataIngestor:
         try:
             # Build SELECT query
             if columns:
-                column_str = ', '.join(columns)
+                column_str = ", ".join(columns)
             else:
-                column_str = '*'
+                column_str = "*"
 
             query = f"SELECT {column_str} FROM {table_name}"
 
@@ -205,22 +216,26 @@ class DataIngestor:
             params = []
 
             if spatial_filters:
-                if 'bbox' in spatial_filters:
+                if "bbox" in spatial_filters:
                     # Bounding box filter
-                    bbox = spatial_filters['bbox']  # [min_lon, min_lat, max_lon, max_lat]
+                    bbox = spatial_filters[
+                        "bbox"
+                    ]  # [min_lon, min_lat, max_lon, max_lat]
                     where_conditions.append(
                         "ST_Within(geom, ST_MakeEnvelope(%s, %s, %s, %s, 4326))"
                     )
                     params.extend(bbox)
 
-                if 'radius' in spatial_filters:
+                if "radius" in spatial_filters:
                     # Radius filter around a point
-                    center = spatial_filters['radius']['center']  # [lon, lat]
-                    radius_km = spatial_filters['radius']['radius_km']
+                    center = spatial_filters["radius"]["center"]  # [lon, lat]
+                    radius_km = spatial_filters["radius"]["radius_km"]
                     where_conditions.append(
                         "ST_DWithin(geom::geography, ST_Point(%s, %s)::geography, %s)"
                     )
-                    params.extend([center[0], center[1], radius_km * 1000])  # Convert to meters
+                    params.extend(
+                        [center[0], center[1], radius_km * 1000]
+                    )  # Convert to meters
 
             # Add regular filters
             if filters:
@@ -234,7 +249,9 @@ class DataIngestor:
             query += f" LIMIT {limit}"
 
             # Execute query
-            results = self.postgis_db.execute_query(query, tuple(params) if params else None)
+            results = self.postgis_db.execute_query(
+                query, tuple(params) if params else None
+            )
 
             if results:
                 df = pd.DataFrame(results)
@@ -261,14 +278,12 @@ class DataIngestor:
         cutoff_time = datetime.utcnow() - timedelta(hours=hours)
 
         # Get recent PostGIS data
-        postgis_filters = {
-            'updated_at': f"> '{cutoff_time.isoformat()}'"
-        }
+        postgis_filters = {"updated_at": f"> '{cutoff_time.isoformat()}'"}
         postgis_data = self.get_postgis_data(filters=postgis_filters)
 
         # Get recent CKG data (assuming documents have timestamp fields)
         ckg_data = {}
-        collections = ['MythologicalEntity', 'GeographicFeature', 'CulturalConcept']
+        collections = ["MythologicalEntity", "GeographicFeature", "CulturalConcept"]
 
         for collection in collections:
             try:
@@ -290,14 +305,11 @@ class DataIngestor:
             except Exception as e:
                 logger.error(f"Failed to get recent CKG data from {collection}: {e}")
 
-        return {
-            'postgis_recent': postgis_data,
-            'ckg_recent': ckg_data
-        }
+        return {"postgis_recent": postgis_data, "ckg_recent": ckg_data}
 
-    def get_spatial_clusters(self,
-                           table_name: str = 'puzzle_pieces',
-                           cluster_distance: float = 0.1) -> pd.DataFrame:
+    def get_spatial_clusters(
+        self, table_name: str = "puzzle_pieces", cluster_distance: float = 0.1
+    ) -> pd.DataFrame:
         """
         Identify spatial clusters in geospatial data
 
@@ -323,7 +335,9 @@ class DataIngestor:
             ORDER BY cluster_id, cluster_size DESC
             """
 
-            results = self.postgis_db.execute_query(query, (cluster_distance, cluster_distance))
+            results = self.postgis_db.execute_query(
+                query, (cluster_distance, cluster_distance)
+            )
 
             if results:
                 df = pd.DataFrame(results)
@@ -336,9 +350,9 @@ class DataIngestor:
             logger.error(f"Failed to identify spatial clusters: {e}")
             return pd.DataFrame()
 
-    def get_semantic_relationships(self,
-                                 entity_name: str,
-                                 relationship_types: List[str] = None) -> Dict[str, Any]:
+    def get_semantic_relationships(
+        self, entity_name: str, relationship_types: List[str] = None
+    ) -> Dict[str, Any]:
         """
         Retrieve semantic relationships for a given entity from CKG
 
@@ -354,7 +368,7 @@ class DataIngestor:
             return {}
 
         if relationship_types is None:
-            relationship_types = ['DEPICTS', 'LOCATED_AT', 'MENTIONED_IN', 'RELATED_TO']
+            relationship_types = ["DEPICTS", "LOCATED_AT", "MENTIONED_IN", "RELATED_TO"]
 
         relationships = {}
 
@@ -366,7 +380,9 @@ class DataIngestor:
             RETURN entity
             """
 
-            cursor = self.ckg_db.aql.execute(entity_query, bind_vars={'name': entity_name})
+            cursor = self.ckg_db.aql.execute(
+                entity_query, bind_vars={"name": entity_name}
+            )
             entities = list(cursor)
 
             if not entities:
@@ -392,26 +408,30 @@ class DataIngestor:
                 }}
                 """
 
-                cursor = self.ckg_db.aql.execute(rel_query, bind_vars={'entity_id': entity['_id']})
+                cursor = self.ckg_db.aql.execute(
+                    rel_query, bind_vars={"entity_id": entity["_id"]}
+                )
                 rel_data = list(cursor)
 
                 if rel_data:
                     relationships[rel_type] = rel_data
 
             return {
-                'entity': entity,
-                'relationships': relationships,
-                'relationship_count': sum(len(rels) for rels in relationships.values())
+                "entity": entity,
+                "relationships": relationships,
+                "relationship_count": sum(len(rels) for rels in relationships.values()),
             }
 
         except Exception as e:
             logger.error(f"Failed to get semantic relationships: {e}")
             return {}
 
-    def prepare_novelty_data(self,
-                           include_spatial: bool = True,
-                           include_semantic: bool = True,
-                           time_window_hours: int = 24) -> Dict[str, Any]:
+    def prepare_novelty_data(
+        self,
+        include_spatial: bool = True,
+        include_semantic: bool = True,
+        time_window_hours: int = 24,
+    ) -> Dict[str, Any]:
         """
         Prepare comprehensive data package for novelty detection
 
@@ -424,40 +444,60 @@ class DataIngestor:
             Dictionary with prepared data for novelty analysis
         """
         data_package = {
-            'timestamp': datetime.utcnow(),
-            'spatial_data': {},
-            'semantic_data': {},
-            'recent_changes': {},
-            'metadata': {}
+            "timestamp": datetime.utcnow(),
+            "spatial_data": {},
+            "semantic_data": {},
+            "recent_changes": {},
+            "metadata": {},
         }
 
         try:
             # Get spatial data
             if include_spatial:
-                data_package['spatial_data'] = {
-                    'puzzle_pieces': self.get_postgis_data(),
-                    'spatial_clusters': self.get_spatial_clusters()
+                data_package["spatial_data"] = {
+                    "puzzle_pieces": self.get_postgis_data(),
+                    "spatial_clusters": self.get_spatial_clusters(),
                 }
 
             # Get semantic data
             if include_semantic:
-                data_package['semantic_data'] = self.get_ckg_data()
+                data_package["semantic_data"] = self.get_ckg_data()
 
             # Get recent changes
-            data_package['recent_changes'] = self.get_recent_data(time_window_hours)
+            data_package["recent_changes"] = self.get_recent_data(time_window_hours)
 
             # Add metadata
-            data_package['metadata'] = {
-                'spatial_records': sum(len(df) for df in data_package['spatial_data'].values() if isinstance(df, pd.DataFrame)),
-                'semantic_records': sum(len(df) for df in data_package['semantic_data'].values() if isinstance(df, pd.DataFrame)),
-                'recent_changes_count': sum(len(df) for df in data_package['recent_changes']['ckg_recent'].values() if isinstance(df, pd.DataFrame)) +
-                                       (len(data_package['recent_changes']['postgis_recent']) if isinstance(data_package['recent_changes']['postgis_recent'], pd.DataFrame) else 0),
-                'data_sources': ['CKG', 'PostGIS'],
-                'time_window_hours': time_window_hours
+            data_package["metadata"] = {
+                "spatial_records": sum(
+                    len(df)
+                    for df in data_package["spatial_data"].values()
+                    if isinstance(df, pd.DataFrame)
+                ),
+                "semantic_records": sum(
+                    len(df)
+                    for df in data_package["semantic_data"].values()
+                    if isinstance(df, pd.DataFrame)
+                ),
+                "recent_changes_count": sum(
+                    len(df)
+                    for df in data_package["recent_changes"]["ckg_recent"].values()
+                    if isinstance(df, pd.DataFrame)
+                )
+                + (
+                    len(data_package["recent_changes"]["postgis_recent"])
+                    if isinstance(
+                        data_package["recent_changes"]["postgis_recent"], pd.DataFrame
+                    )
+                    else 0
+                ),
+                "data_sources": ["CKG", "PostGIS"],
+                "time_window_hours": time_window_hours,
             }
 
-            logger.info(f"Prepared data package with {data_package['metadata']['spatial_records']} spatial and "
-                       f"{data_package['metadata']['semantic_records']} semantic records")
+            logger.info(
+                f"Prepared data package with {data_package['metadata']['spatial_records']} spatial and "
+                f"{data_package['metadata']['semantic_records']} semantic records"
+            )
 
         except Exception as e:
             logger.error(f"Failed to prepare novelty data: {e}")

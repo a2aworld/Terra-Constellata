@@ -11,7 +11,13 @@ import logging
 from typing import Any, Dict, Optional, Union
 import aiohttp
 
-from .schemas import A2AMessage, JSONRPCRequest, JSONRPCNotification, JSONRPCResponse, JSONRPCErrorResponse
+from .schemas import (
+    A2AMessage,
+    JSONRPCRequest,
+    JSONRPCNotification,
+    JSONRPCResponse,
+    JSONRPCErrorResponse,
+)
 from .validation import MessageValidator
 
 logger = logging.getLogger(__name__)
@@ -56,16 +62,20 @@ class A2AClient:
         self._request_id += 1
         return f"{self.agent_name}_{self._request_id}"
 
-    async def _send_request(self, rpc_message: Union[JSONRPCRequest, JSONRPCNotification]) -> Optional[Dict[str, Any]]:
+    async def _send_request(
+        self, rpc_message: Union[JSONRPCRequest, JSONRPCNotification]
+    ) -> Optional[Dict[str, Any]]:
         """Send JSON-RPC message to server"""
         if not self.session:
-            raise RuntimeError("Client not connected. Use connect() or async context manager.")
+            raise RuntimeError(
+                "Client not connected. Use connect() or async context manager."
+            )
 
         try:
             async with self.session.post(
                 f"{self.server_url}/jsonrpc",
                 json=rpc_message.dict(),
-                headers={"Content-Type": "application/json"}
+                headers={"Content-Type": "application/json"},
             ) as response:
                 if response.status == 204:  # No Content for notifications
                     return None
@@ -91,13 +101,11 @@ class A2AClient:
             Exception: If request fails or returns error
         """
         # Set sender if not set
-        if not hasattr(message, 'sender_agent') or not message.sender_agent:
+        if not hasattr(message, "sender_agent") or not message.sender_agent:
             message.sender_agent = self.agent_name
 
         request = JSONRPCRequest(
-            method=method,
-            params=message.dict(),
-            id=self._get_next_id()
+            method=method, params=message.dict(), id=self._get_next_id()
         )
 
         logger.debug(f"Sending request: {method}")
@@ -122,13 +130,10 @@ class A2AClient:
             message: A2A message to send
         """
         # Set sender if not set
-        if not hasattr(message, 'sender_agent') or not message.sender_agent:
+        if not hasattr(message, "sender_agent") or not message.sender_agent:
             message.sender_agent = self.agent_name
 
-        notification = JSONRPCNotification(
-            method=method,
-            params=message.dict()
-        )
+        notification = JSONRPCNotification(method=method, params=message.dict())
 
         logger.debug(f"Sending notification: {method}")
         await self._send_request(notification)
@@ -148,20 +153,20 @@ class A2AClient:
 
         batch = []
         for method, message in requests:
-            if not hasattr(message, 'sender_agent') or not message.sender_agent:
+            if not hasattr(message, "sender_agent") or not message.sender_agent:
                 message.sender_agent = self.agent_name
 
-            batch.append(JSONRPCRequest(
-                method=method,
-                params=message.dict(),
-                id=self._get_next_id()
-            ).dict())
+            batch.append(
+                JSONRPCRequest(
+                    method=method, params=message.dict(), id=self._get_next_id()
+                ).dict()
+            )
 
         try:
             async with self.session.post(
                 f"{self.server_url}/jsonrpc",
                 json=batch,
-                headers={"Content-Type": "application/json"}
+                headers={"Content-Type": "application/json"},
             ) as response:
                 responses = await response.json()
 
@@ -169,7 +174,11 @@ class A2AClient:
                 for resp in responses:
                     if "error" in resp:
                         error = resp["error"]
-                        results.append(RuntimeError(f"JSON-RPC Error {error['code']}: {error['message']}"))
+                        results.append(
+                            RuntimeError(
+                                f"JSON-RPC Error {error['code']}: {error['message']}"
+                            )
+                        )
                     else:
                         results.append(resp.get("result"))
                 return results
@@ -199,7 +208,7 @@ async def send_geospatial_anomaly(
     confidence: float,
     description: str,
     data_source: str,
-    target_agent: Optional[str] = None
+    target_agent: Optional[str] = None,
 ):
     """Send geospatial anomaly message"""
     from .schemas import GeospatialAnomalyIdentified
@@ -210,25 +219,20 @@ async def send_geospatial_anomaly(
         confidence=confidence,
         description=description,
         data_source=data_source,
-        target_agent=target_agent
+        target_agent=target_agent,
     )
 
     return await client.send_request("GEOSPATIAL_ANOMALY_IDENTIFIED", message)
 
 
 async def send_inspiration_request(
-    client: A2AClient,
-    context: str,
-    domain: str,
-    target_agent: Optional[str] = None
+    client: A2AClient, context: str, domain: str, target_agent: Optional[str] = None
 ):
     """Send inspiration request message"""
     from .schemas import InspirationRequest
 
     message = InspirationRequest(
-        context=context,
-        domain=domain,
-        target_agent=target_agent
+        context=context, domain=domain, target_agent=target_agent
     )
 
     return await client.send_request("INSPIRATION_REQUEST", message)
@@ -236,13 +240,14 @@ async def send_inspiration_request(
 
 # Example usage
 if __name__ == "__main__":
+
     async def main():
         async with A2AClient("http://localhost:8080", "test_agent") as client:
             # Send a test request
             result = await send_inspiration_request(
                 client,
                 context="Create a story about ancient civilizations",
-                domain="mythology"
+                domain="mythology",
             )
             print(f"Response: {result}")
 

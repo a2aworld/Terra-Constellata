@@ -12,6 +12,7 @@ import json
 # Add the project root to Python path
 sys.path.insert(0, str(Path(__file__).parent))
 
+
 def test_file_structure():
     """Test that all required files exist."""
     print("🧪 Testing file structure...")
@@ -22,7 +23,7 @@ def test_file_structure():
         "backend/api/workflow.py",
         "interfaces/genesis_interface.html",
         "interfaces/web/index.html",
-        "interfaces/web/script.js"
+        "interfaces/web/script.js",
     ]
 
     missing_files = []
@@ -40,6 +41,7 @@ def test_file_structure():
     print("  ✅ All required files present")
     return True
 
+
 def test_api_routes():
     """Test that API routes are properly defined."""
     print("🧪 Testing API route definitions...")
@@ -47,17 +49,17 @@ def test_api_routes():
     try:
         # Read the workflow API file
         api_file = Path(__file__).parent / "backend/api/workflow.py"
-        with open(api_file, 'r') as f:
+        with open(api_file, "r") as f:
             content = f.read()
 
         # Check for key route definitions
         required_routes = [
-            "@router.post(\"/start\"",
-            "@router.get(\"/status/{workflow_id}\"",
-            "@router.post(\"/feedback\"",
-            "@router.get(\"/history\"",
-            "@router.post(\"/trigger-autonomous\"",
-            "@router.get(\"/philosophy\""
+            '@router.post("/start"',
+            '@router.get("/status/{workflow_id}"',
+            '@router.post("/feedback"',
+            '@router.get("/history"',
+            '@router.post("/trigger-autonomous"',
+            '@router.get("/philosophy"',
         ]
 
         missing_routes = []
@@ -78,6 +80,7 @@ def test_api_routes():
         print(f"  ❌ API route test failed: {e}")
         return False
 
+
 def test_workflow_stages():
     """Test that workflow stages are properly defined."""
     print("🧪 Testing workflow stage definitions...")
@@ -85,7 +88,7 @@ def test_workflow_stages():
     try:
         # Read the workflow file
         workflow_file = Path(__file__).parent / "workflow/cocreation_workflow.py"
-        with open(workflow_file, 'r') as f:
+        with open(workflow_file, "r") as f:
             content = f.read()
 
         # Check for workflow stages
@@ -109,6 +112,7 @@ def test_workflow_stages():
         print(f"  ❌ Workflow stage test failed: {e}")
         return False
 
+
 def test_interface_features():
     """Test that interface features are implemented."""
     print("🧪 Testing interface features...")
@@ -116,14 +120,14 @@ def test_interface_features():
     try:
         # Test Genesis Interface
         genesis_file = Path(__file__).parent / "interfaces/genesis_interface.html"
-        with open(genesis_file, 'r', encoding='utf-8') as f:
+        with open(genesis_file, "r", encoding="utf-8") as f:
             genesis_content = f.read()
 
         genesis_features = [
             "Co-Creation Workflow",
             "Posthuman Creativity",
             "workflow-form",
-            "feedback-modal"
+            "feedback-modal",
         ]
 
         missing_genesis = []
@@ -135,13 +139,13 @@ def test_interface_features():
 
         # Test Web Interface enhancements
         web_script_file = Path(__file__).parent / "interfaces/web/script.js"
-        with open(web_script_file, 'r') as f:
+        with open(web_script_file, "r") as f:
             web_content = f.read()
 
         web_features = [
             "checkWorkflowStatus",
             "toggleCoCreationMode",
-            "currentWorkflowId"
+            "currentWorkflowId",
         ]
 
         missing_web = []
@@ -163,6 +167,7 @@ def test_interface_features():
         print(f"  ❌ Interface test failed: {e}")
         return False
 
+
 def test_integration_points():
     """Test that integration points are properly connected."""
     print("🧪 Testing integration points...")
@@ -170,13 +175,13 @@ def test_integration_points():
     try:
         # Check backend main.py for workflow integration
         main_file = Path(__file__).parent / "backend/main.py"
-        with open(main_file, 'r') as f:
+        with open(main_file, "r") as f:
             main_content = f.read()
 
         integration_points = [
             "workflow.router",
             "initialize_systems",
-            "cocreation_workflow"
+            "cocreation_workflow",
         ]
 
         missing_integration = []
@@ -197,11 +202,12 @@ def test_integration_points():
         print(f"  ❌ Integration test failed: {e}")
         return False
 
+
 def generate_test_report(results):
     """Generate a test report."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("📊 Co-Creation Workflow Integration Test Report")
-    print("="*60)
+    print("=" * 60)
 
     passed = sum(1 for result in results if result[1])
     total = len(results)
@@ -225,11 +231,12 @@ def generate_test_report(results):
         print("\n⚠️  Some tests failed. Please check the implementation.")
         return False
 
+
 def main():
     """Run all integration tests."""
     print("🚀 Terra Constellata Co-Creation Workflow Integration Tests")
     print("Testing the unified human-AI co-creation system")
-    print("="*60)
+    print("=" * 60)
 
     results = []
 
@@ -244,6 +251,7 @@ def main():
     success = generate_test_report(results)
 
     return 0 if success else 1
+
 
 if __name__ == "__main__":
     exit_code = main()

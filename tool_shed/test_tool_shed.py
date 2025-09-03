@@ -11,8 +11,12 @@ from pathlib import Path
 from unittest.mock import Mock, AsyncMock
 
 from .models import (
-    Tool, ToolMetadata, ToolCapabilities, ToolProposal,
-    SearchQuery, ToolValidation
+    Tool,
+    ToolMetadata,
+    ToolCapabilities,
+    ToolProposal,
+    SearchQuery,
+    ToolValidation,
 )
 from .registry import ToolRegistry
 from .vector_store import ToolVectorStore
@@ -32,15 +36,15 @@ class TestModels:
                 description="A test tool",
                 author="TestAgent",
                 category="test",
-                tags=["test", "demo"]
+                tags=["test", "demo"],
             ),
             capabilities=ToolCapabilities(
                 functions=["test_function"],
                 input_types=["text"],
-                output_types=["result"]
+                output_types=["result"],
             ),
             code="def test(): return 'test'",
-            documentation="Test tool documentation"
+            documentation="Test tool documentation",
         )
 
         assert tool.metadata.name == "TestTool"
@@ -55,7 +59,7 @@ class TestModels:
             description="A new tool proposal",
             capabilities=["analyze", "process"],
             use_case="Data processing",
-            priority="high"
+            priority="high",
         )
 
         assert proposal.tool_name == "NewTool"
@@ -199,15 +203,13 @@ class TestToolRegistry:
                 name="TestTool",
                 description="Test tool",
                 author="TestAgent",
-                category="test"
+                category="test",
             ),
             capabilities=ToolCapabilities(
-                functions=["test"],
-                input_types=["text"],
-                output_types=["result"]
+                functions=["test"], input_types=["text"], output_types=["result"]
             ),
             code="def test(): return 'test'",
-            documentation="Test documentation"
+            documentation="Test documentation",
         )
 
         success = await registry.register_tool(tool)
@@ -227,15 +229,15 @@ class TestToolRegistry:
                 name="DataTool",
                 description="Data processing tool",
                 author="DataAgent",
-                category="data"
+                category="data",
             ),
             capabilities=ToolCapabilities(
                 functions=["process_data"],
                 input_types=["csv"],
-                output_types=["processed_data"]
+                output_types=["processed_data"],
             ),
             code="def process_data(data): return data",
-            documentation="Processes data"
+            documentation="Processes data",
         )
 
         tool2 = Tool(
@@ -243,15 +245,15 @@ class TestToolRegistry:
                 name="TextTool",
                 description="Text analysis tool",
                 author="TextAgent",
-                category="nlp"
+                category="nlp",
             ),
             capabilities=ToolCapabilities(
                 functions=["analyze_text"],
                 input_types=["text"],
-                output_types=["analysis"]
+                output_types=["analysis"],
             ),
             code="def analyze_text(text): return text",
-            documentation="Analyzes text"
+            documentation="Analyzes text",
         )
 
         await registry.register_tool(tool1)
@@ -274,7 +276,7 @@ class TestToolRegistry:
             tool_name="ProposedTool",
             description="A proposed tool",
             capabilities=["analyze"],
-            use_case="Analysis tasks"
+            use_case="Analysis tasks",
         )
 
         # Submit proposal
@@ -322,15 +324,15 @@ class TestSemanticSearch:
                 name="DataAnalyzer",
                 description="Analyzes data and generates insights",
                 author="DataAgent",
-                category="data_science"
+                category="data_science",
             ),
             capabilities=ToolCapabilities(
                 functions=["analyze", "visualize"],
                 input_types=["csv", "json"],
-                output_types=["charts", "reports"]
+                output_types=["charts", "reports"],
             ),
             code="def analyze(data): return data",
-            documentation="Data analysis tool"
+            documentation="Data analysis tool",
         )
 
         await search_engine.registry.register_tool(tool)
@@ -361,7 +363,7 @@ class TestToolEvolution:
             evolution_type="enhancement",
             description="Add new feature",
             proposed_changes={"functions": ["new_feature"]},
-            requester_agent="TestAgent"
+            requester_agent="TestAgent",
         )
 
         assert request_id is not None
@@ -386,7 +388,10 @@ def new_function(y):
     return y + 1
 """
 
-        is_compatible, issues = evolution_manager.compatibility_checker.check_compatibility(
+        (
+            is_compatible,
+            issues,
+        ) = evolution_manager.compatibility_checker.check_compatibility(
             old_code, new_code
         )
 
@@ -409,9 +414,7 @@ class TestToolSmithAgent:
         """Create test ToolSmith agent."""
         registry = ToolRegistry()
         agent = ToolSmithAgent(
-            llm=mock_llm,
-            registry=registry,
-            a2a_server_url="http://localhost:8080"
+            llm=mock_llm, registry=registry, a2a_server_url="http://localhost:8080"
         )
         yield agent
         agent.cleanup()
@@ -450,15 +453,13 @@ async def test_full_tool_lifecycle():
                 name="LifecycleTestTool",
                 description="Tool for testing lifecycle",
                 author="TestAgent",
-                category="test"
+                category="test",
             ),
             capabilities=ToolCapabilities(
-                functions=["test"],
-                input_types=["text"],
-                output_types=["result"]
+                functions=["test"], input_types=["text"], output_types=["result"]
             ),
             code="def test(): return 'success'",
-            documentation="Lifecycle test tool"
+            documentation="Lifecycle test tool",
         )
 
         success = await registry.register_tool(tool)
@@ -475,7 +476,7 @@ async def test_full_tool_lifecycle():
             evolution_type="enhancement",
             description="Add more features",
             proposed_changes={"functions": ["test", "enhanced_test"]},
-            requester_agent="TestAgent"
+            requester_agent="TestAgent",
         )
 
         # Approve evolution

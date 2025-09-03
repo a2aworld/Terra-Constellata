@@ -14,6 +14,7 @@ from enum import Enum
 
 class ContributionType(Enum):
     """Types of agent contributions."""
+
     TASK_EXECUTION = "task_execution"
     CREATIVE_OUTPUT = "creative_output"
     PROBLEM_SOLVING = "problem_solving"
@@ -24,6 +25,7 @@ class ContributionType(Enum):
 
 class StrategyType(Enum):
     """Types of documented strategies."""
+
     WORKFLOW_PATTERN = "workflow_pattern"
     DECISION_MAKING = "decision_making"
     PROBLEM_SOLVING = "problem_solving"
@@ -34,6 +36,7 @@ class StrategyType(Enum):
 @dataclass
 class AttributionRecord:
     """Record of attribution for AI partners and contributors."""
+
     agent_name: str
     agent_type: str
     contribution_type: ContributionType
@@ -51,21 +54,22 @@ class AttributionRecord:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for storage."""
         data = asdict(self)
-        data['contribution_type'] = self.contribution_type.value
-        data['timestamp'] = self.timestamp.isoformat()
+        data["contribution_type"] = self.contribution_type.value
+        data["timestamp"] = self.timestamp.isoformat()
         return data
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'AttributionRecord':
+    def from_dict(cls, data: Dict[str, Any]) -> "AttributionRecord":
         """Create from dictionary."""
-        data['contribution_type'] = ContributionType(data['contribution_type'])
-        data['timestamp'] = datetime.fromisoformat(data['timestamp'])
+        data["contribution_type"] = ContributionType(data["contribution_type"])
+        data["timestamp"] = datetime.fromisoformat(data["timestamp"])
         return cls(**data)
 
 
 @dataclass
 class AgentContribution:
     """Record of an agent's contribution."""
+
     contribution_id: str
     agent_name: str
     agent_type: str
@@ -92,23 +96,28 @@ class AgentContribution:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for storage."""
         data = asdict(self)
-        data['contribution_type'] = self.contribution_type.value
-        data['timestamp'] = self.timestamp.isoformat()
-        data['attribution_records'] = [record.to_dict() for record in self.attribution_records]
+        data["contribution_type"] = self.contribution_type.value
+        data["timestamp"] = self.timestamp.isoformat()
+        data["attribution_records"] = [
+            record.to_dict() for record in self.attribution_records
+        ]
         return data
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'AgentContribution':
+    def from_dict(cls, data: Dict[str, Any]) -> "AgentContribution":
         """Create from dictionary."""
-        data['contribution_type'] = ContributionType(data['contribution_type'])
-        data['timestamp'] = datetime.fromisoformat(data['timestamp'])
-        data['attribution_records'] = [AttributionRecord.from_dict(r) for r in data['attribution_records']]
+        data["contribution_type"] = ContributionType(data["contribution_type"])
+        data["timestamp"] = datetime.fromisoformat(data["timestamp"])
+        data["attribution_records"] = [
+            AttributionRecord.from_dict(r) for r in data["attribution_records"]
+        ]
         return cls(**data)
 
 
 @dataclass
 class StrategyDocument:
     """Documented strategy or pattern."""
+
     strategy_id: str
     strategy_type: StrategyType
     title: str
@@ -136,21 +145,22 @@ class StrategyDocument:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for storage."""
         data = asdict(self)
-        data['strategy_type'] = self.strategy_type.value
-        data['created_at'] = self.created_at.isoformat()
+        data["strategy_type"] = self.strategy_type.value
+        data["created_at"] = self.created_at.isoformat()
         return data
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'StrategyDocument':
+    def from_dict(cls, data: Dict[str, Any]) -> "StrategyDocument":
         """Create from dictionary."""
-        data['strategy_type'] = StrategyType(data['strategy_type'])
-        data['created_at'] = datetime.fromisoformat(data['created_at'])
+        data["strategy_type"] = StrategyType(data["strategy_type"])
+        data["created_at"] = datetime.fromisoformat(data["created_at"])
         return cls(**data)
 
 
 @dataclass
 class LegacyChapter:
     """Generated legacy chapter for the Galactic Storybook."""
+
     chapter_id: str
     title: str
     narrative: str
@@ -177,19 +187,20 @@ class LegacyChapter:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for storage."""
         data = asdict(self)
-        data['generated_at'] = self.generated_at.isoformat()
+        data["generated_at"] = self.generated_at.isoformat()
         return data
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'LegacyChapter':
+    def from_dict(cls, data: Dict[str, Any]) -> "LegacyChapter":
         """Create from dictionary."""
-        data['generated_at'] = datetime.fromisoformat(data['generated_at'])
+        data["generated_at"] = datetime.fromisoformat(data["generated_at"])
         return cls(**data)
 
 
 @dataclass
 class KnowledgeEntry:
     """Entry in the knowledge base."""
+
     entry_id: str
     category: str
     title: str
@@ -216,21 +227,22 @@ class KnowledgeEntry:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for storage."""
         data = asdict(self)
-        data['created_at'] = self.created_at.isoformat()
-        data['last_updated'] = self.last_updated.isoformat()
+        data["created_at"] = self.created_at.isoformat()
+        data["last_updated"] = self.last_updated.isoformat()
         return data
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'KnowledgeEntry':
+    def from_dict(cls, data: Dict[str, Any]) -> "KnowledgeEntry":
         """Create from dictionary."""
-        data['created_at'] = datetime.fromisoformat(data['created_at'])
-        data['last_updated'] = datetime.fromisoformat(data['last_updated'])
+        data["created_at"] = datetime.fromisoformat(data["created_at"])
+        data["last_updated"] = datetime.fromisoformat(data["last_updated"])
         return cls(**data)
 
 
 @dataclass
 class CodexStatistics:
     """Statistics for the Codex system."""
+
     total_contributions: int
     total_strategies: int
     total_chapters: int
@@ -245,5 +257,5 @@ class CodexStatistics:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         data = asdict(self)
-        data['generated_at'] = self.generated_at.isoformat()
+        data["generated_at"] = self.generated_at.isoformat()
         return data

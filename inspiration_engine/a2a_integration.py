@@ -13,8 +13,12 @@ import json
 
 from ..a2a_protocol.client import A2AClient
 from ..a2a_protocol.schemas import (
-    InspirationRequest, CreationFeedback, NarrativePrompt,
-    ToolProposal, CertificationRequest, A2AMessage
+    InspirationRequest,
+    CreationFeedback,
+    NarrativePrompt,
+    ToolProposal,
+    CertificationRequest,
+    A2AMessage,
 )
 from .algorithms import NoveltyScore
 from .prompt_ranking import CreativePrompt, PromptRanking
@@ -27,10 +31,12 @@ class A2AInspirationClient:
     A2A client specialized for inspiration engine communication
     """
 
-    def __init__(self,
-                 server_url: str,
-                 agent_name: str = "inspiration_engine",
-                 timeout: float = 30.0):
+    def __init__(
+        self,
+        server_url: str,
+        agent_name: str = "inspiration_engine",
+        timeout: float = 30.0,
+    ):
         """
         Initialize A2A inspiration client
 
@@ -53,11 +59,13 @@ class A2AInspirationClient:
         """Async context manager exit"""
         await self.client.disconnect()
 
-    async def request_inspiration(self,
-                                context: str,
-                                domain: str,
-                                constraints: Optional[List[str]] = None,
-                                target_agent: Optional[str] = None) -> Dict[str, Any]:
+    async def request_inspiration(
+        self,
+        context: str,
+        domain: str,
+        constraints: Optional[List[str]] = None,
+        target_agent: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """
         Request creative inspiration from other agents
 
@@ -76,20 +84,22 @@ class A2AInspirationClient:
             context=context,
             domain=domain,
             constraints=constraints or [],
-            inspiration_type="creative_novelty"
+            inspiration_type="creative_novelty",
         )
 
         try:
             response = await self.client.send_request("INSPIRATION_REQUEST", message)
-            logger.info(f"Received inspiration response from {target_agent or 'any agent'}")
+            logger.info(
+                f"Received inspiration response from {target_agent or 'any agent'}"
+            )
             return response
         except Exception as e:
             logger.error(f"Failed to request inspiration: {e}")
             return {"error": str(e)}
 
-    async def share_novelty_findings(self,
-                                   findings: Dict[str, Any],
-                                   target_agents: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+    async def share_novelty_findings(
+        self, findings: Dict[str, Any], target_agents: Optional[List[str]] = None
+    ) -> List[Dict[str, Any]]:
         """
         Share novelty detection findings with other agents
 
@@ -105,12 +115,14 @@ class A2AInspirationClient:
 
         message = NarrativePrompt(
             sender_agent=self.agent_name,
-            target_agent=target_agents[0] if target_agents and len(target_agents) == 1 else None,
+            target_agent=target_agents[0]
+            if target_agents and len(target_agents) == 1
+            else None,
             theme="novelty_discovery",
-            elements=findings.get('key_elements', []),
+            elements=findings.get("key_elements", []),
             style="analytical",
             length="medium",
-            constraints=["focus_on_novelty", "include_quantitative_scores"]
+            constraints=["focus_on_novelty", "include_quantitative_scores"],
         )
 
         try:
@@ -129,9 +141,9 @@ class A2AInspirationClient:
             logger.error(f"Failed to share novelty findings: {e}")
             return [{"error": str(e)}]
 
-    async def propose_inspiration_tools(self,
-                                     tool_ideas: List[Dict[str, Any]],
-                                     target_agent: Optional[str] = None) -> Dict[str, Any]:
+    async def propose_inspiration_tools(
+        self, tool_ideas: List[Dict[str, Any]], target_agent: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
         Propose new tools or capabilities for inspiration generation
 
@@ -151,12 +163,14 @@ class A2AInspirationClient:
         message = ToolProposal(
             sender_agent=self.agent_name,
             target_agent=target_agent,
-            tool_name=tool_idea.get('name', 'InspirationEnhancementTool'),
-            description=tool_idea.get('description', 'Tool for enhancing creative inspiration'),
-            capabilities=tool_idea.get('capabilities', []),
-            requirements=tool_idea.get('requirements', []),
-            use_case=tool_idea.get('use_case', 'Creative inspiration enhancement'),
-            priority=tool_idea.get('priority', 'medium')
+            tool_name=tool_idea.get("name", "InspirationEnhancementTool"),
+            description=tool_idea.get(
+                "description", "Tool for enhancing creative inspiration"
+            ),
+            capabilities=tool_idea.get("capabilities", []),
+            requirements=tool_idea.get("requirements", []),
+            use_case=tool_idea.get("use_case", "Creative inspiration enhancement"),
+            priority=tool_idea.get("priority", "medium"),
         )
 
         try:
@@ -167,12 +181,14 @@ class A2AInspirationClient:
             logger.error(f"Failed to propose inspiration tools: {e}")
             return {"error": str(e)}
 
-    async def send_creation_feedback(self,
-                                   original_request_id: str,
-                                   feedback_type: str,
-                                   content: str,
-                                   rating: Optional[int] = None,
-                                   target_agent: Optional[str] = None) -> Dict[str, Any]:
+    async def send_creation_feedback(
+        self,
+        original_request_id: str,
+        feedback_type: str,
+        content: str,
+        rating: Optional[int] = None,
+        target_agent: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """
         Send feedback on creative outputs or inspiration requests
 
@@ -192,7 +208,7 @@ class A2AInspirationClient:
             original_request_id=original_request_id,
             feedback_type=feedback_type,
             content=content,
-            rating=rating
+            rating=rating,
         )
 
         try:
@@ -203,12 +219,14 @@ class A2AInspirationClient:
             logger.error(f"Failed to send creation feedback: {e}")
             return {"error": str(e)}
 
-    async def request_certification(self,
-                                  subject: str,
-                                  certification_type: str,
-                                  evidence: Dict[str, Any],
-                                  criteria: List[str],
-                                  target_agent: Optional[str] = None) -> Dict[str, Any]:
+    async def request_certification(
+        self,
+        subject: str,
+        certification_type: str,
+        evidence: Dict[str, Any],
+        criteria: List[str],
+        target_agent: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """
         Request certification/validation of inspiration findings
 
@@ -228,20 +246,22 @@ class A2AInspirationClient:
             subject=subject,
             certification_type=certification_type,
             evidence=evidence,
-            criteria=criteria
+            criteria=criteria,
         )
 
         try:
             response = await self.client.send_request("CERTIFICATION_REQUEST", message)
-            logger.info(f"Requested certification for {subject} from {target_agent or 'certification_agent'}")
+            logger.info(
+                f"Requested certification for {subject} from {target_agent or 'certification_agent'}"
+            )
             return response
         except Exception as e:
             logger.error(f"Failed to request certification: {e}")
             return {"error": str(e)}
 
-    async def broadcast_inspiration_update(self,
-                                         update_type: str,
-                                         update_data: Dict[str, Any]) -> None:
+    async def broadcast_inspiration_update(
+        self, update_type: str, update_data: Dict[str, Any]
+    ) -> None:
         """
         Broadcast inspiration engine status updates to all agents
 
@@ -253,14 +273,13 @@ class A2AInspirationClient:
         message = A2AMessage(
             sender_agent=self.agent_name,
             message_id=f"broadcast_{update_type}_{datetime.utcnow().isoformat()}",
-            timestamp=datetime.utcnow()
+            timestamp=datetime.utcnow(),
         )
 
         # Add custom fields
-        message.__dict__.update({
-            'update_type': update_type,
-            'update_data': update_data
-        })
+        message.__dict__.update(
+            {"update_type": update_type, "update_data": update_data}
+        )
 
         try:
             await self.client.send_notification("INSPIRATION_UPDATE", message)
@@ -278,9 +297,9 @@ class A2AInspirationClient:
         Returns:
             Narrative prompt string
         """
-        key_elements = findings.get('key_elements', [])
-        novelty_scores = findings.get('novelty_scores', {})
-        domain = findings.get('domain', 'general')
+        key_elements = findings.get("key_elements", [])
+        novelty_scores = findings.get("novelty_scores", {})
+        domain = findings.get("domain", "general")
 
         prompt_parts = [
             f"Explore the novel discovery in the {domain} domain:",
@@ -288,18 +307,27 @@ class A2AInspirationClient:
         ]
 
         if novelty_scores:
-            top_score = max(novelty_scores.values(), key=lambda x: x.score if hasattr(x, 'score') else 0)
-            if hasattr(top_score, 'algorithm'):
-                prompt_parts.append(f"Novelty detected using {top_score.algorithm} algorithm")
+            top_score = max(
+                novelty_scores.values(),
+                key=lambda x: x.score if hasattr(x, "score") else 0,
+            )
+            if hasattr(top_score, "algorithm"):
+                prompt_parts.append(
+                    f"Novelty detected using {top_score.algorithm} algorithm"
+                )
 
-        prompt_parts.append("Develop a creative narrative that captures this unique insight.")
+        prompt_parts.append(
+            "Develop a creative narrative that captures this unique insight."
+        )
 
         return " ".join(prompt_parts)
 
-    async def collaborative_inspiration_session(self,
-                                             session_topic: str,
-                                             participating_agents: List[str],
-                                             duration_minutes: int = 30) -> Dict[str, Any]:
+    async def collaborative_inspiration_session(
+        self,
+        session_topic: str,
+        participating_agents: List[str],
+        duration_minutes: int = 30,
+    ) -> Dict[str, Any]:
         """
         Initiate a collaborative inspiration session with multiple agents
 
@@ -312,48 +340,56 @@ class A2AInspirationClient:
             Session results and contributions
         """
         session_data = {
-            'session_id': f"session_{datetime.utcnow().isoformat()}",
-            'topic': session_topic,
-            'participants': participating_agents,
-            'duration_minutes': duration_minutes,
-            'start_time': datetime.utcnow().isoformat()
+            "session_id": f"session_{datetime.utcnow().isoformat()}",
+            "topic": session_topic,
+            "participants": participating_agents,
+            "duration_minutes": duration_minutes,
+            "start_time": datetime.utcnow().isoformat(),
         }
 
         # Send session invitation to all participants
         invitation_message = A2AMessage(
             sender_agent=self.agent_name,
             message_id=f"invitation_{session_data['session_id']}",
-            timestamp=datetime.utcnow()
+            timestamp=datetime.utcnow(),
         )
-        invitation_message.__dict__.update({
-            'invitation_type': 'inspiration_session',
-            'session_data': session_data
-        })
+        invitation_message.__dict__.update(
+            {"invitation_type": "inspiration_session", "session_data": session_data}
+        )
 
         try:
             # Send invitations
-            requests = [("SESSION_INVITATION", invitation_message) for _ in participating_agents]
+            requests = [
+                ("SESSION_INVITATION", invitation_message) for _ in participating_agents
+            ]
             responses = await self.client.batch_request(requests)
 
             session_results = {
-                'session_data': session_data,
-                'invitations_sent': len(requests),
-                'responses_received': len([r for r in responses if not isinstance(r, Exception)]),
-                'participants_joined': [agent for agent, resp in zip(participating_agents, responses)
-                                      if not isinstance(resp, Exception) and resp.get('accepted', False)],
-                'contributions': []
+                "session_data": session_data,
+                "invitations_sent": len(requests),
+                "responses_received": len(
+                    [r for r in responses if not isinstance(r, Exception)]
+                ),
+                "participants_joined": [
+                    agent
+                    for agent, resp in zip(participating_agents, responses)
+                    if not isinstance(resp, Exception) and resp.get("accepted", False)
+                ],
+                "contributions": [],
             }
 
-            logger.info(f"Initiated collaborative session '{session_topic}' with {len(participating_agents)} agents")
+            logger.info(
+                f"Initiated collaborative session '{session_topic}' with {len(participating_agents)} agents"
+            )
             return session_results
 
         except Exception as e:
             logger.error(f"Failed to initiate collaborative session: {e}")
             return {"error": str(e)}
 
-    async def share_prompt_rankings(self,
-                                  rankings: PromptRanking,
-                                  target_agent: Optional[str] = None) -> Dict[str, Any]:
+    async def share_prompt_rankings(
+        self, rankings: PromptRanking, target_agent: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
         Share prompt ranking results with other agents
 
@@ -365,28 +401,33 @@ class A2AInspirationClient:
             Response from recipient agent
         """
         ranking_data = {
-            'total_prompts': len(rankings.ranked_prompts),
-            'diversity_score': rankings.diversity_score,
-            'ranking_criteria': rankings.ranking_criteria,
-            'top_prompt': {
-                'id': rankings.top_prompt.id if rankings.top_prompt else None,
-                'content': rankings.top_prompt.content[:200] if rankings.top_prompt else None,
-                'domain': rankings.top_prompt.domain if rankings.top_prompt else None,
-                'creative_potential': rankings.top_prompt.creative_potential if rankings.top_prompt else None
-            } if rankings.top_prompt else None,
-            'timestamp': rankings.timestamp.isoformat()
+            "total_prompts": len(rankings.ranked_prompts),
+            "diversity_score": rankings.diversity_score,
+            "ranking_criteria": rankings.ranking_criteria,
+            "top_prompt": {
+                "id": rankings.top_prompt.id if rankings.top_prompt else None,
+                "content": rankings.top_prompt.content[:200]
+                if rankings.top_prompt
+                else None,
+                "domain": rankings.top_prompt.domain if rankings.top_prompt else None,
+                "creative_potential": rankings.top_prompt.creative_potential
+                if rankings.top_prompt
+                else None,
+            }
+            if rankings.top_prompt
+            else None,
+            "timestamp": rankings.timestamp.isoformat(),
         }
 
         message = A2AMessage(
             sender_agent=self.agent_name,
             target_agent=target_agent,
             message_id=f"rankings_{datetime.utcnow().isoformat()}",
-            timestamp=datetime.utcnow()
+            timestamp=datetime.utcnow(),
         )
-        message.__dict__.update({
-            'ranking_data': ranking_data,
-            'message_type': 'prompt_rankings'
-        })
+        message.__dict__.update(
+            {"ranking_data": ranking_data, "message_type": "prompt_rankings"}
+        )
 
         try:
             response = await self.client.send_request("PROMPT_RANKINGS", message)
@@ -396,11 +437,9 @@ class A2AInspirationClient:
             logger.error(f"Failed to share prompt rankings: {e}")
             return {"error": str(e)}
 
-    async def request_peer_review(self,
-                                content: str,
-                                content_type: str,
-                                reviewers: List[str],
-                                criteria: List[str]) -> Dict[str, Any]:
+    async def request_peer_review(
+        self, content: str, content_type: str, reviewers: List[str], criteria: List[str]
+    ) -> Dict[str, Any]:
         """
         Request peer review of creative content from other agents
 
@@ -414,21 +453,20 @@ class A2AInspirationClient:
             Review responses from agents
         """
         review_request = {
-            'content': content[:1000],  # Limit content length
-            'content_type': content_type,
-            'criteria': criteria,
-            'request_id': f"review_{datetime.utcnow().isoformat()}"
+            "content": content[:1000],  # Limit content length
+            "content_type": content_type,
+            "criteria": criteria,
+            "request_id": f"review_{datetime.utcnow().isoformat()}",
         }
 
         message = A2AMessage(
             sender_agent=self.agent_name,
-            message_id=review_request['request_id'],
-            timestamp=datetime.utcnow()
+            message_id=review_request["request_id"],
+            timestamp=datetime.utcnow(),
         )
-        message.__dict__.update({
-            'review_request': review_request,
-            'message_type': 'peer_review_request'
-        })
+        message.__dict__.update(
+            {"review_request": review_request, "message_type": "peer_review_request"}
+        )
 
         try:
             # Send review requests to multiple agents
@@ -436,11 +474,13 @@ class A2AInspirationClient:
             responses = await self.client.batch_request(requests)
 
             review_results = {
-                'request_id': review_request['request_id'],
-                'reviewers_contacted': len(reviewers),
-                'responses_received': len([r for r in responses if not isinstance(r, Exception)]),
-                'reviews': [r for r in responses if not isinstance(r, Exception)],
-                'errors': [str(r) for r in responses if isinstance(r, Exception)]
+                "request_id": review_request["request_id"],
+                "reviewers_contacted": len(reviewers),
+                "responses_received": len(
+                    [r for r in responses if not isinstance(r, Exception)]
+                ),
+                "reviews": [r for r in responses if not isinstance(r, Exception)],
+                "errors": [str(r) for r in responses if isinstance(r, Exception)],
             }
 
             logger.info(f"Requested peer review from {len(reviewers)} agents")
@@ -452,10 +492,9 @@ class A2AInspirationClient:
 
 
 # Utility functions for common inspiration engine operations
-async def broadcast_novelty_alert(client: A2AInspirationClient,
-                                novelty_score: float,
-                                domain: str,
-                                description: str) -> None:
+async def broadcast_novelty_alert(
+    client: A2AInspirationClient, novelty_score: float, domain: str, description: str
+) -> None:
     """
     Broadcast a novelty alert to all agents
 
@@ -466,18 +505,22 @@ async def broadcast_novelty_alert(client: A2AInspirationClient,
         description: Description of the novel finding
     """
     alert_data = {
-        'novelty_score': novelty_score,
-        'domain': domain,
-        'description': description,
-        'alert_level': 'high' if novelty_score > 0.8 else 'medium' if novelty_score > 0.6 else 'low'
+        "novelty_score": novelty_score,
+        "domain": domain,
+        "description": description,
+        "alert_level": "high"
+        if novelty_score > 0.8
+        else "medium"
+        if novelty_score > 0.6
+        else "low",
     }
 
-    await client.broadcast_inspiration_update('novelty_alert', alert_data)
+    await client.broadcast_inspiration_update("novelty_alert", alert_data)
 
 
-async def request_inspiration_collaboration(client: A2AInspirationClient,
-                                         topic: str,
-                                         required_expertise: List[str]) -> Dict[str, Any]:
+async def request_inspiration_collaboration(
+    client: A2AInspirationClient, topic: str, required_expertise: List[str]
+) -> Dict[str, Any]:
     """
     Request collaboration on an inspiration topic
 
@@ -490,9 +533,9 @@ async def request_inspiration_collaboration(client: A2AInspirationClient,
         Collaboration setup response
     """
     collaboration_data = {
-        'topic': topic,
-        'required_expertise': required_expertise,
-        'collaboration_type': 'inspiration_development'
+        "topic": topic,
+        "required_expertise": required_expertise,
+        "collaboration_type": "inspiration_development",
     }
 
     # Find agents with required expertise
@@ -500,7 +543,5 @@ async def request_inspiration_collaboration(client: A2AInspirationClient,
     potential_collaborators = ["mythology_agent", "geography_agent", "narrative_agent"]
 
     return await client.collaborative_inspiration_session(
-        topic,
-        potential_collaborators,
-        duration_minutes=45
+        topic, potential_collaborators, duration_minutes=45
     )

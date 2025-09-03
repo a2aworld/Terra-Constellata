@@ -1,9 +1,9 @@
 # Core dependencies # >=0.1.17 and # ==0.0.92 and # ==0.4.18
-langchain>=0.1.0
-langchain-community>=0.0.13
+langchain
+langchain-community
 langchain-core 
-langchain-openai>=0.0.8
-langgraph==0.0.40
+langchain-openai
+langgraph
 langsmith  
 chromadb  
 
@@ -70,11 +70,7 @@ prometheus-client==0.19.0
 # Error tracking
 sentry-sdk==1.40.0
 
-<<<<<<< HEAD
-# Reinforcement Learning
-=======
 # Reinforcement Learning # ==2.0.0 # ==0.29.0
->>>>>>> 4799dd36ffeb0a5203e9e41e54b284a39b16cc40
 ray[rllib]==2.6.0
 optuna==3.3.0
 

@@ -72,7 +72,7 @@ sentry-sdk==1.40.0
 
 # Reinforcement Learning # ==2.0.0 # ==0.29.0
 stable-baselines3 
-gymnasium==0.29.1
+gymnasium[all]
 ray[rllib]==2.6.0
 optuna==3.3.0
 

@@ -117,7 +117,7 @@ Terra Constellata represents the next evolution in AI systems - a multi-agent ec
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-repo/terra-constellata.git
+git clone https://github.com/a2a-world/terra-constellata.git
 cd terra-constellata
 
 # Configure environment
@@ -489,7 +489,7 @@ We welcome contributions from the community! Here's how to get involved:
 
 ```bash
 # Fork and clone
-git clone https://github.com/your-username/terra-constellata.git
+git clone https://github.com/a2a-world/terra-constellata.git
 cd terra-constellata
 
 # Create feature branch

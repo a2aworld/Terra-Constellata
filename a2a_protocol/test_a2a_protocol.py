@@ -11,6 +11,7 @@ from unittest.mock import Mock, AsyncMock, patch
 from datetime import datetime
 
 from .schemas import (
+    A2AMessage,
     GeospatialAnomalyIdentified,
     InspirationRequest,
     CreationFeedback,

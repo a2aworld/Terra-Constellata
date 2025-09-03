@@ -9,6 +9,7 @@ including training, inference, and A2A protocol integration.
 import asyncio
 import logging
 import sys
+import torch
 from pathlib import Path
 
 # Add the project root to Python path

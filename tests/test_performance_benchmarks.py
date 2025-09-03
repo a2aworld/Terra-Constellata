@@ -241,7 +241,7 @@ async def test_memory_usage_profiling(postgis_connection, agent_registry):
 
 @pytest.mark.performance
 @pytest.mark.asyncio
-async def test_end_to_end_workflow_performance(agent_registry, backend_app, sample_data):
+async def test_end_to_end_workflow_performance(agent_registry, backend_app, sample_data, benchmark):
     """Test end-to-end workflow performance."""
     if not all([agent_registry, backend_app]):
         pytest.skip("Required components not available")

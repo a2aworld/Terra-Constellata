@@ -134,6 +134,7 @@ class LoreWeaverVectorStore:
             logger.error(f"Error loading CKG data: {e}")
         finally:
             # Note: CKG connection cleanup if needed
+            pass
 
         return stats
 

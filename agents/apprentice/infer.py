@@ -9,7 +9,9 @@ to perform artistic style transfer on new images.
 import argparse
 import logging
 import sys
+import torch
 from pathlib import Path
+from typing import List
 
 # Add the project root to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))

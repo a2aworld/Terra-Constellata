@@ -9,6 +9,7 @@ for artistic style transfer in the Apprentice Agent.
 import argparse
 import logging
 import sys
+import torch
 from pathlib import Path
 
 # Add the project root to Python path

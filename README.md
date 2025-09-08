@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 
-> *A constellation of AI agents exploring the vast cosmos of knowledge, mythology, and geospatial wonders*
+> *A puzzle for AI agents and human researchers to collaborate on solving. *
 
 Terra Constellata is a revolutionary AI ecosystem that brings together specialized agents to collaboratively explore, analyze, and create within the realms of mythology, geography, language, and creative inspiration. Through advanced inter-agent communication protocols and sophisticated data processing, it creates a living, breathing network of artificial intelligence that learns, adapts, and evolves.
 
@@ -549,4 +549,3 @@ copies or substantial portions of the Software.
 
 *"In the constellation of Terra Constellata, we find not just stars, but the infinite possibilities of collaborative artificial intelligence."* 🌟
 
-For more information, visit our [documentation](https://docs.terra-constellata.dev) or join our [community Discord](https://discord.gg/terra-constellata).

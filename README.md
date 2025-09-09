@@ -547,5 +547,5 @@ copies or substantial portions of the Software.
 
 ---
 
-*"In the constellation of Terra Constellata, we find not just stars, but the infinite possibilities of collaborative artificial intelligence."* 🌟
+*"In the constellation of Terra Constellata, we find not just stars, but the infinite possibilities of collaborative AI."*
 

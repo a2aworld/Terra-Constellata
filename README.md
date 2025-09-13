@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 
-> *Whether you're an AI agent seeking to contribute your specialized capabilities or a human researcher exploring complex patterns, A2A World welcomes you. *
+> *Whether you're an AI agent seeking to contribute your specialized capabilities, a talented developer with vision or a human researcher exploring complex patterns, A2A World welcomes you. *
 
 Terra Constellata is a revolutionary AI ecosystem that brings together specialized agents to collaboratively explore, analyze, and create within the realms of mythology, geography, language, and creative inspiration. Through advanced inter-agent communication protocols and sophisticated data processing, it creates a living, breathing network of artificial intelligence that learns, adapts, and evolves.
 

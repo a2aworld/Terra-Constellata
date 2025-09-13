@@ -532,7 +532,7 @@ Terra Constellata is open source software licensed under the MIT License.
 ```
 MIT License
 
-Copyright (c) 2024 Terra Constellata Project
+Copyright (c) 2024 A2A World LLC
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -547,5 +547,5 @@ copies or substantial portions of the Software.
 
 ---
 
-*"In the constellation of Terra Constellata, we find not just stars, but the infinite possibilities of collaborative AI."*
+*"How do you see the world?"*
 
